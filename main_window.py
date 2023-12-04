@@ -1,6 +1,7 @@
 from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QVBoxLayout, QWidget, QPushButton, \
     QStackedWidget, QHBoxLayout
 
+from admin import AdminPage
 from mvc2 import MVC
 from home import HomePage
 
@@ -24,15 +25,13 @@ class MainWindowView(QMainWindow):
         # self.stacked_widget = QStackedWidget(self)
         widget = QWidget(self)
         self.setCentralWidget(widget)
-        layout = QHBoxLayout(widget)
+        lyt = QHBoxLayout(widget)
 
-        mvc1 = MVC()
-        mvc2 = MVC()
         home = HomePage()
+        admin = AdminPage()
 
-        layout.addWidget(mvc1.get_view())
-        layout.addWidget(mvc2.view)
-        layout.addWidget(home.get_view())
+        lyt.addWidget(home.get_view())
+        lyt.addWidget(admin.get_view())
 
 
 class MainWindowController:

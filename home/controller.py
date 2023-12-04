@@ -2,6 +2,7 @@ import json
 
 from PySide6.QtNetwork import QNetworkReply, QNetworkRequest
 
+from setting_manager import SettingManager
 from data.api.api_manager import APIManager
 
 
@@ -48,8 +49,17 @@ class HomeController:
                 data = reply.readAll().data().decode("utf-8")
                 print(f"응답 성공\ndata:", data)
                 headers = reply.rawHeaderPairs()
-                for header in headers:
-                    print(f"Header: {header[0]} = {header[1].data().decode('utf-8')}")
+                tokens = ""
+                for header, value in headers:
+                    if header == b"Authorization":
+                        auth = value.data().decode("utf-8")
+                        tokens = auth.split(" ")[1].split("/")
+
+                print("refresh:", tokens[0])
+                print("access:", tokens[1])
+                setting_manager = SettingManager()
+                setting_manager.save_refresh_token(tokens[0])
+                setting_manager.save_access_token(tokens[1])
 
         self.api_manager.login(login_info, api_handler)
 

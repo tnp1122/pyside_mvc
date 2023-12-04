@@ -1,8 +1,4 @@
-import asyncio
-
-from PySide6.QtCore import QLine
-from PySide6.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QFrame, QHBoxLayout, QVBoxLayout, QStackedWidget, \
-    QTabWidget
+from PySide6.QtWidgets import QWidget, QLabel, QLineEdit, QPushButton, QHBoxLayout, QVBoxLayout, QTabWidget
 
 
 class HomeView(QWidget):
@@ -85,9 +81,3 @@ class HomeView(QWidget):
 
         self.btn_login.clicked.connect(self.controller.do_login)
         self.btn_rg.clicked.connect(self.controller.do_registration)
-
-    def do_login(self):
-        asyncio.ensure_future(self.run_async_login())
-
-    async def run_async_login(self):
-        self.controller.do_login()
