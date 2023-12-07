@@ -1,4 +1,4 @@
-from home import *
+from ui.home import *
 
 
 class HomePage:

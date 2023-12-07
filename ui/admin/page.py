@@ -1,4 +1,4 @@
-from admin import *
+from ui.admin import *
 
 
 class AdminPage:

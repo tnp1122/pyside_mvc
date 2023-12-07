@@ -1,4 +1,4 @@
-from admin.user_list_table import *
+from ui.admin.user_list_table import *
 
 
 class UserListTable:

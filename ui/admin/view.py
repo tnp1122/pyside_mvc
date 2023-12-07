@@ -1,7 +1,7 @@
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QListWidget, QPushButton, QSizePolicy
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton
 
-from admin.user_list_table import UserListTable
+from ui.admin.user_list_table import UserListTable
 
 
 class AdminView(QWidget):

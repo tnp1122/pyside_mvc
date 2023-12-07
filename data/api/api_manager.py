@@ -35,6 +35,10 @@ class APIManager:
             raise ValueError("Unsupported HTTP method")
 
         if callback and callable(callback):
+            print("reply:", reply)
+            print("read:", reply.readAll())
+            http_status_code = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
+            print(f"HTTP Status Code: {http_status_code}")
             reply.finished.connect(lambda: callback(reply))
 
     def login(self, login_info, callback):

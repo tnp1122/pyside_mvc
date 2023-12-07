@@ -1,9 +1,7 @@
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel, QLineEdit, QVBoxLayout, QWidget, QPushButton, \
-    QStackedWidget, QHBoxLayout
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout
 
-from admin import AdminPage
-from mvc2 import MVC
-from home import HomePage
+from ui.admin import AdminPage
+from ui.home import HomePage
 
 
 class MainWindowModel:
