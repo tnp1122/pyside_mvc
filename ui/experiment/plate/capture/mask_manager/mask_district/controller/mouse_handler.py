@@ -80,7 +80,6 @@ class MouseHandler:
         return QRectF(QPointF(left, top), QPointF(right, bottom))
 
     def on_mouse_moved(self, event):
-        print(event)
         if self.status == Status.NORMAL:
             self.check_mouse_position(event)
 

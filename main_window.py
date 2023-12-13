@@ -36,7 +36,6 @@ class MainWindowView(QMainWindow):
         btn_vertical = QPushButton("세로")
         btn_horizontal.clicked.connect(lambda: district.set_direction(0))
         btn_vertical.clicked.connect(lambda: district.set_direction(1))
-        # 커넥트 지우면 마우스 이벤트가 작동안함 두개는 상관없는데 왜지?
 
         lyt.addWidget(home.get_view())
         lyt.addWidget(admin.get_view())
