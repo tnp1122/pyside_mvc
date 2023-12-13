@@ -15,6 +15,7 @@ class MaskDistrictWidget(MouseHandler):
         self.add_axes()
 
         super().__init__(self.model, self.view)
+        self.view.set_scene()
 
     @property
     def model(self):

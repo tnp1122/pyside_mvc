@@ -13,6 +13,7 @@ class MaskDistrictView(QGraphicsView):
         self.setRenderHint(QPainter.Antialiasing, True)
         self.scene = MaskDistrictScene(origin_image)
 
+    def set_scene(self):
         self.setScene(self.scene)
         self.ui_initialized_signal.emit()
 
