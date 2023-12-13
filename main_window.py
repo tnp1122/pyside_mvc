@@ -1,7 +1,9 @@
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout
+from PySide6.QtGui import QImage
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QPushButton
 
 from ui.admin import AdminPage
 from ui.home import HomePage
+from ui.experiment.plate.capture.mask_manager.mask_district.controller.mask_district_widget import MaskDistrictWidget
 
 
 class MainWindowModel:
@@ -27,9 +29,20 @@ class MainWindowView(QMainWindow):
 
         home = HomePage()
         admin = AdminPage()
+        image = QImage("ui/experiment/plate/capture/plate_image.jpg")
+        district = MaskDistrictWidget(image)
+        district.set_direction(0)
+        btn_horizontal = QPushButton("가로")
+        btn_vertical = QPushButton("세로")
+        btn_horizontal.clicked.connect(lambda: district.set_direction(0))
+        btn_vertical.clicked.connect(lambda: district.set_direction(1))
+        # 커넥트 지우면 마우스 이벤트가 작동안함 두개는 상관없는데 왜지?
 
         lyt.addWidget(home.get_view())
         lyt.addWidget(admin.get_view())
+        lyt.addWidget(district.view)
+        lyt.addWidget(btn_horizontal)
+        lyt.addWidget(btn_vertical)
 
 
 class MainWindowController:
