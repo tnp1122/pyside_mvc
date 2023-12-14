@@ -37,8 +37,8 @@ class MaskDistrictScene(QGraphicsScene):
 
         self.border = None
 
-    def add_border(self, x, y, width, height, border_width, margin):
-        self.border = MaskDistrictBorder(x, y, width, height, border_width, margin)
+    def add_border(self, x, y, width, height, border_width):
+        self.border = MaskDistrictBorder(x, y, width, height, border_width)
         self.addItem(self.border)
 
     def mouseMoveEvent(self, event):
@@ -55,9 +55,8 @@ class MaskDistrictScene(QGraphicsScene):
 
 
 class MaskDistrictBorder(QGraphicsRectItem):
-    def __init__(self, x, y, width, height, border_width, margin, parent=None):
+    def __init__(self, x, y, width, height, border_width, parent=None):
         super().__init__(x, y, width, height, parent)
-        self.margin = margin
 
         self.setFlag(QGraphicsRectItem.ItemIsMovable)
         self.setTransformOriginPoint(self.rect().center())
@@ -65,31 +64,61 @@ class MaskDistrictBorder(QGraphicsRectItem):
         pen = QPen(Qt.NoPen)
         self.setPen(pen)
 
-        self.mask_area = None
-        self.additive_axes = []
-        self.solvent_axes = []
+        self.mask_area = MaskDistrictArea(x, y, width, height, border_width, self)
+        self.vertical_axes = [Axis(0, y, bar_height=height, is_vertical=True, parent=self) for _ in range(12)]
+        self.horizontal_axes = [Axis(0, x, bar_height=width, parent=self) for _ in range(12)]
 
     def set_movable(self, movable):
         self.setFlag(QGraphicsRectItem.ItemIsMovable, movable)
 
-    def add_mask_area(self, x, y, width, height, border_width):
-        self.mask_area = MaskDistrictArea(x, y, width, height, border_width, self)
+    def set_direction(self, direction):
+        if direction == 0:
+            for axis in self.vertical_axes[-4:]:
+                axis.setVisible(True)
+            for axis in self.horizontal_axes[-4:]:
+                axis.setVisible(False)
 
-    def add_axes(self, value, bar_start, head_width, head_height, bar_width, bar_height, is_vertical=False):
-        axis = Axis(value, bar_start, head_width, head_height, bar_width, bar_height, is_vertical, self)
-        if is_vertical:
-            self.additive_axes.append(axis)
         else:
-            self.solvent_axes.append(axis)
+            for axis in self.vertical_axes[-4:]:
+                axis.setVisible(False)
+            for axis in self.horizontal_axes[-4:]:
+                axis.setVisible(True)
 
-    def set_interval(self, axes, is_vertical):
+    def set_bar_height(self, value, diff, is_vertical=True):
         if is_vertical:
-            axes_bar = self.solvent_axes
+            axes = self.vertical_axes
         else:
-            axes_bar = self.additive_axes
+            axes = self.horizontal_axes
+        for axis in axes:
+            head = axis.head.rect()
+            bar = axis.bar.rect()
 
-        for idx, axis in enumerate(axes_bar):
-            axis.set_pos(axes[idx])
+            if is_vertical:
+                head_x = head.x()
+                head_y = head.y() - diff
+                bar_x = bar.x()
+                bar_y = bar.y() - diff
+                width = bar.width()
+                height = value
+            else:
+                head_x = head.x() - diff
+                head_y = head.y()
+                bar_x = bar.x() - diff
+                bar_y = bar.y()
+                width = value
+                height = bar.height()
+
+            axis.head.setRect(head_x, head_y, head.width(), head.height())
+            axis.bar.setRect(bar_x, bar_y, width, height)
+
+    def set_intervals(self, axes, is_up_down_interval=True):
+        if is_up_down_interval:
+            axis_bars = self.horizontal_axes
+        else:
+            axis_bars = self.vertical_axes
+
+        for idx, value in enumerate(axes):
+            axis_bars[idx].set_pos(value)
 
 
 class MaskDistrictArea(QGraphicsRectItem):
@@ -106,12 +135,11 @@ class MaskDistrictArea(QGraphicsRectItem):
 
 
 class Axis(QGraphicsRectItem):
-    def __init__(self, value, bar_start, head_width=10, head_height=10, bar_width=10, bar_height=10, is_vertical=False,
+    def __init__(self, value, bar_start, head_width=20, head_height=10, bar_width=10, bar_height=10, is_vertical=False,
                  parent=None):
         super().__init__(parent)
         self.value = value
         self.is_vertical = is_vertical
-
         if is_vertical:
             head_x = value - head_width / 2
             head_y = bar_start - head_height
@@ -133,29 +161,6 @@ class Axis(QGraphicsRectItem):
 
         self.head.setBrush(self.brush)
         self.bar.setBrush(self.brush)
-
-    def set_height(self, value, diff):
-        head = self.head.rect()
-        bar = self.bar.rect()
-
-        if self.is_vertical:
-            head_x = head.x()
-            head_y = head.y() - diff
-            bar_x = bar.x()
-            bar_y = bar.y() - diff
-            width = bar.width()
-            height = value
-        else:
-            head_x = head.x() - diff
-            head_y = head.y()
-            bar_x = bar.x() - diff
-            bar_y = bar.y()
-            width = value
-            height = bar.height()
-
-        self.head.setRect(head_x, head_y, head.width(), head.height())
-        self.bar.setRect(bar_x, bar_y, width, height)
-        return
 
     def set_pos(self, value):
         self.value = value

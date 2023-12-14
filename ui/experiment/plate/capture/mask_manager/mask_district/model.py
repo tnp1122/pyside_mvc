@@ -1,17 +1,17 @@
 class MaskDistrictModel:
     def __init__(self):
-        self._area_x = 100
-        self._area_y = 100
+        self._area_x = 500
+        self._area_y = 1100
         self._area_width = 1000
         self._area_height = 600
-        self._direction = 1     # 0 = horizontal, 1 = vertical
+        self._direction = 0  # 0 = horizontal, 1 = vertical
         self._rotation = 0
         self._border_width = 10
 
-        self._additive_axes = [42 + i * 83 for i in range(12)]
-        self._solvent_axes = [37 + i * 75 for i in range(8)]
-        self._axis_head_width = 50
-        self._axis_head_height = 50
+        additive_interval = self._area_width / 12
+        solvent_interval = self._area_height / 8
+        self._additive_axes = [additive_interval / 2 + i * additive_interval for i in range(12)]
+        self._solvent_axes = [solvent_interval / 2 + i * solvent_interval for i in range(8)]
 
     @property
     def area_x(self):
@@ -48,14 +48,6 @@ class MaskDistrictModel:
     @property
     def solvent_axes(self):
         return self._solvent_axes
-
-    @property
-    def axis_head_width(self):
-        return self._axis_head_width
-
-    @property
-    def axis_head_height(self):
-        return self._axis_head_height
 
     @area_x.setter
     def area_x(self, x):
@@ -104,11 +96,3 @@ class MaskDistrictModel:
             raise ValueError("올바른 인덱스를 입력하세요.")
 
         self._solvent_axes[index] = value
-
-    @axis_head_width.setter
-    def axis_head_width(self, width):
-        self._axis_head_width = width
-
-    @axis_head_height.setter
-    def axis_head_height(self, height):
-        self._axis_head_height = height

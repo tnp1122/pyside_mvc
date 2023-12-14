@@ -143,8 +143,8 @@ class MouseHandler:
     def resize(self, event):
         mouse_x, mouse_y = event.scenePos().x(), event.scenePos().y()
 
-        scene_rect = self.resize_origin
-        area = self.border.mask_area.rect()
+        scene_rect = self.resize_origin  # 원본의 실제 좌표
+        area = self.border.mask_area.rect()  # 부모 상 위치 (0, 0)
 
         adjust = 0
 
@@ -158,57 +158,70 @@ class MouseHandler:
             adjust = mouse_x - scene_rect.right()
 
         if self.trigger == Trigger.DEACTIVATE:
-            if abs(adjust) < 10:
+            if abs(adjust) < 3:
                 return
             else:
                 self.trigger = Trigger.ACTIVATE
 
-        width = area.width()
-        height = area.height()
         x = area.x()
         y = area.y()
+        width = area.width()
+        height = area.height()
         diff = 0  # x 또는 y 좌표 변화량
 
         if self.mouse == Mouse.TOP:
             height = scene_rect.height() + adjust
-            diff = height - self.model.area_height
-            self.model.area_y -= diff
-            y = self.model.area_y
+            diff = height - area.height()
+            y = y - diff
 
         elif self.mouse == Mouse.BOTTOM:
             height = scene_rect.height() + adjust
 
         elif self.mouse == Mouse.LEFT:
             width = scene_rect.width() + adjust
-            diff = width - self.model.area_width
-            self.model.area_x -= diff
-            x = self.model.area_x
+            diff = width - area.width()
+            x = x - diff
 
         elif self.mouse == Mouse.RIGHT:
             width = scene_rect.width() + adjust
 
-        self.model.area_width = width
-        self.model.area_height = height
-        self.border.mask_area.setRect(x, y, width, height)
-        if self.mouse == Mouse.TOP or self.mouse == Mouse.BOTTOM:
-            for axis in self.border.additive_axes:
-                axis.set_height(height, diff)
-                self.set_axes(adjust)
-        elif self.mouse == Mouse.LEFT or self.mouse == Mouse.RIGHT:
-            for axis in self.border.solvent_axes:
-                axis.set_height(width, diff)
-                self.set_axes(adjust, False)
+        self.model.area_x = x
+        self.model.area_y = y
+        if self.model.direction == 0:
+            self.model.area_width = width
+            self.model.area_height = height
+        else:
+            self.model.area_width = height
+            self.model.area_height = width
 
-    def set_axes(self, adjust, is_vertical=True):
+        self.border.setRect(x, y, width, height)
+        self.border.mask_area.setRect(x, y, width, height)
+
+        # 축 조정
+        if self.mouse == Mouse.TOP or self.mouse == Mouse.BOTTOM:
+            self.set_intervals(adjust)
+            self.border.set_bar_height(height, diff, True)
+
+        elif self.mouse == Mouse.LEFT or self.mouse == Mouse.RIGHT:
+            self.set_intervals(adjust)
+            self.border.set_bar_height(width, diff, False)
+
+    def set_intervals(self, adjust):
+        if self.model.direction == 0:
+            vertical_axes = self.additive_axes_origin
+            horizontal_axes = self.solvent_axes_origin
+        else:
+            vertical_axes = self.solvent_axes_origin
+            horizontal_axes = self.additive_axes_origin
+
         if self.mouse == Mouse.TOP or self.mouse == Mouse.BOTTOM:
             size = self.resize_origin.height()
-            axes = self.solvent_axes_origin
+            axes = horizontal_axes
         elif self.mouse == Mouse.LEFT or self.mouse == Mouse.RIGHT:
             size = self.resize_origin.width()
-            axes = self.additive_axes_origin
+            axes = vertical_axes
         else:
             return
-
         intervals = [0] * len(axes)
         intervals[0] = axes[0]
         for i in range(1, len(axes)):
@@ -224,13 +237,20 @@ class MouseHandler:
             new_axes[i] = new_axes[i - 1] + new_intervals[i]
 
         if self.mouse == Mouse.TOP or self.mouse == Mouse.BOTTOM:
-            self.model.solvent_axes = new_axes
+            horizontal_axes = new_axes
             new_axes = [self.model.area_y + axis for axis in new_axes]
+            self.border.set_intervals(new_axes, True)
         else:
-            self.model.additive_axes = new_axes
+            vertical_axes = new_axes
             new_axes = [self.model.area_x + axis for axis in new_axes]
+            self.border.set_intervals(new_axes, False)
 
-        self.border.set_interval(new_axes, is_vertical)
+        if self.model.direction == 0:
+            self.model.additive_axes = vertical_axes
+            self.model.solvent_axes = horizontal_axes
+        else:
+            self.model.solvent_axes = vertical_axes
+            self.model.additive_axes = horizontal_axes
 
     # def rotate(self, event):
     #     x2, y2 = event.scenePos().x(), event.scenePos().y()
