@@ -1,7 +1,7 @@
 import PySide6
 from PySide6.QtCore import Signal, Qt
 from PySide6.QtGui import QPainter, QPixmap, QPen, QBrush, QColor
-from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsRectItem
+from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsRectItem, QGraphicsEllipseItem
 
 
 class MaskDistrictView(QGraphicsView):
@@ -65,8 +65,10 @@ class MaskDistrictBorder(QGraphicsRectItem):
         self.setPen(pen)
 
         self.mask_area = MaskDistrictArea(x, y, width, height, border_width, self)
-        self.vertical_axes = [Axis(0, y, bar_height=height, is_vertical=True, parent=self) for _ in range(12)]
-        self.horizontal_axes = [Axis(0, x, bar_height=width, parent=self) for _ in range(12)]
+        self.vertical_axes = [Axis(0, y, head_height=50, bar_height=height, is_vertical=True, parent=self) for _ in range(12)]
+        self.horizontal_axes = [Axis(0, x, head_height=50, bar_height=width, parent=self) for _ in range(12)]
+        self.circles = [Circle(x, y, 10, self) for y in range(8) for x in range(12)]
+        self.set_circle_visible(False)
 
     def set_movable(self, movable):
         self.setFlag(QGraphicsRectItem.ItemIsMovable, movable)
@@ -120,6 +122,24 @@ class MaskDistrictBorder(QGraphicsRectItem):
         for idx, value in enumerate(axes):
             axis_bars[idx].set_pos(value)
 
+    def set_circles_center(self, x_axes, y_axes):
+        x_len = len(x_axes)
+        for y_idx, y in enumerate(y_axes):
+            for x_idx, x in enumerate(x_axes):
+                idx = x_idx + y_idx * x_len
+                self.circles[idx].set_center(x, y)
+
+    def set_circle_radius(self, radius):
+        for circle in self.circles:
+            circle.set_radius(radius)
+
+    def is_circle_visible(self):
+        return self.circles[0].isVisible()
+
+    def set_circle_visible(self, visible):
+        for circle in self.circles:
+            circle.setVisible(visible)
+
 
 class MaskDistrictArea(QGraphicsRectItem):
     def __init__(self, x, y, width, height, border_width, parent=None):
@@ -159,7 +179,9 @@ class Axis(QGraphicsRectItem):
             self.bar = QGraphicsRectItem(bar_x, bar_y, bar_height, bar_width, self)
             self.brush = QBrush(QColor(0, 255, 0))
 
+        self.head.setPen(Qt.NoPen)
         self.head.setBrush(self.brush)
+        self.bar.setPen(Qt.NoPen)
         self.bar.setBrush(self.brush)
 
     def set_pos(self, value):
@@ -181,3 +203,31 @@ class Axis(QGraphicsRectItem):
 
         self.head.setRect(head_x, head_y, head.width(), head.height())
         self.bar.setRect(bar_x, bar_y, bar.width(), bar.height())
+
+
+class Circle(QGraphicsEllipseItem):
+    def __init__(self, cx, cy, radius, parent=None):
+        super().__init__(cx - radius, cy - radius, 2 * radius, 2 * radius, parent)
+        self.setPen(Qt.NoPen)
+        self.setBrush(Qt.white)
+
+    def center(self):
+        rect = self.rect()
+        cx = rect.x() + rect.width() / 2
+        cy = rect.y() + rect.height() / 2
+        return cx, cy
+
+    def radius(self):
+        return self.rect().width() / 2
+
+    def set_center(self, x, y):
+        rect = self.rect()
+        cx = x - self.radius()
+        cy = y - self.radius()
+        self.setRect(cx, cy, rect.width(), rect.height())
+
+    def set_radius(self, radius):
+        center = self.center()
+        cx = center[0] - radius
+        cy = center[1] - radius
+        self.setRect(cx, cy, radius * 2, radius * 2)

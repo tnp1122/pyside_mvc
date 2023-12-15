@@ -25,6 +25,7 @@ class MaskManagerWidget:
         self.view.btn_mask_area.clicked.connect(self.on_btn_mask_area_clicked)
         self.view.btn_set_horizontal.clicked.connect(lambda: self.view.district_widget.set_direction(0))
         self.view.btn_set_vertical.clicked.connect(lambda: self.view.district_widget.set_direction(1))
+        self.view.btn_circle.clicked.connect(self.set_circle_visible)
 
     def on_btn_mask_district_clicked(self):
         if self.view.btn_mask_district.isChecked():
@@ -43,6 +44,9 @@ class MaskManagerWidget:
 
         else:
             self.model.current_view = MaskViewIndex.ORIGIN
+
+    def set_circle_visible(self):
+        self.view.district_widget.set_circle_visible(not self.view.district_widget.is_circle_visible())
 
 
 def main():

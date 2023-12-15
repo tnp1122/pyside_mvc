@@ -206,6 +206,8 @@ class MouseHandler:
             self.set_intervals(adjust)
             self.border.set_bar_height(width, diff, False)
 
+        self.set_circles_center()
+
     def set_intervals(self, adjust):
         if self.model.direction == 0:
             vertical_axes = self.additive_axes_origin
@@ -251,6 +253,9 @@ class MouseHandler:
         else:
             self.model.solvent_axes = vertical_axes
             self.model.additive_axes = horizontal_axes
+
+    def set_circles_center(self):
+        pass
 
     # def rotate(self, event):
     #     x2, y2 = event.scenePos().x(), event.scenePos().y()

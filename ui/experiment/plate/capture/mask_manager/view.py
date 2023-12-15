@@ -24,6 +24,7 @@ class MaskManagerView(BaseWidgetView):
         self.btn_mask_area = MileStone("마스킹 영역 보기")
         lyt_mile_stone.addWidget(self.btn_mask_district)
         lyt_mile_stone.addWidget(self.btn_mask_area)
+        lyt_mile_stone.addStretch()
 
         stack = QStackedWidget()
         stack.addWidget(self.get_widget_district())
@@ -33,16 +34,19 @@ class MaskManagerView(BaseWidgetView):
 
     def get_widget_district(self):
         widget = QWidget()
-        lyt = QHBoxLayout(widget)
+        lyt = QVBoxLayout(widget)
 
         self.district_widget = MaskDistrictWidget(self.origin_image)
         lyt.addWidget(self.district_widget.view)
 
-        lyt_buttons = QVBoxLayout()
+        lyt_buttons = QHBoxLayout()
         self.btn_set_horizontal = QPushButton("가로")
         self.btn_set_vertical = QPushButton("세로")
+        self.btn_circle = QPushButton("원 보기")
         lyt_buttons.addWidget(self.btn_set_horizontal)
         lyt_buttons.addWidget(self.btn_set_vertical)
+        lyt_buttons.addWidget(self.btn_circle)
+        lyt_buttons.addStretch()
         lyt.addLayout(lyt_buttons)
 
         return widget
