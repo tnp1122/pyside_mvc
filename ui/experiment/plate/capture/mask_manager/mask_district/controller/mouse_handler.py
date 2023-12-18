@@ -37,7 +37,7 @@ class MouseHandler:
         self._view = view
         self._border = self.view.scene.border
 
-        self.mouse = Mouse.NORMAL
+        self.mouse = [Mouse.NORMAL]
         self.status = Status.NORMAL
         self.trigger = Trigger.DEACTIVATE
 
@@ -48,6 +48,8 @@ class MouseHandler:
         self.view.scene.mouse_moved_signal.connect(self.on_mouse_moved)
         self.view.scene.mouse_pressed_signal.connect(self.on_mouse_pressed)
         self.view.scene.mouse_released_signal.connect(self.on_mouse_released)
+
+        self.cursor_size = self.model.cursor_size
 
     @property
     def model(self):
@@ -62,11 +64,15 @@ class MouseHandler:
         return self._border
 
     def set_mouse_cursor(self):
-        if self.mouse == Mouse.TOP or self.mouse == Mouse.BOTTOM:
+        if (Mouse.TOP in self.mouse and Mouse.LEFT in self.mouse) or (Mouse.BOTTOM in self.mouse and Mouse.RIGHT in self.mouse):
+            self.view.setCursor(Qt.SizeFDiagCursor)
+        elif (Mouse.TOP in self.mouse and Mouse.RIGHT in self.mouse) or (Mouse.BOTTOM in self.mouse and Mouse.LEFT in self.mouse):
+            self.view.setCursor(Qt.SizeBDiagCursor)
+        elif Mouse.TOP in self.mouse or Mouse.BOTTOM in self.mouse:
             self.view.setCursor(Qt.SizeVerCursor)
-        elif self.mouse == Mouse.LEFT or self.mouse == Mouse.RIGHT:
+        elif Mouse.LEFT in self.mouse or Mouse.RIGHT in self.mouse:
             self.view.setCursor(Qt.SizeHorCursor)
-        elif self.mouse == Mouse.BOTTOM_RIGHT_LOT:
+        elif Mouse.BOTTOM_RIGHT_LOT in self.mouse:
             self.view.setCursor(Qt.CrossCursor)
         else:
             self.view.setCursor(Qt.ArrowCursor)
@@ -90,7 +96,7 @@ class MouseHandler:
         #     self.rotate(event)
 
     def on_mouse_pressed(self, event):
-        if self.mouse == Mouse.TOP or self.mouse == Mouse.BOTTOM or self.mouse == Mouse.LEFT or self.mouse == Mouse.RIGHT:
+        if self.is_mouse_settable(check_vertical=True) or self.is_mouse_settable(check_vertical=False):
             self.border.set_movable(False)
             self.status = Status.RESIZE
             self.resize_origin = self.get_scene_rect(self.border.mask_area)
@@ -107,7 +113,6 @@ class MouseHandler:
 
     def on_mouse_released(self, event):
         self.border.set_movable(True)
-        self.mouse = Mouse.NORMAL
         self.status = Status.NORMAL
         self.trigger = Trigger.DEACTIVATE
         self.resize_origin = None
@@ -116,27 +121,26 @@ class MouseHandler:
 
     def check_mouse_position(self, event):
         mouse_x, mouse_y = event.scenePos().x(), event.scenePos().y()
-
         rect = self.get_scene_rect(self.border.mask_area)
         left, right, top, bottom = rect.left(), rect.right(), rect.top(), rect.bottom()
 
-        self.mouse = Mouse.NORMAL
+        self.mouse = [Mouse.NORMAL]
 
-        if left < mouse_x < right:
-            if top - 50 < mouse_y < top:
-                self.mouse = Mouse.TOP
-            elif bottom < mouse_y < bottom + 50:
-                self.mouse = Mouse.BOTTOM
+        if left - self.cursor_size < mouse_x < right + self.cursor_size:
+            if top - self.cursor_size < mouse_y < top:
+                self.mouse.append(Mouse.TOP)
+            elif bottom < mouse_y < bottom + self.cursor_size:
+                self.mouse.append(Mouse.BOTTOM)
 
         # 좌표상 top 부분이 수치가 낮으므로 유의
-        if top < mouse_y < bottom:
-            if left - 50 < mouse_x < left:
-                self.mouse = Mouse.LEFT
-            elif right < mouse_x < right + 50:
-                self.mouse = Mouse.RIGHT
+        if top - self.cursor_size < mouse_y < bottom + self.cursor_size:
+            if left - self.cursor_size < mouse_x < left:
+                self.mouse.append(Mouse.LEFT)
+            elif right < mouse_x < right + self.cursor_size:
+                self.mouse.append(Mouse.RIGHT)
 
-        if (right < mouse_x < right + 50) and (bottom < mouse_y < bottom + 50):
-            self.mouse = Mouse.BOTTOM_RIGHT_LOT
+        # if (right < mouse_x < right + 50) and (bottom < mouse_y < bottom + 50):
+        #     self.mouse = [Mouse.BOTTOM_RIGHT_LOT]
 
         self.set_mouse_cursor()
 
@@ -146,19 +150,20 @@ class MouseHandler:
         scene_rect = self.resize_origin  # 원본의 실제 좌표
         area = self.border.mask_area.rect()  # 부모 상 위치 (0, 0)
 
-        adjust = 0
+        w_adjust = 0
+        h_adjust = 0
 
-        if self.mouse == Mouse.TOP:
-            adjust = scene_rect.top() - mouse_y
-        elif self.mouse == Mouse.BOTTOM:
-            adjust = mouse_y - scene_rect.bottom()
-        elif self.mouse == Mouse.LEFT:
-            adjust = scene_rect.left() - mouse_x
-        elif self.mouse == Mouse.RIGHT:
-            adjust = mouse_x - scene_rect.right()
+        if Mouse.TOP in self.mouse:
+            h_adjust = scene_rect.top() - mouse_y
+        elif Mouse.BOTTOM in self.mouse:
+            h_adjust = mouse_y - scene_rect.bottom()
+        if Mouse.LEFT in self.mouse:
+            w_adjust = scene_rect.left() - mouse_x
+        elif Mouse.RIGHT in self.mouse:
+            w_adjust = mouse_x - scene_rect.right()
 
         if self.trigger == Trigger.DEACTIVATE:
-            if abs(adjust) < 3:
+            if abs(w_adjust) < 3 and abs(h_adjust) < 3:
                 return
             else:
                 self.trigger = Trigger.ACTIVATE
@@ -167,23 +172,24 @@ class MouseHandler:
         y = area.y()
         width = area.width()
         height = area.height()
-        diff = 0  # x 또는 y 좌표 변화량
+        w_diff = 0
+        h_diff = 0  # x 또는 y 좌표 변화량
 
-        if self.mouse == Mouse.TOP:
-            height = scene_rect.height() + adjust
-            diff = height - area.height()
-            y = y - diff
+        if Mouse.TOP in self.mouse:
+            height = scene_rect.height() + h_adjust
+            h_diff = height - area.height()
+            y = y - h_diff
 
-        elif self.mouse == Mouse.BOTTOM:
-            height = scene_rect.height() + adjust
+        elif Mouse.BOTTOM in self.mouse:
+            height = scene_rect.height() + h_adjust
 
-        elif self.mouse == Mouse.LEFT:
-            width = scene_rect.width() + adjust
-            diff = width - area.width()
-            x = x - diff
+        if Mouse.LEFT in self.mouse:
+            width = scene_rect.width() + w_adjust
+            w_diff = width - area.width()
+            x = x - w_diff
 
-        elif self.mouse == Mouse.RIGHT:
-            width = scene_rect.width() + adjust
+        elif Mouse.RIGHT in self.mouse:
+            width = scene_rect.width() + w_adjust
 
         self.model.area_x = x
         self.model.area_y = y
@@ -198,17 +204,14 @@ class MouseHandler:
         self.border.mask_area.setRect(x, y, width, height)
 
         # 축 조정
-        if self.mouse == Mouse.TOP or self.mouse == Mouse.BOTTOM:
-            self.set_intervals(adjust)
-            self.border.set_bar_height(height, diff, True)
-
-        elif self.mouse == Mouse.LEFT or self.mouse == Mouse.RIGHT:
-            self.set_intervals(adjust)
-            self.border.set_bar_height(width, diff, False)
+        if self.is_mouse_settable(check_vertical=True) or self.is_mouse_settable(check_vertical=False):
+            self.set_intervals(w_adjust, h_adjust)
+            self.border.set_bar_height(height, h_diff, is_vertical=True)
+            self.border.set_bar_height(width, w_diff, is_vertical=False)
 
         self.set_circles_center()
 
-    def set_intervals(self, adjust):
+    def set_intervals(self, w_adjust, h_adjust):
         if self.model.direction == 0:
             vertical_axes = self.additive_axes_origin
             horizontal_axes = self.solvent_axes_origin
@@ -216,14 +219,32 @@ class MouseHandler:
             vertical_axes = self.solvent_axes_origin
             horizontal_axes = self.additive_axes_origin
 
-        if self.mouse == Mouse.TOP or self.mouse == Mouse.BOTTOM:
+        if self.is_mouse_settable(check_vertical=True):
             size = self.resize_origin.height()
             axes = horizontal_axes
-        elif self.mouse == Mouse.LEFT or self.mouse == Mouse.RIGHT:
+            new_axes = self.get_new_axes(size, axes, h_adjust)
+
+            horizontal_axes = new_axes
+            new_axes = [self.model.area_y + axis for axis in new_axes]
+            self.border.set_intervals(new_axes, True)
+
+        if self.is_mouse_settable(check_vertical=False):
             size = self.resize_origin.width()
             axes = vertical_axes
+            new_axes = self.get_new_axes(size, axes, w_adjust)
+
+            vertical_axes = new_axes
+            new_axes = [self.model.area_x + axis for axis in new_axes]
+            self.border.set_intervals(new_axes, False)
+
+        if self.model.direction == 0:
+            self.model.additive_axes = vertical_axes
+            self.model.solvent_axes = horizontal_axes
         else:
-            return
+            self.model.solvent_axes = vertical_axes
+            self.model.additive_axes = horizontal_axes
+
+    def get_new_axes(self, size, axes, adjust):
         intervals = [0] * len(axes)
         intervals[0] = axes[0]
         for i in range(1, len(axes)):
@@ -238,21 +259,12 @@ class MouseHandler:
         for i in range(1, len(new_intervals[:-1])):
             new_axes[i] = new_axes[i - 1] + new_intervals[i]
 
-        if self.mouse == Mouse.TOP or self.mouse == Mouse.BOTTOM:
-            horizontal_axes = new_axes
-            new_axes = [self.model.area_y + axis for axis in new_axes]
-            self.border.set_intervals(new_axes, True)
-        else:
-            vertical_axes = new_axes
-            new_axes = [self.model.area_x + axis for axis in new_axes]
-            self.border.set_intervals(new_axes, False)
+        return new_axes
 
-        if self.model.direction == 0:
-            self.model.additive_axes = vertical_axes
-            self.model.solvent_axes = horizontal_axes
-        else:
-            self.model.solvent_axes = vertical_axes
-            self.model.additive_axes = horizontal_axes
+    def is_mouse_settable(self, check_vertical=True):
+        if check_vertical:
+            return Mouse.TOP in self.mouse or Mouse.BOTTOM in self.mouse
+        return Mouse.LEFT in self.mouse or Mouse.RIGHT in self.mouse
 
     def set_circles_center(self):
         pass
