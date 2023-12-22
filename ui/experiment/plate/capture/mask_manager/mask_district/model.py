@@ -14,7 +14,7 @@ class MaskDistrictModel:
         self._solvent_axes = [solvent_interval / 2 + i * solvent_interval for i in range(8)]
         self._circle_radius = 35
 
-        self._cursor_size = 30
+        self._border_threshold = 30
 
     @property
     def area_x(self):
@@ -57,8 +57,8 @@ class MaskDistrictModel:
         return self._circle_radius
 
     @property
-    def cursor_size(self):
-        return self._cursor_size
+    def border_threshold(self):
+        return self._border_threshold
 
     @area_x.setter
     def area_x(self, x):
@@ -112,6 +112,6 @@ class MaskDistrictModel:
     def circle_radius(self, radius):
         self._circle_radius = radius
 
-    @cursor_size.setter
-    def cursor_size(self, size):
-        self._cursor_size = size
+    @border_threshold.setter
+    def border_threshold(self, threshold):
+        self._border_threshold = threshold

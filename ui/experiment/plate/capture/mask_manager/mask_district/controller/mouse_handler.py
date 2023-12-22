@@ -49,7 +49,7 @@ class MouseHandler:
         self.view.scene.mouse_pressed_signal.connect(self.on_mouse_pressed)
         self.view.scene.mouse_released_signal.connect(self.on_mouse_released)
 
-        self.cursor_size = self.model.cursor_size
+        self.border_threshold = self.model.border_threshold
 
     @property
     def model(self):
@@ -126,17 +126,17 @@ class MouseHandler:
 
         self.mouse = [Mouse.NORMAL]
 
-        if left - self.cursor_size < mouse_x < right + self.cursor_size:
-            if top - self.cursor_size < mouse_y < top:
+        if left - self.border_threshold < mouse_x < right + self.border_threshold:
+            if top - self.border_threshold < mouse_y < top:
                 self.mouse.append(Mouse.TOP)
-            elif bottom < mouse_y < bottom + self.cursor_size:
+            elif bottom < mouse_y < bottom + self.border_threshold:
                 self.mouse.append(Mouse.BOTTOM)
 
         # 좌표상 top 부분이 수치가 낮으므로 유의
-        if top - self.cursor_size < mouse_y < bottom + self.cursor_size:
-            if left - self.cursor_size < mouse_x < left:
+        if top - self.border_threshold < mouse_y < bottom + self.border_threshold:
+            if left - self.border_threshold < mouse_x < left:
                 self.mouse.append(Mouse.LEFT)
-            elif right < mouse_x < right + self.cursor_size:
+            elif right < mouse_x < right + self.border_threshold:
                 self.mouse.append(Mouse.RIGHT)
 
         # if (right < mouse_x < right + 50) and (bottom < mouse_y < bottom + 50):
