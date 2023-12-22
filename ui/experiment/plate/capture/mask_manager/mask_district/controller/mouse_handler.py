@@ -119,6 +119,16 @@ class MouseHandler:
         self.additive_axes_origin = None
         self.solvent_axes_origin = None
 
+        area = self.get_scene_rect(self.border.mask_area)
+        if self.model.direction == 0:
+            width, height = area.width(), area.height()
+        else:
+            width, height = area.height(), area.width()
+        self.model.area_x = area.x()
+        self.model.area_y = area.y()
+        self.model.area_width = width
+        self.model.area_height = height
+
     def check_mouse_position(self, event):
         mouse_x, mouse_y = event.scenePos().x(), event.scenePos().y()
         rect = self.get_scene_rect(self.border.mask_area)
