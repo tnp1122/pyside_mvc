@@ -5,17 +5,12 @@ from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsRectItem, 
 
 
 class MaskDistrictView(QGraphicsView):
-    ui_initialized_signal = Signal()
-
     def __init__(self, origin_image, parent=None):
         super().__init__(parent)
 
         self.setRenderHint(QPainter.Antialiasing, True)
         self.scene = MaskDistrictScene(origin_image)
-
-    def set_scene(self):
         self.setScene(self.scene)
-        self.ui_initialized_signal.emit()
 
     def wheelEvent(self, event):
         factor = 1.2
@@ -68,7 +63,10 @@ class MaskDistrictBorder(QGraphicsRectItem):
         self.vertical_axes = [Axis(0, y, head_height=50, bar_height=height, is_vertical=True, parent=self) for _ in range(12)]
         self.horizontal_axes = [Axis(0, x, head_height=50, bar_height=width, parent=self) for _ in range(12)]
         self.circles = [Circle(x, y, 10, self) for y in range(8) for x in range(12)]
-        self.set_circle_visible(False)
+
+    def set_circle_visible(self, is_visible):
+        for circle in self.circles:
+            circle.setVisible(is_visible)
 
     def set_movable(self, movable):
         self.setFlag(QGraphicsRectItem.ItemIsMovable, movable)
@@ -132,13 +130,6 @@ class MaskDistrictBorder(QGraphicsRectItem):
     def set_circle_radius(self, radius):
         for circle in self.circles:
             circle.set_radius(radius)
-
-    def is_circle_visible(self):
-        return self.circles[0].isVisible()
-
-    def set_circle_visible(self, visible):
-        for circle in self.circles:
-            circle.setVisible(visible)
 
 
 class MaskDistrictArea(QGraphicsRectItem):

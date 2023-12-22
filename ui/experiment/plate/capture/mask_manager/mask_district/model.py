@@ -1,5 +1,7 @@
 class MaskDistrictModel:
     def __init__(self):
+        self._is_circle_visible = False
+
         self._area_x = 563
         self._area_y = 530
         self._area_width = 1406
@@ -15,6 +17,10 @@ class MaskDistrictModel:
         self._circle_radius = 35
 
         self._border_threshold = 30
+
+    @property
+    def is_circle_visible(self):
+        return self._is_circle_visible
 
     @property
     def area_x(self):
@@ -59,6 +65,10 @@ class MaskDistrictModel:
     @property
     def border_threshold(self):
         return self._border_threshold
+
+    @is_circle_visible.setter
+    def is_circle_visible(self, value):
+        self._is_circle_visible = value
 
     @area_x.setter
     def area_x(self, x):

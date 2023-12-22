@@ -9,11 +9,10 @@ class MaskDistrictWidget(MouseHandler):
     def __init__(self, origin_image, parent=None):
         self._model = MaskDistrictModel()
         self._view = MaskDistrictView(origin_image, parent)
-
         self.add_border()
 
         super().__init__(self.model, self.view)
-        self.view.set_scene()
+        self.set_border()
 
     @property
     def model(self):
@@ -31,16 +30,25 @@ class MaskDistrictWidget(MouseHandler):
         border_width = self.model.border_width
 
         self.view.scene.add_border(x, y, width, height, border_width)
+
+    def set_border(self):
         self.set_direction(self.model.direction)
-        self.view.scene.border.set_circle_radius(self.model.circle_radius)
+        self.set_circle_visible(self.model.is_circle_visible)
+        self.set_circle_radius(self.model.circle_radius)
+
+    def is_circle_visible(self):
+        return self.model.is_circle_visible
+
+    def set_circle_visible(self, is_visible):
+        self.model.is_circle_visible = is_visible
+        self.border.set_circle_visible(is_visible)
 
     def set_direction(self, direction):
         if not (direction == 0 or direction == 1):  # 0: 가로, 1: 세로
             raise ValueError("방향이 올바르지 않습니다.")
 
         self.model.direction = direction
-        border = self.view.scene.border
-        border.set_direction(direction)
+        self.border.set_direction(direction)
 
         if direction == 0:
             width = self.model.area_width
@@ -49,14 +57,12 @@ class MaskDistrictWidget(MouseHandler):
             width = self.model.area_height
             height = self.model.area_width
 
-        border.setRect(self.model.area_x, self.model.area_y, width, height)
-        border.mask_area.setRect(self.model.area_x, self.model.area_y, width, height)
+        self.border.setRect(self.model.area_x, self.model.area_y, width, height)
+        self.border.mask_area.setRect(self.model.area_x, self.model.area_y, width, height)
         self.init_intervals()
         self.set_circles_center()
 
     def init_intervals(self):
-        border = self.view.scene.border
-
         if self.model.direction == 0:
             vertical_axes = [self.model.area_x + axis for axis in self.model.additive_axes]
             horizontal_axes = [self.model.area_y + axis for axis in self.model.solvent_axes]
@@ -68,30 +74,23 @@ class MaskDistrictWidget(MouseHandler):
             width = self.model.area_height
             height = self.model.area_width
 
-        border.set_intervals(vertical_axes, False)
-        border.set_intervals(horizontal_axes, True)
-        border.set_bar_height(width, 0, False)
-        border.set_bar_height(height, 0, True)
+        self.border.set_intervals(vertical_axes, is_up_down_interval=False)
+        self.border.set_intervals(horizontal_axes, is_up_down_interval=True)
+        self.border.set_bar_height(height, 0, is_vertical=True)
+        self.border.set_bar_height(width, 0, is_vertical=False)
 
     def set_circles_center(self):
         super().set_circles_center()
-        border = self.view.scene.border
         if self.model.direction == 0:
             x_axes = [self.model.area_x + axis for axis in self.model.additive_axes]
             y_axes = [self.model.area_y + axis for axis in self.model.solvent_axes]
         else:
             x_axes = [self.model.area_x + axis for axis in self.model.solvent_axes]
             y_axes = [self.model.area_y + axis for axis in self.model.additive_axes]
-        border.set_circles_center(x_axes, y_axes)
+        self.border.set_circles_center(x_axes, y_axes)
 
     def set_circle_radius(self, radius):
-        self.view.scene.border.set_circle_radius(radius)
-
-    def is_circle_visible(self):
-        return self.border.is_circle_visible()
-
-    def set_circle_visible(self, visible):
-        self.border.set_circle_visible(visible)
+        self.border.set_circle_radius(radius)
 
 
 def main():
