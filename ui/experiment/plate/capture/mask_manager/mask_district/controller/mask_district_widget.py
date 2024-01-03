@@ -3,15 +3,18 @@ from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton
 
 from ui.experiment.plate.capture.mask_manager.mask_district import MaskDistrictModel, MaskDistrictView
 from ui.experiment.plate.capture.mask_manager.mask_district.controller.mouse_handler import MouseHandler
+from ui.experiment.plate.capture.mask_manager.mask_district.controller.view_handler import ViewHandler
 
 
 class MaskDistrictWidget(MouseHandler):
     def __init__(self, origin_image, parent=None):
         self._model = MaskDistrictModel()
-        self._view = MaskDistrictView(origin_image, parent)
+        self._view = MaskDistrictView(parent)
+        self.view.set_scene(origin_image)
         self.add_border()
 
         super().__init__(self.model, self.view)
+        self.view_handler = ViewHandler(self.model, self.view)
         self.set_border()
 
     @property

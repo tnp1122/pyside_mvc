@@ -1,6 +1,6 @@
-from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QStackedWidget, QWidget, QPushButton
+from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QPushButton
 
-from ui import BaseWidgetView, MileStone
+from ui import BaseWidgetView, MileStoneRadio
 from ui.experiment.plate.capture.mask_manager.mask_district.controller.mask_district_widget import MaskDistrictWidget
 
 
@@ -18,35 +18,21 @@ class MaskManagerView(BaseWidgetView):
         self.setWindowTitle("마스크 영역 지정")
         lyt = QVBoxLayout(self)
 
-        lyt_mile_stone = QHBoxLayout()
-        lyt.addLayout(lyt_mile_stone)
-        self.btn_mask_district = MileStone("마스킹 구역 지정")
-        self.btn_mask_area = MileStone("마스킹 영역 보기")
-        lyt_mile_stone.addWidget(self.btn_mask_district)
-        lyt_mile_stone.addWidget(self.btn_mask_area)
-        lyt_mile_stone.addStretch()
+        self.view_radio = MileStoneRadio(["원본", "마스킹 구역 지정", "마스킹 영역 보기"])
+        lyt.addWidget(self.view_radio)
 
-        stack = QStackedWidget()
-        stack.addWidget(self.get_widget_district())
-        lyt.addWidget(stack)
+        self.graphics = MaskDistrictWidget(self.origin_image)
+        lyt.addWidget(self.graphics.view)
 
-        self.emit_ui_initialized_signal()
-
-    def get_widget_district(self):
-        widget = QWidget()
-        lyt = QVBoxLayout(widget)
-
-        self.district_widget = MaskDistrictWidget(self.origin_image)
-        lyt.addWidget(self.district_widget.view)
-
-        lyt_buttons = QHBoxLayout()
+        lyt_district_button = QHBoxLayout()
+        lyt.addLayout(lyt_district_button)
         self.btn_set_horizontal = QPushButton("가로")
         self.btn_set_vertical = QPushButton("세로")
         self.btn_circle = QPushButton("원 보기")
-        lyt_buttons.addWidget(self.btn_set_horizontal)
-        lyt_buttons.addWidget(self.btn_set_vertical)
-        lyt_buttons.addWidget(self.btn_circle)
-        lyt_buttons.addStretch()
-        lyt.addLayout(lyt_buttons)
+        lyt_district_button.addWidget(self.btn_set_horizontal)
+        lyt_district_button.addWidget(self.btn_set_vertical)
+        lyt_district_button.addWidget(self.btn_circle)
+        lyt_district_button.addStretch()
+        lyt.addLayout(lyt_district_button)
 
-        return widget
+        self.emit_ui_initialized_signal()

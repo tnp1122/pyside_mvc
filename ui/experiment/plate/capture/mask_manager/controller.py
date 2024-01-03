@@ -21,32 +21,18 @@ class MaskManagerWidget:
         return self._view
 
     def connect_button_signal(self):
-        self.view.btn_mask_district.clicked.connect(self.on_btn_mask_district_clicked)
-        self.view.btn_mask_area.clicked.connect(self.on_btn_mask_area_clicked)
-        self.view.btn_set_horizontal.clicked.connect(lambda: self.view.district_widget.set_direction(0))
-        self.view.btn_set_vertical.clicked.connect(lambda: self.view.district_widget.set_direction(1))
+        self.view.view_radio.selected.connect(self.on_select_changed)
+        self.view.btn_set_horizontal.clicked.connect(lambda: self.view.graphics.set_direction(0))
+        self.view.btn_set_vertical.clicked.connect(lambda: self.view.graphics.set_direction(1))
         self.view.btn_circle.clicked.connect(self.set_circle_visible)
 
-    def on_btn_mask_district_clicked(self):
-        if self.view.btn_mask_district.isChecked():
-            self.model.current_view = MaskViewIndex.DISTRICT
-            if self.view.btn_mask_area.isChecked():
-                self.view.btn_mask_area.setChecked(False)
-
-        else:
-            self.model.current_view = MaskViewIndex.ORIGIN
-
-    def on_btn_mask_area_clicked(self):
-        if self.view.btn_mask_district.isChecked():
-            self.model.current_view = MaskViewIndex.MASK
-            if self.view.btn_mask_district.isChecked():
-                self.view.btn_mask_district.setChecked(False)
-
-        else:
-            self.model.current_view = MaskViewIndex.ORIGIN
+    def on_select_changed(self, index):
+        view_index = MaskViewIndex(index)
+        self.model.current_view = view_index
+        self.view.graphics.view_handler.set_current_view(view_index)
 
     def set_circle_visible(self):
-        self.view.district_widget.set_circle_visible(not self.view.district_widget.is_circle_visible())
+        self.view.graphics.set_circle_visible(not self.view.graphics.is_circle_visible())
 
 
 def main():

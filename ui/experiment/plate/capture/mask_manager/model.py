@@ -2,9 +2,9 @@ from enum import Enum
 
 
 class MaskViewIndex(Enum):
-    ORIGIN = 1
-    DISTRICT = 2
-    MASK = 3
+    ORIGIN = 0
+    DISTRICT = 1
+    MASK = 2
 
 
 class MaskManagerModel:

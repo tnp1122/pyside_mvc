@@ -1,14 +1,17 @@
 import PySide6
 from PySide6.QtCore import Signal, Qt
-from PySide6.QtGui import QPainter, QPixmap, QPen, QBrush, QColor
-from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsRectItem, QGraphicsEllipseItem
+from PySide6.QtGui import QPixmap, QPen, QBrush, QColor, QPainter
+from PySide6.QtWidgets import QGraphicsScene, QGraphicsRectItem, QGraphicsEllipseItem, QGraphicsView
 
 
 class MaskDistrictView(QGraphicsView):
-    def __init__(self, origin_image, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
 
         self.setRenderHint(QPainter.Antialiasing, True)
+        self.scene = None
+
+    def set_scene(self, origin_image):
         self.scene = MaskDistrictScene(origin_image)
         self.setScene(self.scene)
 
@@ -60,7 +63,8 @@ class MaskDistrictBorder(QGraphicsRectItem):
         self.setPen(pen)
 
         self.mask_area = MaskDistrictArea(x, y, width, height, border_width, self)
-        self.vertical_axes = [Axis(0, y, head_height=50, bar_height=height, is_vertical=True, parent=self) for _ in range(12)]
+        self.vertical_axes = [Axis(0, y, head_height=50, bar_height=height, is_vertical=True, parent=self) for _ in
+                              range(12)]
         self.horizontal_axes = [Axis(0, x, head_height=50, bar_height=width, parent=self) for _ in range(12)]
         self.circles = [Circle(x, y, 10, self) for y in range(8) for x in range(12)]
 
