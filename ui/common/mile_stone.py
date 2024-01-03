@@ -15,7 +15,7 @@ class MileStone(QPushButton):
 
             QPushButton:checked {
                 background-color: #5E6C80;
-                border: 0px;
+                border: 1px solid #5E6C80;
                 color: white;
             }
         """)
