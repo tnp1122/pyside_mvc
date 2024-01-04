@@ -1,4 +1,4 @@
-class MaskDistrictModel:
+class MaskGraphicsModel:
     def __init__(self):
         self._is_circle_visible = False
 
@@ -17,6 +17,20 @@ class MaskDistrictModel:
         self._circle_radius = 35
 
         self._border_threshold = 30
+
+    def get_circle_mask_info(self):
+        circle_mask_info = {
+            "x": self.area_x,
+            "y": self.area_y,
+            "width": self.area_width,
+            "height": self.area_height,
+            "direction": self.direction,
+            "roation": self.rotation,
+            "additive_axes": self.additive_axes,
+            "solvent_axes": self.solvent_axes,
+            "radius": self.circle_radius
+        }
+        return circle_mask_info
 
     @property
     def is_circle_visible(self):

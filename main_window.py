@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, Q
 
 from ui.admin import AdminPage
 from ui.home import HomePage
-from ui.experiment.plate.capture.mask_manager.mask_district.controller.mask_district_widget import MaskDistrictWidget
+from ui.experiment.plate.capture.mask_manager.mask_graphics.controller.main import MaskGraphicsWidget
 
 
 class MainWindowModel:
@@ -30,7 +30,7 @@ class MainWindowView(QMainWindow):
         home = HomePage()
         admin = AdminPage()
         image = QImage("ui/experiment/plate/capture/plate_image.jpg")
-        district = MaskDistrictWidget(image)
+        district = MaskGraphicsWidget(image)
         district.set_direction(0)
         btn_horizontal = QPushButton("가로")
         btn_vertical = QPushButton("세로")

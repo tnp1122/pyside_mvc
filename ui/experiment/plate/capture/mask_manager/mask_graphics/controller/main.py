@@ -1,15 +1,15 @@
 from PySide6.QtGui import QImage
 from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton
 
-from ui.experiment.plate.capture.mask_manager.mask_district import MaskDistrictModel, MaskDistrictView
-from ui.experiment.plate.capture.mask_manager.mask_district.controller.mouse_handler import MouseHandler
-from ui.experiment.plate.capture.mask_manager.mask_district.controller.view_handler import ViewHandler
+from ui.experiment.plate.capture.mask_manager.mask_graphics import MaskGraphicsModel, MaskGraphicsView
+from ui.experiment.plate.capture.mask_manager.mask_graphics.controller.mouse_handler import MouseHandler
+from ui.experiment.plate.capture.mask_manager.mask_graphics.controller.view_handler import ViewHandler
 
 
-class MaskDistrictWidget(MouseHandler):
+class MaskGraphicsWidget(MouseHandler):
     def __init__(self, origin_image, parent=None):
-        self._model = MaskDistrictModel()
-        self._view = MaskDistrictView(parent)
+        self._model = MaskGraphicsModel()
+        self._view = MaskGraphicsView(parent)
         self.view.set_scene(origin_image)
         self.add_border()
 
@@ -95,12 +95,23 @@ class MaskDistrictWidget(MouseHandler):
     def set_circle_radius(self, radius):
         self.border.set_circle_radius(radius)
 
+    def get_district(self):
+        x, y = self.model.area_x, self.model.area_y
+        width, height = self.model.area_width, self.model.area_height
+        direction, rotation = self.model.direction, self.model.rotation
+        additive_axes, solvent_axes = self.model.additive_axes, self.model.solvent_axes
+
+        return x, y, width, height, direction, rotation, additive_axes, solvent_axes
+
+    def set_masking_view(self, masking_view):
+        self.view.scene.masking_view.setPixmap(masking_view)
+
 
 def main():
     app = QApplication([])
     widget = QWidget()
     image = QImage("../../../plate_image.jpg")
-    district = MaskDistrictWidget(image)
+    district = MaskGraphicsWidget(image)
     btn_horizontal = QPushButton("가로")
     btn_vertical = QPushButton("세로")
     btn_horizontal.clicked.connect(lambda: district.set_direction(0))
