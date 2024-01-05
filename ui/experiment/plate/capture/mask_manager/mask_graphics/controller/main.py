@@ -60,20 +60,22 @@ class MaskGraphicsWidget(MouseHandler):
             width = self.model.area_height
             height = self.model.area_width
 
-        self.border.setRect(self.model.area_x, self.model.area_y, width, height)
-        self.border.mask_area.setRect(self.model.area_x, self.model.area_y, width, height)
+        scened_x, scened_y = self.model.scened_x, self.model.scened_y
+        self.border.setRect(scened_x, scened_y, width, height)
+        self.border.mask_area.setRect(scened_x, scened_y, width, height)
         self.init_intervals()
         self.set_circles_center()
 
     def init_intervals(self):
+        scened_x, scened_y = self.model.scened_x, self.model.scened_y
         if self.model.direction == 0:
-            vertical_axes = [self.model.area_x + axis for axis in self.model.additive_axes]
-            horizontal_axes = [self.model.area_y + axis for axis in self.model.solvent_axes]
+            vertical_axes = [scened_x + axis for axis in self.model.additive_axes]
+            horizontal_axes = [scened_y + axis for axis in self.model.solvent_axes]
             width = self.model.area_width
             height = self.model.area_height
         else:
-            vertical_axes = [self.model.area_x + axis for axis in self.model.solvent_axes]
-            horizontal_axes = [self.model.area_y + axis for axis in self.model.additive_axes]
+            vertical_axes = [scened_x + axis for axis in self.model.solvent_axes]
+            horizontal_axes = [scened_y + axis for axis in self.model.additive_axes]
             width = self.model.area_height
             height = self.model.area_width
 
@@ -83,13 +85,13 @@ class MaskGraphicsWidget(MouseHandler):
         self.border.set_bar_height(width, 0, is_vertical=False)
 
     def set_circles_center(self):
-        super().set_circles_center()
+        scened_x, scened_y = self.model.scened_x, self.model.scened_y
         if self.model.direction == 0:
-            x_axes = [self.model.area_x + axis for axis in self.model.additive_axes]
-            y_axes = [self.model.area_y + axis for axis in self.model.solvent_axes]
+            x_axes = [scened_x + axis for axis in self.model.additive_axes]
+            y_axes = [scened_y + axis for axis in self.model.solvent_axes]
         else:
-            x_axes = [self.model.area_x + axis for axis in self.model.solvent_axes]
-            y_axes = [self.model.area_y + axis for axis in self.model.additive_axes]
+            x_axes = [scened_x + axis for axis in self.model.solvent_axes]
+            y_axes = [scened_y + axis for axis in self.model.additive_axes]
         self.border.set_circles_center(x_axes, y_axes)
 
     def set_circle_radius(self, radius):

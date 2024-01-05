@@ -6,6 +6,9 @@ class MaskGraphicsModel:
         self._area_y = 530
         self._area_width = 1406
         self._area_height = 945
+        self._scened_x = self.area_x     # 좌표 이동시 scene의 좌표도 이동하므로 원점에서의 좌표가 필요함
+        self._scened_y = self.area_y
+
         self._direction = 1  # 0 = horizontal, 1 = vertical
         self._rotation = 0
         self._border_width = 10
@@ -51,6 +54,14 @@ class MaskGraphicsModel:
     @property
     def area_height(self):
         return self._area_height
+
+    @property
+    def scened_x(self):
+        return self._scened_x
+
+    @property
+    def scened_y(self):
+        return self._scened_y
 
     @property
     def direction(self):
@@ -99,6 +110,14 @@ class MaskGraphicsModel:
     @area_height.setter
     def area_height(self, height):
         self._area_height = height
+
+    @scened_x.setter
+    def scened_x(self, x):
+        self._scened_x = x
+
+    @scened_y.setter
+    def scened_y(self, y):
+        self._scened_y = y
 
     @direction.setter
     def direction(self, value):
