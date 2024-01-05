@@ -20,6 +20,7 @@ class MaskGraphicsModel:
         self._circle_radius = 35
 
         self._border_threshold = 30
+        self.is_border_adjustable = False
 
     def get_circle_mask_info(self):
         circle_mask_info = {

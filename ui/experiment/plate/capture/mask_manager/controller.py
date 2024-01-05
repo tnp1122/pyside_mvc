@@ -38,6 +38,11 @@ class MaskManagerWidget:
         self.graphics.view_handler.set_current_view(view_index)
         self.view.set_bottom_lyt(index)
 
+        if view_index == MaskViewIndex.DISTRICT:
+            self.graphics.model.is_border_adjustable = True
+        else:
+            self.graphics.model.is_border_adjustable = False
+
         if view_index == MaskViewIndex.MASK:
             circle_mask_info = self.graphics.model.get_circle_mask_info()
             self.view.masking.set_circle_mask(circle_mask_info)

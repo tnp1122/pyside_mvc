@@ -64,6 +64,9 @@ class MouseHandler:
         return self._border
 
     def set_mouse_cursor(self):
+        if not self.model.is_border_adjustable:
+            return
+
         if (Mouse.TOP in self.mouse and Mouse.LEFT in self.mouse) or (Mouse.BOTTOM in self.mouse and Mouse.RIGHT in self.mouse):
             self.view.setCursor(Qt.SizeFDiagCursor)
         elif (Mouse.TOP in self.mouse and Mouse.RIGHT in self.mouse) or (Mouse.BOTTOM in self.mouse and Mouse.LEFT in self.mouse):
@@ -276,6 +279,9 @@ class MouseHandler:
         return new_axes
 
     def is_mouse_settable(self, check_vertical=True):
+        if not self.model.is_border_adjustable:
+            return False
+
         if check_vertical:
             return Mouse.TOP in self.mouse or Mouse.BOTTOM in self.mouse
         return Mouse.LEFT in self.mouse or Mouse.RIGHT in self.mouse
