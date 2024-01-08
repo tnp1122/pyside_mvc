@@ -165,7 +165,7 @@ class MouseHandler:
         mouse_x, mouse_y = event.scenePos().x(), event.scenePos().y()
 
         scene_rect = self.resize_origin  # 원본의 실제 좌표
-        area = self.border.mask_area.rect()  # 부모 상 위치 (0, 0)
+        area = self.get_scene_rect(self.border.mask_area)
 
         w_adjust = 0
         h_adjust = 0
@@ -210,6 +210,9 @@ class MouseHandler:
 
         self.model.area_x = x
         self.model.area_y = y
+        self.model.scened_x = self.model.area_x - self.border.scenePos().x()
+        self.model.scened_y = self.model.area_y - self.border.scenePos().y()
+
         if self.model.direction == 0:
             self.model.area_width = width
             self.model.area_height = height
@@ -217,8 +220,8 @@ class MouseHandler:
             self.model.area_width = height
             self.model.area_height = width
 
-        self.border.setRect(x, y, width, height)
-        self.border.mask_area.setRect(x, y, width, height)
+        self.border.setRect(self.model.scened_x, self.model.scened_y, width, height)
+        self.border.mask_area.setRect(self.model.scened_x, self.model.scened_y, width, height)
 
         # 축 조정
         if self.is_mouse_settable(check_vertical=True) or self.is_mouse_settable(check_vertical=False):
@@ -242,7 +245,7 @@ class MouseHandler:
             new_axes = self.get_new_axes(size, axes, h_adjust)
 
             horizontal_axes = new_axes
-            new_axes = [self.model.area_y + axis for axis in new_axes]
+            new_axes = [self.model.scened_y + axis for axis in new_axes]
             self.border.set_intervals(new_axes, True)
 
         if self.is_mouse_settable(check_vertical=False):
@@ -251,7 +254,7 @@ class MouseHandler:
             new_axes = self.get_new_axes(size, axes, w_adjust)
 
             vertical_axes = new_axes
-            new_axes = [self.model.area_x + axis for axis in new_axes]
+            new_axes = [self.model.scened_x + axis for axis in new_axes]
             self.border.set_intervals(new_axes, False)
 
         if self.model.direction == 0:
