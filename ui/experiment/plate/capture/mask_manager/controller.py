@@ -25,6 +25,8 @@ class MaskManagerWidget:
     def init_text(self):
         self.view.ET_r.setText(str(self.graphics.model.circle_radius))
 
+        self.view.ET_threshold.setText(str(self.view.masking.threshold))
+
     def init_controller(self):
         self.graphics = self.view.graphics
         self.view.view_radio.selected.connect(self.on_select_changed)
@@ -34,6 +36,8 @@ class MaskManagerWidget:
 
         self.view.btn_show_masking.clicked.connect(self.show_masking_view)
         self.view.ET_r.textChanged.connect(self.on_change_radius)
+
+        self.view.ET_threshold.textChanged.connect(self.on_change_threshold)
 
         self.view.masking.masked_image_updated_signal.connect(self.update_masking_view)
 
@@ -65,6 +69,11 @@ class MaskManagerWidget:
         if radius == "":
             return
         self.graphics.set_circle_radius(int(radius))
+
+    def on_change_threshold(self, threshold):
+        if threshold == "" or not (0 < int(threshold) < 255):
+            return
+        self.view.masking.set_threshold(int(threshold))
 
 
 def main():

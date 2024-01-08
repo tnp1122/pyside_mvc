@@ -26,15 +26,10 @@ class MaskManagerView(BaseWidgetView):
         self.graphics = MaskGraphicsWidget(QImage(self.origin_image))
         lyt.addWidget(self.graphics.view)
 
-        self.lyt_bottom_district = self.init_bottom_district() #QHBoxLayout()
+        self.lyt_bottom_district = self.init_bottom_district()
         lyt.addLayout(self.lyt_bottom_district)
 
-        self.masking = Masking(self.origin_image)
-        self.lyt_bottom_masking = QHBoxLayout()
-        lyt.addLayout(self.lyt_bottom_masking)
-        self.btn_show_masking = QPushButton("마스킹 영역 수정")
-        self.lyt_bottom_masking.addWidget(self.btn_show_masking)
-        self.lyt_bottom_masking.addStretch()
+        self.lyt_bottom_masking = self.init_bottom_masking()
         lyt.addLayout(self.lyt_bottom_masking)
 
         self.set_bottom_lyt(0)
@@ -111,6 +106,28 @@ class MaskManagerView(BaseWidgetView):
         lyt.addWidget(self.ET_h)
         lyt.addWidget(lb_r)
         lyt.addWidget(self.ET_r)
+        lyt.addStretch()
+
+        return lyt
+
+    def init_bottom_masking(self):
+        self.masking = Masking(self.origin_image)
+        lyt = QHBoxLayout()
+        self.btn_show_masking = QPushButton("마스킹 영역 수정")
+        divider = QFrame()
+        divider.setFrameShape(QFrame.VLine)
+        divider.setFrameShadow(QFrame.Sunken)
+
+        lb_threshold = QLabel("threshold")
+        self.ET_threshold = QLineEdit()
+        validator = QIntValidator(1, 255)
+        self.ET_threshold.setValidator(validator)
+        self.ET_threshold.setFixedWidth(40)
+
+        lyt.addWidget(self.btn_show_masking)
+        lyt.addWidget(divider)
+        lyt.addWidget(lb_threshold)
+        lyt.addWidget(self.ET_threshold)
         lyt.addStretch()
 
         return lyt

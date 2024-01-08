@@ -27,7 +27,12 @@ class Masking(QObject):
         self.drawing_thickness = 5
         self.overlay_k = 25
         self.zoom_level = 200
+        self.threshold = 200
 
+        self.set_flare_mask()
+
+    def set_threshold(self, threshold):
+        self.threshold = threshold
         self.set_flare_mask()
 
     def mouse_callback(self, event, x, y, flags, params):
@@ -140,8 +145,8 @@ class Masking(QObject):
                            thickness=cv2.FILLED)
         self.mask()
 
-    def set_flare_mask(self, thresh=200):
-        _, flare_mask = cv2.threshold(self.origin_image, thresh, 255, cv2.THRESH_BINARY_INV)
+    def set_flare_mask(self):
+        _, flare_mask = cv2.threshold(self.origin_image, self.threshold, 255, cv2.THRESH_BINARY_INV)
         temp = np.all(flare_mask[:, :] == [255, 255, 255], axis=-1)
         flare_mask[~temp] = [0, 0, 0]
 
