@@ -1,5 +1,5 @@
-from PySide6.QtGui import QImage
-from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QPushButton
+from PySide6.QtGui import QImage, QIntValidator, QDoubleValidator
+from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QFrame, QLabel
 
 from ui import BaseWidgetView, MileStoneRadio
 from ui.experiment.plate.capture.mask_manager import Masking
@@ -26,15 +26,7 @@ class MaskManagerView(BaseWidgetView):
         self.graphics = MaskGraphicsWidget(QImage(self.origin_image))
         lyt.addWidget(self.graphics.view)
 
-        self.lyt_bottom_district = QHBoxLayout()
-        lyt.addLayout(self.lyt_bottom_district)
-        self.btn_set_horizontal = QPushButton("가로")
-        self.btn_set_vertical = QPushButton("세로")
-        self.btn_circle = QPushButton("원 보기")
-        self.lyt_bottom_district.addWidget(self.btn_set_horizontal)
-        self.lyt_bottom_district.addWidget(self.btn_set_vertical)
-        self.lyt_bottom_district.addWidget(self.btn_circle)
-        self.lyt_bottom_district.addStretch()
+        self.lyt_bottom_district = self.init_bottom_district() #QHBoxLayout()
         lyt.addLayout(self.lyt_bottom_district)
 
         self.masking = Masking(self.origin_image)
@@ -68,3 +60,57 @@ class MaskManagerView(BaseWidgetView):
         for idx in range(lyt.count() - 1):
             widget = lyt.itemAt(idx).widget()
             widget.setVisible(visible)
+
+    def init_bottom_district(self):
+        lyt = QHBoxLayout()
+        self.btn_set_horizontal = QPushButton("가로")
+        self.btn_set_vertical = QPushButton("세로")
+        self.btn_circle = QPushButton("원 보기")
+        divider = QFrame()
+        divider.setFrameShape(QFrame.VLine)
+        divider.setFrameShadow(QFrame.Sunken)
+
+        lb_x = QLabel("x")
+        lb_y = QLabel("y")
+        lb_w = QLabel("width")
+        lb_h = QLabel("height")
+        lb_r = QLabel("반지름")
+        validator = QDoubleValidator(0.0, 9999.99, 3)
+        validator_int = QIntValidator(1, 999)
+        validator.setNotation(QDoubleValidator.StandardNotation)
+
+        self.ET_x = QLineEdit()
+        self.ET_y = QLineEdit()
+        self.ET_w = QLineEdit()
+        self.ET_h = QLineEdit()
+        self.ET_r = QLineEdit()
+
+        self.ET_x.setValidator(validator)
+        self.ET_y.setValidator(validator)
+        self.ET_w.setValidator(validator)
+        self.ET_h.setValidator(validator)
+        self.ET_r.setValidator(validator_int)
+
+        self.ET_x.setFixedWidth(70)
+        self.ET_y.setFixedWidth(70)
+        self.ET_w.setFixedWidth(70)
+        self.ET_h.setFixedWidth(70)
+        self.ET_r.setFixedWidth(40)
+
+        lyt.addWidget(self.btn_set_horizontal)
+        lyt.addWidget(self.btn_set_vertical)
+        lyt.addWidget(self.btn_circle)
+        lyt.addWidget(divider)
+        lyt.addWidget(lb_x)
+        lyt.addWidget(self.ET_x)
+        lyt.addWidget(lb_y)
+        lyt.addWidget(self.ET_y)
+        lyt.addWidget(lb_w)
+        lyt.addWidget(self.ET_w)
+        lyt.addWidget(lb_h)
+        lyt.addWidget(self.ET_h)
+        lyt.addWidget(lb_r)
+        lyt.addWidget(self.ET_r)
+        lyt.addStretch()
+
+        return lyt

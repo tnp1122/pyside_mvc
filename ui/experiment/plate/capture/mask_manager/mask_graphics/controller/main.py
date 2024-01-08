@@ -39,6 +39,12 @@ class MaskGraphicsWidget(MouseHandler):
         self.set_circle_visible(self.model.is_circle_visible)
         self.set_circle_radius(self.model.circle_radius)
 
+    def set_position(self, x=None, y=None, width=None, height=None):
+
+        if x is not None:
+            self.model.area_x = x
+            self.border.setRect
+
     def is_circle_visible(self):
         return self.model.is_circle_visible
 

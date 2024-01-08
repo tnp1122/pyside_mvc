@@ -11,6 +11,7 @@ class MaskManagerWidget:
 
         self.view.ui_initialized_signal.connect(self.init_controller)
         self.view.init_ui()
+        self.init_text()
         self.update_masking_view()
 
     @property
@@ -21,6 +22,9 @@ class MaskManagerWidget:
     def view(self):
         return self._view
 
+    def init_text(self):
+        self.view.ET_r.setText(str(self.graphics.model.circle_radius))
+
     def init_controller(self):
         self.graphics = self.view.graphics
         self.view.view_radio.selected.connect(self.on_select_changed)
@@ -29,6 +33,7 @@ class MaskManagerWidget:
         self.view.btn_circle.clicked.connect(self.set_circle_visible)
 
         self.view.btn_show_masking.clicked.connect(self.show_masking_view)
+        self.view.ET_r.textChanged.connect(self.on_change_radius)
 
         self.view.masking.masked_image_updated_signal.connect(self.update_masking_view)
 
@@ -55,6 +60,11 @@ class MaskManagerWidget:
 
     def show_masking_view(self):
         self.view.masking.show_image()
+
+    def on_change_radius(self, radius):
+        if radius == "":
+            return
+        self.graphics.set_circle_radius(int(radius))
 
 
 def main():
