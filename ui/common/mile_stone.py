@@ -37,7 +37,6 @@ class MileStoneRadio(QWidget):
         else:
             lyt = QVBoxLayout(self)
 
-        from ui import MileStone
         self.stones = []
         for idx, text in enumerate(texts):
             mile_stone = MileStone(text)
