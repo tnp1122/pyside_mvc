@@ -1,17 +1,15 @@
-from PySide6.QtCore import QSignalMapper
-from PySide6.QtWidgets import QTableWidget, QTableWidgetItem, QPushButton, QSizePolicy, QHBoxLayout, QWidget, \
-    QHeaderView
+from PySide6.QtCore import QSignalMapper, Signal
+from PySide6.QtWidgets import QTableWidgetItem, QPushButton, QSizePolicy, QHBoxLayout, QWidget, QHeaderView
+
+from ui.common import BaseTableWidgetView
 
 
-class UserListTableView(QTableWidget):
-    def __init__(self, controller, parent=None):
+class UserListTableView(BaseTableWidgetView):
+    approved_signal = Signal(int)
+    rejected_signal = Signal(int)
+
+    def __init__(self, parent=None):
         super().__init__(parent)
-
-        self.controller = controller
-
-    def set_controller(self, controller):
-        self.controller = controller
-        self.init_ui()
 
     def init_ui(self):
         self.setMinimumWidth(400)
@@ -20,6 +18,8 @@ class UserListTableView(QTableWidget):
         headers = ["이름", "아이디", "요청일자", "승인"]
         self.setHorizontalHeaderLabels(headers)
         self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+        self.emit_ui_initialized_signal()
 
     def clear_table(self):
         for row in range(self.rowCount()):
@@ -81,7 +81,7 @@ class UserListTableView(QTableWidget):
         button.setStyleSheet("QPushButton { text-align: center; padding: 5px; }")
 
     def on_approve_clicked(self, row):
-        print(f"{row} 승인")
+        self.approved_signal.emit(row)
 
     def on_reject_clicked(self, row):
-        print(f"{row} 거절")
+        self.rejected_signal.emit(row)

@@ -1,5 +1,5 @@
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QWidget, QStackedWidget, QTabWidget
+from PySide6.QtWidgets import QWidget, QStackedWidget, QTabWidget, QTableWidget
 
 
 class BaseViewMixin:
@@ -20,5 +20,10 @@ class BaseStackedWidgetView(BaseViewMixin, QStackedWidget):
 
 
 class BaseTabWidgetView(BaseViewMixin, QTabWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+
+class BaseTableWidgetView(BaseViewMixin, QTableWidget):
     def __init__(self, parent=None):
         super().__init__(parent)

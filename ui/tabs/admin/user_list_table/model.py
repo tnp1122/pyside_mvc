@@ -7,5 +7,5 @@ class UserListTableModel:
         return self._user_list
 
     @user_list.setter
-    def user_list(self, user_list):
-        self._user_list = user_list
+    def user_list(self, value):
+        self._user_list = value

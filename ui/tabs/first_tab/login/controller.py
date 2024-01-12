@@ -1,10 +1,11 @@
 import logging
 
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import Signal
 from PySide6.QtNetwork import QNetworkReply
 from PySide6.QtWidgets import QApplication
 
 from data.api.api_manager import APIManager
+from ui.common.base_controller import BaseController
 from ui.tabs.first_tab.login import LoginModel, LoginView
 from util.setting_manager import SettingManager
 
@@ -16,15 +17,12 @@ PASSWORD_R = 3
 NAME = 4
 
 
-class LoginWidget(QObject):
+class LoginWidget(BaseController):
     set_home_signal = Signal()
 
     def __init__(self, parent=None):
-        super().__init__()
-        self._model = LoginModel()
-        self._view = LoginView(parent)
+        super().__init__(LoginModel, LoginView, parent)
 
-        self.view.ui_initialized_signal.connect(self.init_controller)
         self.view.init_ui()
 
         self.api_manager = APIManager()
