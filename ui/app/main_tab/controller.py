@@ -25,7 +25,7 @@ class MainTabWidget:
 
     def set_first_tab(self, index):
         self.view.setCurrentIndex(0)
-        self.view.first_tab.set_current_index(index)
+        self.view.first.set_current_index(index)
 
 
 def main():

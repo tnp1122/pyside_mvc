@@ -24,9 +24,9 @@ class AppWidget:
 
     def init_controller(self):
         self.view.info_bar.view.btn_setting.clicked.connect(lambda: self.set_first_tab(FirstTabIndex.SETTING))
-        self.view.tabs.view.first_tab.view.setting.view.btn.clicked.connect(self.set_home)
-        self.view.tabs.view.first_tab.view.setting.view.btn_logout.clicked.connect(self.do_logout)
-        self.view.tabs.view.first_tab.view.login.set_home_signal.connect(self.set_home)
+        self.view.tabs.view.first.view.setting.view.btn.clicked.connect(self.set_home)
+        self.view.tabs.view.first.view.setting.view.btn_logout.clicked.connect(self.do_logout)
+        self.view.tabs.view.first.view.login.set_home_signal.connect(self.set_home)
 
         self.set_home()
 
