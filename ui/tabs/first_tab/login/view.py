@@ -23,10 +23,19 @@ class LoginView(BaseWidgetView):
         tabs.setFixedSize(*self.size_tabs)
         tabs.addTab(tab_login, "로그인")
         tabs.addTab(tab_rg, " 계정등록")
+        tabs_style_sheet = f"""
+            QTabWidget::pane {{ border: 0px; }}
+            QTabBar::tab {{ min-width: {(tabs.width()-2) // tabs.count()}px; border:0px; }}
+            QTabBar::tab:first {{ border-right: 2px solid black; }}
+            QTabBar::tab:selected {{ color: black; font-weight: bold; }}
+            QTabBar::tab:!selected {{ color: #818181; font-weight: normal; }}
+        """
+        tabs.setStyleSheet(tabs_style_sheet)
 
         lyt.addWidget(lb_logo, alignment=Qt.AlignHCenter)
         lyt.addStretch()
         lyt.addWidget(tabs, alignment=Qt.AlignHCenter)
+        lyt.addStretch()
         self.emit_ui_initialized_signal()
 
     def set_tab_login(self):
