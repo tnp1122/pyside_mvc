@@ -1,25 +1,24 @@
-from PySide6.QtWidgets import QVBoxLayout
-
-from ui.app.main_tab import MainTabWidget
-from ui.app.info_bar import InfoBarWidget
+from ui.app.main_tab import MainTabController
+from ui.app.info_bar import InfoBarController
 from ui.common import BaseWidgetView
 
 
 class AppView(BaseWidgetView):
+    info_bar_margin = 2
+
     def __init__(self, parent=None):
         super().__init__(parent)
-
-        self.info_bar_margin = 2
 
     def showEvent(self, event):
         super().showEvent(event)
         self.update_info_bar_position()
 
-    def init_ui(self):
-        self.tabs = MainTabWidget(self)
-        self.info_bar = InfoBarWidget(self)
+    def init_view(self):
+        super().init_view()
+
+        self.tabs = MainTabController(self)
+        self.info_bar = InfoBarController(self)
         self.setMinimumSize(self.tabs.view.minimumSize())
-        self.emit_ui_initialized_signal()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)

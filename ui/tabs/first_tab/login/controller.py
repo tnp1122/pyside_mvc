@@ -2,7 +2,6 @@ import logging
 
 from PySide6.QtCore import Signal
 from PySide6.QtNetwork import QNetworkReply
-from PySide6.QtWidgets import QApplication
 
 from data.api.api_manager import APIManager
 from ui.common.base_controller import BaseController
@@ -20,23 +19,15 @@ NAME = 4
 class LoginWidget(BaseController):
     set_home_signal = Signal()
 
+    api_manager = APIManager()
+    setting_manager = SettingManager()
+
     def __init__(self, parent=None):
         super().__init__(LoginModel, LoginView, parent)
 
-        self.view.init_ui()
-
-        self.api_manager = APIManager()
-        self.setting_manager = SettingManager()
-
-    @property
-    def model(self):
-        return self._model
-
-    @property
-    def view(self):
-        return self._view
-
     def init_controller(self):
+        super().init_controller()
+
         self.view.et_username_login.textChanged.connect(lambda value: self.on_text_changed(value, USERNAME_L))
         self.view.et_password_login.textChanged.connect(lambda value: self.on_text_changed(value, PASSWORD_L))
         self.view.et_username_rg.textChanged.connect(lambda value: self.on_text_changed(value, USERNAME_R))
@@ -108,6 +99,8 @@ class LoginWidget(BaseController):
 
 
 def main():
+    from PySide6.QtWidgets import QApplication
+
     app = QApplication([])
     widget = LoginWidget()
     widget.view.show()

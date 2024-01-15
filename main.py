@@ -1,11 +1,9 @@
-from PySide6.QtWidgets import QApplication
-
-from ui.app import AppWidget
-
-
 def main():
+    from PySide6.QtWidgets import QApplication
+    from ui.app import AppController
+
     app = QApplication([])
-    main_app = AppWidget()
+    main_app = AppController()
     main_app.view.show()
     app.exec()
 

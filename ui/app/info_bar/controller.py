@@ -1,31 +1,17 @@
-from PySide6.QtWidgets import QApplication
-
 from ui.app.info_bar import InfoBarModel, InfoBarView
+from ui.common.base_controller import BaseController
 
 
-class InfoBarWidget:
+class InfoBarController(BaseController):
     def __init__(self, parent=None):
-        self._model = InfoBarModel()
-        self._view = InfoBarView(parent)
-
-        self.view.ui_initialized_signal.connect(self.init_controller)
-        self.view.init_ui()
-
-    @property
-    def model(self):
-        return self._model
-
-    @property
-    def view(self):
-        return self._view
-
-    def init_controller(self):
-        pass
+        super().__init__(InfoBarModel, InfoBarView, parent)
 
 
 def main():
+    from PySide6.QtWidgets import QApplication
+
     app = QApplication([])
-    widget = InfoBarWidget()
+    widget = InfoBarController()
     widget.view.show()
     app.exec()
 

@@ -1,12 +1,15 @@
-from PySide6.QtGui import QImage, QIntValidator, QDoubleValidator
+from PySide6.QtCore import Signal
+from PySide6.QtGui import QIntValidator, QDoubleValidator
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QFrame, QLabel
 
 from ui.common import BaseWidgetView, MileStoneRadio
 from ui.tabs.experiment.plate.capture.mask_manager import Masking
-from ui.tabs.experiment.plate.capture.mask_manager.mask_graphics.controller.main import MaskGraphicsWidget
+from ui.tabs.experiment.plate.capture.mask_manager.mask_graphics.controller.main import MaskGraphicsController
 
 
 class MaskManagerView(BaseWidgetView):
+    ui_initialized_signal = Signal()
+
     def __init__(self, origin_image, parent=None):
         super().__init__(parent)
 
@@ -23,7 +26,8 @@ class MaskManagerView(BaseWidgetView):
         self.view_radio = MileStoneRadio(["원본", "마스킹 구역 지정", "마스킹 영역 보기"])
         lyt.addWidget(self.view_radio)
 
-        self.graphics = MaskGraphicsWidget(QImage(self.origin_image))
+        self.graphics = MaskGraphicsController()
+        self.graphics.set_scene(self.origin_image)
         lyt.addWidget(self.graphics.view)
 
         self.lyt_bottom_district = self.init_bottom_district()
@@ -33,7 +37,8 @@ class MaskManagerView(BaseWidgetView):
         lyt.addLayout(self.lyt_bottom_masking)
 
         self.set_bottom_lyt(0)
-        self.emit_ui_initialized_signal()
+        # self.emit_ui_initialized_signal()
+        self.ui_initialized_signal.emit()
 
     def set_bottom_lyt(self, index):
         if index == 0:

@@ -7,8 +7,6 @@ class UserListTableWidget(BaseController):
     def __init__(self, parent=None):
         super().__init__(UserListTableModel, UserListTableView, parent)
 
-        self.view.init_ui()
-
     def set_table_items(self, user_list):
         self.view.set_table_items(user_list)
 

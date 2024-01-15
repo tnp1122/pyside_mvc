@@ -1,13 +1,17 @@
 from PySide6.QtCore import Signal
-from PySide6.QtGui import QPixmap, QPainter
-from PySide6.QtWidgets import QGraphicsScene, QGraphicsView, QGraphicsSceneMouseEvent, QGraphicsPixmapItem
+from PySide6.QtGui import QPixmap, QPainter, QImage
+from PySide6.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QGraphicsPixmapItem
 
+from ui.common import BaseGraphicsView
 from ui.tabs.experiment.plate.capture.mask_manager.mask_graphics.view.mask_district_border import MaskDistrictBorder
 
 
-class MaskGraphicsView(QGraphicsView):
+class MaskGraphicsView(BaseGraphicsView):
     def __init__(self, parent=None):
         super().__init__(parent)
+
+    def init_view(self):
+        super().init_view()
 
         self.setRenderHint(QPainter.Antialiasing, True)
         self.scene = None
@@ -31,8 +35,9 @@ class MaskGraphicsScene(QGraphicsScene):
     def __init__(self, origin_image, parent=None):
         super().__init__(parent)
 
-        self.origin_view = QGraphicsPixmapItem(QPixmap.fromImage(origin_image))
-        self.masking_view = QGraphicsPixmapItem(QPixmap.fromImage(origin_image))
+        image = QImage(origin_image)
+        self.origin_view = QGraphicsPixmapItem(QPixmap.fromImage(image))
+        self.masking_view = QGraphicsPixmapItem(QPixmap.fromImage(image))
         self.addItem(self.origin_view)
         self.addItem(self.masking_view)
 

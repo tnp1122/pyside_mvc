@@ -1,28 +1,19 @@
-from PySide6.QtWidgets import QApplication
-
 from ui.app import AppModel, AppView
+from ui.common.base_controller import BaseController
 from util.enums import FirstTabIndex
 from util.init_app_manager import InitAppManager
 
 
-class AppWidget:
+class AppController(BaseController):
+    # init_app_manager = InitAppManager()
+
     def __init__(self, parent=None):
-        self._model = AppModel()
-        self._view = AppView(parent)
         self.init_app_manager = InitAppManager()
-
-        self.view.ui_initialized_signal.connect(self.init_controller)
-        self.view.init_ui()
-
-    @property
-    def model(self):
-        return self._model
-
-    @property
-    def view(self):
-        return self._view
+        super().__init__(AppModel, AppView, parent)
 
     def init_controller(self):
+        super().init_controller()
+
         self.view.info_bar.view.btn_setting.clicked.connect(lambda: self.set_first_tab(FirstTabIndex.SETTING))
         self.view.tabs.view.first.view.setting.view.btn.clicked.connect(self.set_home)
         self.view.tabs.view.first.view.setting.view.btn_logout.clicked.connect(self.do_logout)
@@ -47,8 +38,10 @@ class AppWidget:
 
 
 def main():
+    from PySide6.QtWidgets import QApplication
+
     app = QApplication([])
-    widget = AppWidget()
+    widget = AppController()
     widget.view.show()
     app.exec()
 

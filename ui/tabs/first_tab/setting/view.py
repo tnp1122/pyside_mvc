@@ -7,7 +7,7 @@ class SettingView(BaseWidgetView):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-    def init_ui(self):
+    def init_view(self):
         lyt = QVBoxLayout(self)
 
         self.btn = QPushButton("홈")
@@ -15,4 +15,3 @@ class SettingView(BaseWidgetView):
 
         lyt.addWidget(self.btn)
         lyt.addWidget(self.btn_logout)
-        self.emit_ui_initialized_signal()

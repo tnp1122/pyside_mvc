@@ -1,38 +1,23 @@
 from PySide6.QtGui import QImage
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton
 
+from ui.common.base_controller import BaseController
 from ui.tabs.experiment.plate.capture.mask_manager.mask_graphics import MaskGraphicsModel, MaskGraphicsView
 from ui.tabs.experiment.plate.capture.mask_manager.mask_graphics.controller.mouse_handler import MouseHandler
 from ui.tabs.experiment.plate.capture.mask_manager.mask_graphics.controller.view_handler import ViewHandler
 
 
-class MaskGraphicsWidget:
-    def __init__(self, origin_image, parent=None):
-        self._model = MaskGraphicsModel()
-        self._view = MaskGraphicsView(parent)
-
-        self.view.set_scene(origin_image)
-        self.add_border()
-
-        self._border = self.view.scene.border
-        # super().__init__(self.model, self.view)
-        self.mouse_handler = MouseHandler(self.model, self.view)
-        self.view_handler = ViewHandler(self.model, self.view)
-        self.set_border()
-
-    @property
-    def model(self):
-        return self._model
-
-    @property
-    def view(self):
-        return self._view
+class MaskGraphicsController(BaseController):
+    def __init__(self, parent=None):
+        super().__init__(MaskGraphicsModel, MaskGraphicsView, parent)
 
     @property
     def border(self):
         return self._border
 
-    def add_border(self):
+    def set_scene(self, origin_image):
+        self.view.set_scene(origin_image)
+
         x = self.model.area_x
         y = self.model.area_y
         width = self.model.area_width
@@ -40,6 +25,12 @@ class MaskGraphicsWidget:
         border_width = self.model.border_width
 
         self.view.scene.add_border(x, y, width, height, border_width)
+
+        self._border = self.view.scene.border
+
+        self.mouse_handler = MouseHandler(self.model, self.view)
+        self.view_handler = ViewHandler(self.view)
+        self.set_border()
 
     def set_border(self):
         self.set_direction(self.model.direction)
@@ -123,10 +114,13 @@ class MaskGraphicsWidget:
 
 
 def main():
+    from PySide6.QtWidgets import QApplication
+
     app = QApplication([])
     widget = QWidget()
     image = QImage("../../../plate_image.jpg")
-    district = MaskGraphicsWidget(image)
+    district = MaskGraphicsController()
+    district.set_scene(image)
     btn_horizontal = QPushButton("가로")
     btn_vertical = QPushButton("세로")
     btn_horizontal.clicked.connect(lambda: district.set_direction(0))

@@ -1,3 +1,3 @@
 from .model import MaskGraphicsModel
 from .view import MaskGraphicsView
-from .controller import MaskGraphicsWidget
+from .controller import MaskGraphicsController

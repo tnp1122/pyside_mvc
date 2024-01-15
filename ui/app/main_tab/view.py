@@ -2,15 +2,17 @@ from PySide6.QtWidgets import QWidget
 
 from ui.common import BaseTabWidgetView
 from ui.tabs.admin import AdminWidget
-from ui.tabs.first_tab import FirstTabWidget
+from ui.tabs.first_tab import FirstTabController
 
 
 class MainTabView(BaseTabWidgetView):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-    def init_ui(self):
-        self.first = FirstTabWidget()
+    def init_view(self):
+        super().init_view()
+
+        self.first = FirstTabController()
         self.experiment = QWidget()
         self.sample = QWidget()
         self.combination = QWidget()
@@ -27,4 +29,3 @@ class MainTabView(BaseTabWidgetView):
         self.addTab(self.admin.view, "관리자 화면")
 
         self.setMinimumSize(640, 500)
-        self.emit_ui_initialized_signal()

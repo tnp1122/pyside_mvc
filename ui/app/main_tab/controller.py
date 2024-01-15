@@ -1,27 +1,11 @@
-from PySide6.QtWidgets import QApplication
-
 from ui.app.main_tab.model import MainTabModel
 from ui.app.main_tab.view import MainTabView
+from ui.common.base_controller import BaseController
 
 
-class MainTabWidget:
+class MainTabController(BaseController):
     def __init__(self, parent=None):
-        self._model = MainTabModel()
-        self._view = MainTabView(parent)
-
-        self.view.ui_initialized_signal.connect(self.init_controller)
-        self.view.init_ui()
-
-    @property
-    def model(self):
-        return self._model
-
-    @property
-    def view(self):
-        return self._view
-
-    def init_controller(self):
-        pass
+        super().__init__(MainTabModel, MainTabView, parent)
 
     def set_first_tab(self, index):
         self.view.setCurrentIndex(0)
@@ -29,8 +13,10 @@ class MainTabWidget:
 
 
 def main():
+    from PySide6.QtWidgets import QApplication
+
     app = QApplication([])
-    widget = MainTabWidget()
+    widget = MainTabController()
     widget.view.show()
     app.exec()
 

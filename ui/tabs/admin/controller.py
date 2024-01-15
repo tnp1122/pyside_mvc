@@ -8,17 +8,18 @@ from ui.common.base_controller import BaseController
 from ui.tabs.admin import AdminModel
 from ui.tabs.admin.view import AdminView
 
-LOCATION = "[Admin Controller]"
+WIDGET = "[Admin Controller]"
 
 
 class AdminWidget(BaseController):
+    api_manager = APIManager()
+
     def __init__(self, parent=None):
         super().__init__(AdminModel, AdminView, parent)
 
-        self.api_manager = APIManager()
-        self.view.init_ui()
-
     def init_controller(self):
+        super().init_controller()
+
         self.view.btn_get_waiting_users.clicked.connect(self.get_user_list)
         self.view.table_waiting_users.view.approved_signal.connect(lambda index: self.on_approved(index))
         self.view.table_waiting_users.view.rejected_signal.connect(lambda index: self.on_rejected(index))
@@ -36,7 +37,7 @@ class AdminWidget(BaseController):
                 print(user_list)
                 self.set_table_items(user_list)
             else:
-                logging.error(f"{LOCATION} get_user_list-{reply.errorString()}")
+                logging.error(f"{WIDGET} get_user_list-{reply.errorString()}")
 
         self.view.table_waiting_users.clear_table_items()
         self.api_manager.get_user_list(api_handler)

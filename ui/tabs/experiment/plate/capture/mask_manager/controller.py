@@ -1,5 +1,3 @@
-from PySide6.QtWidgets import QApplication
-
 from ui.tabs.experiment.plate.capture.mask_manager import MaskManagerView, MaskViewIndex, MaskManagerModel
 
 
@@ -77,8 +75,11 @@ class MaskManagerWidget:
 
 
 def main():
+    from PySide6.QtWidgets import QApplication
+    import os
+
     app = QApplication([])
-    image_path = "../plate_image.jpg"
+    image_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "../plate_image.jpg")
     widget = MaskManagerWidget(image_path)
     widget.view.show()
     app.exec()

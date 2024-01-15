@@ -1,23 +1,14 @@
-from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QWidget, QStackedWidget, QTabWidget, QTableWidget
+from PySide6.QtWidgets import QWidget, QStackedWidget, QTabWidget, QTableWidget, QGraphicsView
 
 
 class BaseViewMixin:
-    ui_initialized_signal = Signal()
-
-    def emit_ui_initialized_signal(self):
-        self.ui_initialized_signal.emit()
-
-
-class BaseViewMixinV2:
     def init_view(self):
         # print(f"parent init view")
         pass
 
-
-class BaseWidgetViewV2(BaseViewMixinV2, QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def on_view_initialized(self):
+        # print(f"on view initiailized")
+        pass
 
 
 class BaseWidgetView(BaseViewMixin, QWidget):
@@ -36,5 +27,10 @@ class BaseTabWidgetView(BaseViewMixin, QTabWidget):
 
 
 class BaseTableWidgetView(BaseViewMixin, QTableWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+
+class BaseGraphicsView(BaseViewMixin, QGraphicsView):
     def __init__(self, parent=None):
         super().__init__(parent)

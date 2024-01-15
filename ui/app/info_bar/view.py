@@ -1,7 +1,7 @@
 import os
 
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import QHBoxLayout, QLabel, QStackedLayout, QWidget
+from PySide6.QtWidgets import QHBoxLayout, QLabel
 
 from ui.common import BaseWidgetView, ImageButton
 
@@ -10,7 +10,9 @@ class InfoBarView(BaseWidgetView):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-    def init_ui(self):
+    def init_view(self):
+        super().init_view()
+
         lyt = QHBoxLayout(self)
         lyt.setContentsMargins(0, 0, 0, 0)
 
@@ -30,4 +32,3 @@ class InfoBarView(BaseWidgetView):
         lyt.addWidget(self.btn_setting)
         lyt.addStretch()
 
-        self.emit_ui_initialized_signal()

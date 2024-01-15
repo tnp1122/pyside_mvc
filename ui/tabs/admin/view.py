@@ -8,7 +8,9 @@ class AdminView(BaseWidgetView):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-    def init_ui(self):
+    def init_view(self):
+        super().init_view()
+
         lyt = QVBoxLayout(self)
 
         self.btn_get_waiting_users = QPushButton("조회")
@@ -16,5 +18,3 @@ class AdminView(BaseWidgetView):
 
         lyt.addWidget(self.btn_get_waiting_users)
         lyt.addWidget(self.table_waiting_users.view)
-
-        self.emit_ui_initialized_signal()

@@ -1,18 +1,20 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QTabWidget
 
-from ui.common import BaseWidgetView, ColoredButton
+from ui.common import ColoredButton, BaseWidgetView
 from ui.common.logo import Logo
 
 
 class LoginView(BaseWidgetView):
+    size_et = 110
+    size_tabs = (220, 160)
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.size_et = 110
-        self.size_tabs = (220, 160)
+    def init_view(self):
+        super().init_view()
 
-    def init_ui(self):
         lyt = QVBoxLayout(self)
 
         lb_logo = Logo(with_title=True)
@@ -36,7 +38,6 @@ class LoginView(BaseWidgetView):
         lyt.addStretch()
         lyt.addWidget(tabs, alignment=Qt.AlignHCenter)
         lyt.addStretch()
-        self.emit_ui_initialized_signal()
 
     def set_tab_login(self):
         tab = QWidget()

@@ -1,31 +1,17 @@
-from PySide6.QtWidgets import QApplication
-
+from ui.common.base_controller import BaseController
 from ui.tabs.first_tab.setting import SettingModel, SettingView
 
 
-class SettingWidget:
+class SettingController(BaseController):
     def __init__(self, parent=None):
-        self._model = SettingModel()
-        self._view = SettingView(parent)
-
-        self.view.ui_initialized_signal.connect(self.init_controller)
-        self.view.init_ui()
-
-    @property
-    def model(self):
-        return self._model
-
-    @property
-    def view(self):
-        return self._view
-
-    def init_controller(self):
-        pass
+        super().__init__(SettingModel, SettingView, parent)
 
 
 def main():
+    from PySide6.QtWidgets import QApplication
+
     app = QApplication([])
-    widget = SettingWidget()
+    widget = SettingController()
     widget.view.show()
     app.exec()
 

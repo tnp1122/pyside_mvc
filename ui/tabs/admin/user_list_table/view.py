@@ -11,15 +11,15 @@ class UserListTableView(BaseTableWidgetView):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-    def init_ui(self):
+    def init_view(self):
+        super().init_view()
+
         self.setMinimumWidth(400)
         self.setColumnCount(4)
 
         headers = ["이름", "아이디", "요청일자", "승인"]
         self.setHorizontalHeaderLabels(headers)
         self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
-        self.emit_ui_initialized_signal()
 
     def clear_table(self):
         for row in range(self.rowCount()):
