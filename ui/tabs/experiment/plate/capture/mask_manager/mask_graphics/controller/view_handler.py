@@ -3,6 +3,7 @@ class ViewHandler:
         self._model = model
         self._view = view
         self._border = self.view.scene.border
+
         self.border.setVisible(False)
         from ui.tabs.experiment.plate.capture.mask_manager import MaskViewIndex
         self.set_current_view(MaskViewIndex.ORIGIN)

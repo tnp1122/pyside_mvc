@@ -6,14 +6,17 @@ from ui.tabs.experiment.plate.capture.mask_manager.mask_graphics.controller.mous
 from ui.tabs.experiment.plate.capture.mask_manager.mask_graphics.controller.view_handler import ViewHandler
 
 
-class MaskGraphicsWidget(MouseHandler):
+class MaskGraphicsWidget:
     def __init__(self, origin_image, parent=None):
         self._model = MaskGraphicsModel()
         self._view = MaskGraphicsView(parent)
+
         self.view.set_scene(origin_image)
         self.add_border()
 
-        super().__init__(self.model, self.view)
+        self._border = self.view.scene.border
+        # super().__init__(self.model, self.view)
+        self.mouse_handler = MouseHandler(self.model, self.view)
         self.view_handler = ViewHandler(self.model, self.view)
         self.set_border()
 
@@ -24,6 +27,10 @@ class MaskGraphicsWidget(MouseHandler):
     @property
     def view(self):
         return self._view
+
+    @property
+    def border(self):
+        return self._border
 
     def add_border(self):
         x = self.model.area_x
