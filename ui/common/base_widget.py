@@ -9,6 +9,17 @@ class BaseViewMixin:
         self.ui_initialized_signal.emit()
 
 
+class BaseViewMixinV2:
+    def init_view(self):
+        # print(f"parent init view")
+        pass
+
+
+class BaseWidgetViewV2(BaseViewMixinV2, QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+
 class BaseWidgetView(BaseViewMixin, QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
