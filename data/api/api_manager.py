@@ -61,17 +61,17 @@ class APIManager:
             raise ValueError("Unsupported HTTP method")
 
         if endpoint == REFRESH_TOKEN_END_POINT:
-            reply.finished.connect(lambda: self._reply_check(origin_api, reply, method, endpoint, callback, data))
+            reply.finished.connect(lambda: self._reply_intercept(origin_api, reply, endpoint, callback, data))
             return
 
         if callback and callable(callback):
             origin_api = inspect.currentframe().f_back.f_code.co_name
-            reply.finished.connect(lambda: self._reply_check(origin_api, reply, method, endpoint, callback, data))
+            reply.finished.connect(lambda: self._reply_intercept(origin_api, reply, endpoint, callback, data))
             return
 
         logging.warning(f"{METHOD} No Callback function, origin_api: {origin_api}")
 
-    def _reply_check(self, origin_api, reply, method, endpoint, callback=None, data=None):
+    def _reply_intercept(self, origin_api, reply, endpoint, callback=None, data=None):
         status_code = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
         if endpoint == REFRESH_TOKEN_END_POINT:
             if status_code == 200:
