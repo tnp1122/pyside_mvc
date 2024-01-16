@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QVBoxLayout, QPushButton
 
 from ui.common import BaseWidgetView
-from ui.tabs.admin.user_list_table.controller import UserListTableWidget
+from ui.tabs.admin.user_list_table import UserListTableController
 
 
 class AdminView(BaseWidgetView):
@@ -14,7 +14,7 @@ class AdminView(BaseWidgetView):
         lyt = QVBoxLayout(self)
 
         self.btn_get_waiting_users = QPushButton("조회")
-        self.table_waiting_users = UserListTableWidget(self)
+        self.table_waiting_users = UserListTableController(self)
 
         lyt.addWidget(self.btn_get_waiting_users)
         lyt.addWidget(self.table_waiting_users.view)

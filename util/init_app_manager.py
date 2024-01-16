@@ -3,7 +3,7 @@ import json
 from PySide6.QtNetwork import QNetworkReply
 
 from data.api.api_manager import APIManager
-from util import SettingManager
+from util.setting_manager import SettingManager
 from util.enums import FirstTabIndex
 
 

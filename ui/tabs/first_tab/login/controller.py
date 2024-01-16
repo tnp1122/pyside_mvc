@@ -4,7 +4,7 @@ from PySide6.QtCore import Signal
 from PySide6.QtNetwork import QNetworkReply
 
 from data.api.api_manager import APIManager
-from ui.common.base_controller import BaseController
+from ui.common import BaseController
 from ui.tabs.first_tab.login import LoginModel, LoginView
 from util.setting_manager import SettingManager
 

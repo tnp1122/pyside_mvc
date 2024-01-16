@@ -1,5 +1,5 @@
 from ui.app import AppModel, AppView
-from ui.common.base_controller import BaseController
+from ui.common import BaseController
 from util.enums import FirstTabIndex
 from util.init_app_manager import InitAppManager
 

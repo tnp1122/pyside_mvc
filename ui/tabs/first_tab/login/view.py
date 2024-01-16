@@ -1,8 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QTabWidget
 
-from ui.common import ColoredButton, BaseWidgetView
-from ui.common.logo import Logo
+from ui.common import BaseWidgetView, ColoredButton, Logo
 
 
 class LoginView(BaseWidgetView):

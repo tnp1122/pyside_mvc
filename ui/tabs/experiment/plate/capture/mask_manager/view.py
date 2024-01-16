@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, 
 
 from ui.common import BaseWidgetView, MileStoneRadio
 from ui.tabs.experiment.plate.capture.mask_manager import Masking
-from ui.tabs.experiment.plate.capture.mask_manager.mask_graphics.controller.main import MaskGraphicsController
+from ui.tabs.experiment.plate.capture.mask_manager.mask_graphics.controller import MaskGraphicsController
 
 
 class MaskManagerView(BaseWidgetView):

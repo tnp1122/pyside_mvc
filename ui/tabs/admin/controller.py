@@ -4,14 +4,13 @@ import logging
 from PySide6.QtNetwork import QNetworkReply
 
 from data.api.api_manager import APIManager
-from ui.common.base_controller import BaseController
-from ui.tabs.admin import AdminModel
-from ui.tabs.admin.view import AdminView
+from ui.common import BaseController
+from ui.tabs.admin import AdminModel, AdminView
 
 WIDGET = "[Admin Controller]"
 
 
-class AdminWidget(BaseController):
+class AdminController(BaseController):
     api_manager = APIManager()
 
     def __init__(self, parent=None):
@@ -53,7 +52,7 @@ def main():
     from PySide6.QtWidgets import QApplication
 
     app = QApplication([])
-    widget = AdminWidget()
+    widget = AdminController()
     widget.view.show()
     app.exec()
 

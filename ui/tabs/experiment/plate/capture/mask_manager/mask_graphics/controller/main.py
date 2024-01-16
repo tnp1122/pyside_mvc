@@ -1,10 +1,9 @@
 from PySide6.QtGui import QImage
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton
 
-from ui.common.base_controller import BaseController
+from ui.common import BaseController
 from ui.tabs.experiment.plate.capture.mask_manager.mask_graphics import MaskGraphicsModel, MaskGraphicsView
-from ui.tabs.experiment.plate.capture.mask_manager.mask_graphics.controller.mouse_handler import MouseHandler
-from ui.tabs.experiment.plate.capture.mask_manager.mask_graphics.controller.view_handler import ViewHandler
+from ui.tabs.experiment.plate.capture.mask_manager.mask_graphics.controller import MouseHandler, ViewHandler
 
 
 class MaskGraphicsController(BaseController):

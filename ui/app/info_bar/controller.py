@@ -1,5 +1,5 @@
 from ui.app.info_bar import InfoBarModel, InfoBarView
-from ui.common.base_controller import BaseController
+from ui.common import BaseController
 
 
 class InfoBarController(BaseController):

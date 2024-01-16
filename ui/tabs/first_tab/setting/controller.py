@@ -1,4 +1,4 @@
-from ui.common.base_controller import BaseController
+from ui.common import BaseController
 from ui.tabs.first_tab.setting import SettingModel, SettingView
 
 

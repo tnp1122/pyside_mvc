@@ -1,8 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QVBoxLayout
 
-from ui.common import BaseWidgetView
-from ui.common.logo import Logo
+from ui.common import BaseWidgetView, Logo
 
 
 class HomeView(BaseWidgetView):

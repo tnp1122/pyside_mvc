@@ -3,7 +3,7 @@ from PySide6.QtGui import QPixmap, QPainter, QImage
 from PySide6.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QGraphicsPixmapItem
 
 from ui.common import BaseGraphicsView
-from ui.tabs.experiment.plate.capture.mask_manager.mask_graphics.view.mask_district_border import MaskDistrictBorder
+from ui.tabs.experiment.plate.capture.mask_manager.mask_graphics.view import MaskDistrictBorder
 
 
 class MaskGraphicsView(BaseGraphicsView):

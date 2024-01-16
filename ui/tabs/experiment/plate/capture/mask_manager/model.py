@@ -1,10 +1,4 @@
-from enum import Enum
-
-
-class MaskViewIndex(Enum):
-    ORIGIN = 0
-    DISTRICT = 1
-    MASK = 2
+from util.enums import MaskViewIndex
 
 
 class MaskManagerModel:

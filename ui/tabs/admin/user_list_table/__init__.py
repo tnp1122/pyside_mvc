@@ -1,3 +1,3 @@
 from .model import UserListTableModel
 from .view import UserListTableView
-from .controller import UserListTableWidget
+from .controller import UserListTableController

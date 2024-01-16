@@ -1,6 +1,5 @@
-from ui.app.main_tab.model import MainTabModel
-from ui.app.main_tab.view import MainTabView
-from ui.common.base_controller import BaseController
+from ui.app.main_tab import MainTabModel, MainTabView
+from ui.common import BaseController
 
 
 class MainTabController(BaseController):

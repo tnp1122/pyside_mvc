@@ -1,3 +1,3 @@
 from .model import AdminModel
 from .view import AdminView
-from .controller import AdminWidget
+from .controller import AdminController

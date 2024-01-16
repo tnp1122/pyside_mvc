@@ -1,5 +1,6 @@
-from ui.common.base_controller import BaseController
-from ui.tabs.experiment.plate.capture.mask_manager import MaskManagerView, MaskViewIndex, MaskManagerModel
+from ui.common import BaseController
+from ui.tabs.experiment.plate.capture.mask_manager import MaskManagerView, MaskManagerModel
+from util.enums import MaskViewIndex
 
 
 class MaskManagerController(BaseController):

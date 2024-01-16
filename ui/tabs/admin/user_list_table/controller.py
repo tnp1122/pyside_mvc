@@ -1,9 +1,8 @@
-from ui.common.base_controller import BaseController
-from ui.tabs.admin.user_list_table.model import UserListTableModel
-from ui.tabs.admin.user_list_table.view import UserListTableView
+from ui.common import BaseController
+from ui.tabs.admin.user_list_table import UserListTableModel, UserListTableView
 
 
-class UserListTableWidget(BaseController):
+class UserListTableController(BaseController):
     def __init__(self, parent=None):
         super().__init__(UserListTableModel, UserListTableView, parent)
 
@@ -19,7 +18,7 @@ def main():
     from PySide6.QtWidgets import QApplication
 
     app = QApplication([])
-    widget = UserListTableWidget()
+    widget = UserListTableController()
     widget.view.show()
     app.exec()
 

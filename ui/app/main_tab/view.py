@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QWidget
 
 from ui.common import BaseTabWidgetView
-from ui.tabs.admin import AdminWidget
+from ui.tabs.admin import AdminController
 from ui.tabs.first_tab import FirstTabController
 
 
@@ -18,7 +18,7 @@ class MainTabView(BaseTabWidgetView):
         self.combination = QWidget()
         self.target = QWidget()
         self.data = QWidget()
-        self.admin = AdminWidget()
+        self.admin = AdminController()
 
         self.addTab(self.first.view, "메인")
         self.addTab(self.experiment, "실험")
