@@ -1,4 +1,3 @@
-from PySide6.QtCore import Signal
 from PySide6.QtGui import QIntValidator, QDoubleValidator
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QFrame, QLabel
 
@@ -8,18 +7,15 @@ from ui.tabs.experiment.plate.capture.mask_manager.mask_graphics.controller.main
 
 
 class MaskManagerView(BaseWidgetView):
-    ui_initialized_signal = Signal()
-
-    def __init__(self, origin_image, parent=None):
-        super().__init__(parent)
-
+    def __init__(self, parent=None, origin_image=None):
         self._origin_image = origin_image
+        super().__init__(parent)
 
     @property
     def origin_image(self):
         return self._origin_image
 
-    def init_ui(self):
+    def init_view(self):
         self.setWindowTitle("마스크 영역 지정")
         lyt = QVBoxLayout(self)
 
@@ -38,7 +34,7 @@ class MaskManagerView(BaseWidgetView):
 
         self.set_bottom_lyt(0)
         # self.emit_ui_initialized_signal()
-        self.ui_initialized_signal.emit()
+        # self.ui_initialized_signal.emit()
 
     def set_bottom_lyt(self, index):
         if index == 0:

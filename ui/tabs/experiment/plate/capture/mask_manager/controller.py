@@ -1,24 +1,12 @@
+from ui.common.base_controller import BaseController
 from ui.tabs.experiment.plate.capture.mask_manager import MaskManagerView, MaskViewIndex, MaskManagerModel
 
 
-class MaskManagerWidget:
-    def __init__(self, origin_image, parent=None):
-        self._model = MaskManagerModel()
-        self._view = MaskManagerView(origin_image, parent)
-        self.graphics = None
+class MaskManagerController(BaseController):
+    def __init__(self, parent=None, origin_image=None):
+        self.origin_image = origin_image
 
-        self.view.ui_initialized_signal.connect(self.init_controller)
-        self.view.init_ui()
-        self.init_text()
-        self.update_masking_view()
-
-    @property
-    def model(self):
-        return self._model
-
-    @property
-    def view(self):
-        return self._view
+        super().__init__(MaskManagerModel, MaskManagerView, parent, origin_image)
 
     def init_text(self):
         self.view.ET_r.setText(str(self.graphics.model.circle_radius))
@@ -26,6 +14,8 @@ class MaskManagerWidget:
         self.view.ET_threshold.setText(str(self.view.masking.threshold))
 
     def init_controller(self):
+        super().init_controller()
+
         self.graphics = self.view.graphics
         self.view.view_radio.selected.connect(self.on_select_changed)
         self.view.btn_set_horizontal.clicked.connect(lambda: self.graphics.set_direction(0))
@@ -38,6 +28,7 @@ class MaskManagerWidget:
         self.view.ET_threshold.textChanged.connect(self.on_change_threshold)
 
         self.view.masking.masked_image_updated_signal.connect(self.update_masking_view)
+
 
     def on_select_changed(self, index):
         view_index = MaskViewIndex(index)
@@ -80,7 +71,7 @@ def main():
 
     app = QApplication([])
     image_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "../plate_image.jpg")
-    widget = MaskManagerWidget(image_path)
+    widget = MaskManagerController(origin_image=image_path)
     widget.view.show()
     app.exec()
 

@@ -2,10 +2,13 @@ from PySide6.QtCore import QObject
 
 
 class BaseController(QObject):
-    def __init__(self, Model, View, parent=None):
+    def __init__(self, Model, View, parent=None, args=None):
         super().__init__()
         self._model = Model()
-        self._view = View(parent)
+        if args:
+            self._view = View(parent, args)
+        else:
+            self._view = View(parent)
         self.init_controller()
         self.on_controller_initialized()
 
