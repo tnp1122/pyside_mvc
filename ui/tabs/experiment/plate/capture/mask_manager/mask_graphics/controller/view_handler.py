@@ -1,10 +1,12 @@
+from util.enums import MaskViewIndex
+
+
 class ViewHandler:
     def __init__(self, view):
         self._view = view
         self._border = self.view.scene.border
 
         self.border.setVisible(False)
-        from ui.tabs.experiment.plate.capture.mask_manager import MaskViewIndex
         self.set_current_view(MaskViewIndex.ORIGIN)
 
     @property
@@ -16,7 +18,6 @@ class ViewHandler:
         return self._border
 
     def set_current_view(self, index):
-        from ui.tabs.experiment.plate.capture.mask_manager import MaskViewIndex
 
         if index == MaskViewIndex.MASK:
             self.view.scene.origin_view.setVisible(False)
