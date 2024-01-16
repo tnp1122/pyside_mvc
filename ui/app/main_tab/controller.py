@@ -6,8 +6,9 @@ class MainTabController(BaseController):
     def __init__(self, parent=None):
         super().__init__(MainTabModel, MainTabView, parent)
 
-    def set_first_tab(self, index):
-        self.view.setCurrentIndex(0)
+    def set_first_tab(self, index, switch=True):
+        if switch:
+            self.view.setCurrentIndex(0)
         self.view.first.set_current_index(index)
 
 

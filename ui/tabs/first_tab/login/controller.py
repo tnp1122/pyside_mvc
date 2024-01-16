@@ -73,7 +73,8 @@ class LoginWidget(BaseController):
                 self.set_home_signal.emit()
 
             else:
-                logging.error(f"{METHOD} login-{reply.errorString()}")
+                message_str = reply.readAll().data().decode('utf-8')
+                logging.error(f"{METHOD} login: {message_str}")
 
         self.api_manager.login(login_info, api_handler)
 
@@ -93,7 +94,8 @@ class LoginWidget(BaseController):
                     print(f"Header: {header[0]} = {header[1].data().decode('utf-8')}")
 
             else:
-                logging.error(f"{METHOD} regist-{reply.errorString()}")
+                message_str = reply.readAll().data().decode('utf-8')
+                logging.error(f"{METHOD} regist: {message_str}")
 
         self.api_manager.regist(registration_info, api_handler)
 

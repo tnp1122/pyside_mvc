@@ -1,6 +1,18 @@
 def main():
+    from dotenv import load_dotenv
+    import os
+    import logging
+
     from PySide6.QtWidgets import QApplication
     from ui.app import AppController
+
+    load_dotenv()
+    file_name = os.getenv("LOG_FILE_NAME")
+
+    if file_name:
+        logging.basicConfig(filename=file_name, filemode="w")
+    else:
+        logging.basicConfig(level=logging.DEBUG)
 
     app = QApplication([])
     main_app = AppController()

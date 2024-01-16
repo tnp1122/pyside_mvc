@@ -1,7 +1,13 @@
+import json
+
+from PySide6.QtNetwork import QNetworkReply
+
+from data.api.api_manager import APIManager
 from ui.app import AppModel, AppView
 from ui.common import BaseController
 from util.enums import FirstTabIndex
 from util.init_app_manager import InitAppManager
+from util.setting_manager import SettingManager
 
 
 class AppController(BaseController):
@@ -9,32 +15,70 @@ class AppController(BaseController):
 
     def __init__(self, parent=None):
         self.init_app_manager = InitAppManager()
+        self.api_manager = APIManager()
+        self.setting_manager = SettingManager()
         super().__init__(AppModel, AppView, parent)
 
     def init_controller(self):
         super().init_controller()
 
-        self.view.info_bar.view.btn_setting.clicked.connect(lambda: self.set_first_tab(FirstTabIndex.SETTING))
-        self.view.tabs.view.first.view.setting.view.btn.clicked.connect(self.set_home)
+        self.view.info_bar.view.btn_setting.clicked.connect(self.show_setting_widget)
+        self.view.tabs.view.first.view.setting.view.btn.clicked.connect(self.show_first_widget)
         self.view.tabs.view.first.view.setting.view.btn_logout.clicked.connect(self.do_logout)
-        self.view.tabs.view.first.view.login.set_home_signal.connect(self.set_home)
+        self.view.tabs.view.first.view.login.set_home_signal.connect(self.update_user_info)
+        self.view.tabs.view.currentChanged.connect(self.tab_switched_handler)
 
-        self.set_home()
+        self.update_user_info()
 
-    def set_home(self):
-        # def get_first_tab_index_handler(index):
-        #     # first_widget_index = reply
-        #     self.set_first_tab(index)
+    def update_user_info(self):
+        def api_handler(reply):
+            if reply.error() == QNetworkReply.NoError:
+                data = reply.readAll().data().decode("utf-8")
+                user_info = json.loads(data)
+                self.model.username = user_info["username"]
+                self.model.name = user_info["name"]
+                self.model.role = user_info["role"]
 
-        self.init_app_manager.get_first_tab_index(lambda index: self.set_first_tab(index))
+                self.model.first_tab_index = FirstTabIndex.HOME
+            else:
+                print(reply)
+                print(reply.error)
+                print(reply.readAll().data().decode("utf-8"))
+                self.model.username = ""
+                self.model.name = "사용자"
+                self.model.role = ""
+                self.model.first_tab_index = FirstTabIndex.LOGIN
 
-    def set_first_tab(self, index):
-        print(f"set_first_tab: {index}")
-        self.view.tabs.set_first_tab(index)
+            is_admin = self.model.role == "admin"
+            self.view.tabs.view.set_admin_tab(is_admin)
+            self.view.info_bar.view.lb_name.setText(self.model.name)
+            self.set_first_tab()
+
+        self.api_manager.get_user_info(callback=api_handler)
+
+    def tab_switched_handler(self, index):
+        if index == 0:
+            self.show_first_widget(switch=False)
+
+    def show_first_widget(self, switch=True):
+        self.model.first_tab_index = FirstTabIndex.LOGIN
+        if self.setting_manager.get_access_token():
+            if self.model.username:
+                self.model.first_tab_index = FirstTabIndex.HOME
+
+        self.set_first_tab(switch=switch)
+
+    def show_setting_widget(self):
+        self.model.first_tab_index = FirstTabIndex.SETTING
+        self.set_first_tab()
+
+    def set_first_tab(self, switch=True):
+        self.view.tabs.set_first_tab(self.model.first_tab_index, switch)
 
     def do_logout(self):
+        self.model.username, self.model.name, self.model.role = "", "", ""
         self.init_app_manager.logout()
-        self.set_home()
+        self.update_user_info()
 
 
 def main():

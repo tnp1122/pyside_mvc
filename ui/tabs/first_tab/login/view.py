@@ -23,7 +23,7 @@ class LoginView(BaseWidgetView):
         tabs = QTabWidget()
         tabs.setFixedSize(*self.size_tabs)
         tabs.addTab(tab_login, "로그인")
-        tabs.addTab(tab_rg, " 계정등록")
+        tabs.addTab(tab_rg, "실험자 등록")
         tabs_style_sheet = f"""
             QTabWidget::pane {{ border: 0px; }}
             QTabBar::tab {{ min-width: {(tabs.width()-2) // tabs.count()}px; border:0px; }}
