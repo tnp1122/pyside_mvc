@@ -11,7 +11,7 @@ from util.setting_manager import SettingManager
 
 load_dotenv()
 
-BASE_URL = os.getenv("BASE_URL")
+BASE_URL = os.getenv("LOCAL_BASE_URL")
 EXCLUDE_END_POINTS = ["user/login/", "user/regist/"]
 REFRESH_TOKEN_END_POINT = "user/refresh/"
 METHOD = "[API manager]"
@@ -20,10 +20,18 @@ POST = "POST"
 
 
 class APIManager:
+    _instance = None
+
+    def __new__(cls):
+        if not cls._instance:
+            cls._instance = super(APIManager, cls).__new__(cls)
+        return cls._instance
 
     def __init__(self):
-        self.manager = QNetworkAccessManager()
-        self.setting_manager = SettingManager()
+        if not hasattr(self, "initialized"):
+            self.initialized = True
+            self.manager = QNetworkAccessManager()
+            self.setting_manager = SettingManager()
 
     def _call_api(self, method, endpoint, callback=None, data=None, origin_api=None):
         url = QUrl(f"{BASE_URL}{endpoint}")
