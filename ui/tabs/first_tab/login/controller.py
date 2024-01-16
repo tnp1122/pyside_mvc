@@ -34,6 +34,8 @@ class LoginWidget(BaseController):
         self.view.et_password_rg.textChanged.connect(lambda value: self.on_text_changed(value, PASSWORD_R))
         self.view.et_name.textChanged.connect(lambda value: self.on_text_changed(value, NAME))
 
+        self.view.enter_pressed_signal.connect(self.on_enter_pressed)
+
         self.view.btn_login.clicked.connect(self.login)
         self.view.btn_rg.clicked.connect(self.regist)
 
@@ -98,6 +100,12 @@ class LoginWidget(BaseController):
                 logging.error(f"{METHOD} regist: {message_str}")
 
         self.api_manager.regist(registration_info, api_handler)
+
+    def on_enter_pressed(self, index):
+        if index == 0:
+            self.login()
+        else:
+            self.regist()
 
 
 def main():

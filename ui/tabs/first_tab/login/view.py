@@ -1,15 +1,20 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QWidget, QLabel, QLineEdit, QHBoxLayout, QVBoxLayout, QTabWidget
 
 from ui.common import BaseWidgetView, ColoredButton, Logo
 
 
 class LoginView(BaseWidgetView):
+    enter_pressed_signal = Signal(int)
     size_et = 110
     size_tabs = (220, 160)
 
     def __init__(self, parent=None):
         super().__init__(parent)
+
+    def keyPressEvent(self, e):
+        if e.key() == Qt.Key_Enter or e.key() == Qt.Key_Return:
+            self.enter_pressed_signal.emit(self.tabs.currentIndex())
 
     def init_view(self):
         super().init_view()
@@ -20,22 +25,22 @@ class LoginView(BaseWidgetView):
         tab_login = self.set_tab_login()
         tab_rg = self.set_tab_rg()
 
-        tabs = QTabWidget()
-        tabs.setFixedSize(*self.size_tabs)
-        tabs.addTab(tab_login, "로그인")
-        tabs.addTab(tab_rg, "실험자 등록")
+        self.tabs = QTabWidget()
+        self.tabs.setFixedSize(*self.size_tabs)
+        self.tabs.addTab(tab_login, "로그인")
+        self.tabs.addTab(tab_rg, "실험자 등록")
         tabs_style_sheet = f"""
             QTabWidget::pane {{ border: 0px; }}
-            QTabBar::tab {{ min-width: {(tabs.width()-2) // tabs.count()}px; border:0px; }}
+            QTabBar::tab {{ min-width: {(self.tabs.width()-2) // self.tabs.count()}px; border:0px; }}
             QTabBar::tab:first {{ border-right: 2px solid black; }}
             QTabBar::tab:selected {{ color: black; font-weight: bold; }}
             QTabBar::tab:!selected {{ color: #818181; font-weight: normal; }}
         """
-        tabs.setStyleSheet(tabs_style_sheet)
+        self.tabs.setStyleSheet(tabs_style_sheet)
 
         lyt.addWidget(lb_logo, alignment=Qt.AlignHCenter)
         lyt.addStretch()
-        lyt.addWidget(tabs, alignment=Qt.AlignHCenter)
+        lyt.addWidget(self.tabs, alignment=Qt.AlignHCenter)
         lyt.addStretch()
 
     def set_tab_login(self):
@@ -96,7 +101,7 @@ class LoginView(BaseWidgetView):
         lyt_password.addStretch()
         lyt_password.addWidget(self.et_password_rg)
 
-        self.btn_rg = ColoredButton("계정등록")
+        self.btn_rg = ColoredButton("실험자 등록")
 
         # lyt.addStretch()
         lyt.addLayout(lyt_name)
