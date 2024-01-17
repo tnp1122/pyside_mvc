@@ -37,15 +37,11 @@ class UserListTableView(BaseTableWidgetView):
         self.mapper_reject.mappedInt.connect(self.on_reject_clicked)
 
         for row, user in enumerate(user_list):
-            print(f"user_index: {row}, user: {user}")
             self.insertRow(row)
-            # print("user:", user)
             name = QTableWidgetItem(user["name"])
             username = QTableWidgetItem(user["username"])
-            regist_date = user["regist_date"]
             approve_buttons = self.get_approve_buttons(row)
 
-            print(regist_date)
             regist_date = QTableWidgetItem(user["regist_date"].split("T")[0])
             self.setItem(row, 0, name)
             self.setItem(row, 1, username)

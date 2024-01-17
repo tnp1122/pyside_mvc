@@ -118,3 +118,7 @@ class APIManager:
     def get_user_list(self, callback):
         endpoint = f"admin/waiting-users/"
         self._call_api(GET, endpoint, callback)
+
+    def approve_user(self, callback, body, user_id):
+        endpoint = f"admin/approve-user/{user_id}"
+        self._call_api(POST, endpoint, callback, body)
