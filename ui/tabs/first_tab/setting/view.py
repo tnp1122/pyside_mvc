@@ -13,5 +13,7 @@ class SettingView(BaseWidgetView):
         self.btn = QPushButton("홈")
         self.btn_logout = QPushButton("로그아웃")
 
+        lyt.addStretch()
         lyt.addWidget(self.btn)
         lyt.addWidget(self.btn_logout)
+        lyt.addStretch()

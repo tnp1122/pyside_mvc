@@ -29,6 +29,6 @@ class FirstTabView(BaseStackedWidgetView):
     def with_container(self, widget):
         container = QWidget(self)
         lyt = QVBoxLayout(container)
-        lyt.addWidget(widget, alignment=Qt.AlignVCenter | Qt.AlignHCenter)
+        lyt.addWidget(widget, stretch=1, alignment=Qt.AlignHCenter)
 
         return container
