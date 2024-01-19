@@ -74,7 +74,7 @@ class APIManager:
     def _reply_intercept(self, origin_api, reply, endpoint, callback=None, data=None):
         status_code = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
         if endpoint == REFRESH_TOKEN_END_POINT:
-            if status_code == 200:
+            if status_code == 204:
                 headers = reply.rawHeaderPairs()
                 for header, value in headers:
                     if header == b"Authentication":
