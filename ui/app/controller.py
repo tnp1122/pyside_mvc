@@ -34,7 +34,7 @@ class AppController(BaseController):
         def api_handler(reply):
             if reply.error() == QNetworkReply.NoError:
                 data = reply.readAll().data().decode("utf-8")
-                user_info = json.loads(data)
+                user_info = json.loads(data)["user_info"]
                 self.model.username = user_info["username"]
                 self.model.name = user_info["name"]
                 self.model.role = user_info["role"]
