@@ -17,7 +17,7 @@ class TreeView(BaseScrollAreaView):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
     def set_tree(self, data):
-        tree_root = TreeRow(is_root=True)
+        tree_root = TreeRow()
         tree_root.add_child(data)
 
         tree = QWidget()
@@ -34,7 +34,7 @@ class TreeRow(QWidget):
 
     clicked_signal = Signal(dict)
 
-    def __init__(self, is_directory=True, parent=None, title="폴더 이름", level=0, is_root=False):
+    def __init__(self, is_directory=True, parent=None, title="폴더 이름", level=0):
         super().__init__()
 
         self.children = []
@@ -43,8 +43,8 @@ class TreeRow(QWidget):
         self.is_directory = is_directory
         self.parent = parent
         self.title = title
-        self.is_root = is_root
         self.level = level
+        self.is_root = self.level == 0
 
         self.init_view()
 
@@ -60,7 +60,7 @@ class TreeRow(QWidget):
         lyt.addLayout(self.lyt_children)
         lyt.addStretch()
 
-        if self.is_root:
+        if self.level == 0:
             return
         img_expend = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                   "../../static/image/expand_left.png")
@@ -177,7 +177,7 @@ class TreeRow(QWidget):
             child.setVisible(self.is_expended)
 
     def add_snapshot(self):
-        print("add snapshot")
+        print(f"[add] level: {self.level}")
 
 
 def main():

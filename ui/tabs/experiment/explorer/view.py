@@ -6,7 +6,6 @@ from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QSplitter, QWidget, QSiz
 
 from ui.common import BaseWidgetView, ImageButton, Logo
 from ui.common.tree_view import TreeView
-from ui.tabs.experiment.explorer.explorer_tree import ExplorerTreeController
 
 
 class ExplorerView(BaseWidgetView):

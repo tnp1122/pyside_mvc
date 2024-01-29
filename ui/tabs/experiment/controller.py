@@ -1,6 +1,5 @@
 from ui.common import BaseController
 from ui.tabs.experiment import ExperimentModel, ExperimentView
-from ui.tabs.experiment.explorer.explorer_tree import ExplorerTreeController
 
 
 class ExperimentController(BaseController):
