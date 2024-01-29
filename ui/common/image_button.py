@@ -18,7 +18,7 @@ class ImageButton(QPushButton):
             else:
                 icon_size = pixmap.rect().size()
             self.setIconSize(icon_size)
-            self.setFixedHeight(icon_size.height())
+            self.setFixedSize(icon_size)
         self.setStyleSheet("""
             QPushButton {
                 border: 0px;
