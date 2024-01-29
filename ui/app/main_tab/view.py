@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QWidget
 
 from ui.common import BaseTabWidgetView
 from ui.tabs.admin import AdminController
+from ui.tabs.experiment import ExperimentController
 from ui.tabs.first_tab import FirstTabController
 
 
@@ -13,7 +14,7 @@ class MainTabView(BaseTabWidgetView):
         super().init_view()
 
         self.first = FirstTabController()
-        self.experiment = QWidget()
+        self.experiment = ExperimentController()
         self.sample = QWidget()
         self.combination = QWidget()
         self.target = QWidget()
@@ -21,7 +22,7 @@ class MainTabView(BaseTabWidgetView):
         self.admin = AdminController()
 
         self.addTab(self.first.view, "메인")
-        self.addTab(self.experiment, "실험")
+        self.addTab(self.experiment.view, "실험")
         self.addTab(self.sample, "시료")
         self.addTab(self.combination, "조합")
         self.addTab(self.target, "타겟 물질")

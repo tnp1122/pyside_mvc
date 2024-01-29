@@ -21,10 +21,13 @@ class BaseController(QObject):
         return self._view
 
     def init_controller(self):
-        self.view.init_view()
+        self.init_view()
         self.on_view_initialized()
 
         # print(f"parent init controller")
+
+    def init_view(self):
+        self.view.init_view()
 
     def on_view_initialized(self):
         self.view.on_view_initialized()
