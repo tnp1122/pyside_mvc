@@ -1,5 +1,5 @@
 from ui.common import BaseController
-from ui.tabs.experiment.plate.capture.mask_manager import MaskManagerView, MaskManagerModel
+from ui.tabs.experiment.window.capture.mask_manager import MaskManagerView, MaskManagerModel
 from util.enums import MaskViewIndex
 
 
