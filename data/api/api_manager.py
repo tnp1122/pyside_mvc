@@ -99,6 +99,8 @@ class APIManager:
 
         callback(reply)
 
+    """ user """
+
     def regist(self, registration_info, callback):
         endpoint = f"user/regist/"
         self._call_api(POST, endpoint, callback, registration_info)
@@ -115,6 +117,8 @@ class APIManager:
         endpoint = f"user/info/"
         self._call_api(GET, endpoint, callback)
 
+    """ admin """
+
     def get_user_list(self, callback):
         endpoint = f"admin/waiting-users/"
         self._call_api(GET, endpoint, callback)
@@ -122,3 +126,9 @@ class APIManager:
     def approve_user(self, callback, body, user_id):
         endpoint = f"admin/approve-user/{user_id}"
         self._call_api(POST, endpoint, callback, body)
+
+    """ experiment """
+
+    def add_experiment(self, experiment, callback):
+        endpoint = f"experiment/"
+        self._call_api(POST, endpoint, callback, experiment)
