@@ -2,9 +2,9 @@ import os
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QResizeEvent
-from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QSplitter, QWidget, QSizePolicy
+from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QSizePolicy
 
-from ui.common import BaseWidgetView, ImageButton, Logo
+from ui.common import BaseWidgetView, ImageButton, Logo, ColoredButton
 from ui.common.tree_view import TreeView
 
 
@@ -21,17 +21,19 @@ class ExplorerView(BaseWidgetView):
 
         lyt = QVBoxLayout(self)
 
-        lyt_toggle = QHBoxLayout()
+        lyt_top = QHBoxLayout()
+        self.btn_add = ColoredButton("실험 추가")
         expand_img = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                   "../../../../static/image/expand_left.png")
         self.btn_toggle = ImageButton(image=expand_img, size=(30, 30))
-        lyt_toggle.addStretch()
-        lyt_toggle.addWidget(self.btn_toggle)
+        lyt_top.addWidget(self.btn_add)
+        lyt_top.addStretch()
+        lyt_top.addWidget(self.btn_toggle)
 
         self.tree = TreeView()
 
         logo = Logo(size=(200, 200))
 
-        lyt.addLayout(lyt_toggle)
+        lyt.addLayout(lyt_top)
         lyt.addWidget(self.tree)
         lyt.addWidget(logo, alignment=Qt.AlignHCenter)

@@ -1,4 +1,4 @@
-from .base_controller import BaseController
+from .base_controller import *
 from .base_view import *
 from .colored_button import ColoredButton
 from .image_button import ImageButton

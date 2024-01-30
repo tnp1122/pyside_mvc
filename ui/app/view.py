@@ -1,6 +1,6 @@
 from ui.app.main_tab import MainTabController
 from ui.app.info_bar import InfoBarController
-from ui.app.toast import Toast
+from ui.common.toast import Toast
 from ui.common import BaseWidgetView
 
 

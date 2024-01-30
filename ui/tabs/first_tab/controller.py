@@ -1,17 +1,10 @@
-from ui.common import BaseController
+from ui.common import StackedWidgetController
 from ui.tabs.first_tab import FirstTabModel, FirstTabView
 
 
-class FirstTabController(BaseController):
+class FirstTabController(StackedWidgetController):
     def __init__(self, parent=None):
         super().__init__(FirstTabModel, FirstTabView, parent)
-
-    def set_current_index(self, index):
-        self.view.setCurrentIndex(index.value)
-        self.model.current_index = index
-
-    def get_current_index(self):
-        return self.model.current_index
 
 
 def main():
