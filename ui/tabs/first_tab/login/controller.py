@@ -1,9 +1,11 @@
+import json
 import logging
 
 from PySide6.QtCore import Signal
 from PySide6.QtNetwork import QNetworkReply
 
 from data.api.api_manager import APIManager
+from ui.common.toast import Toast
 from ui.common import BaseController
 from ui.tabs.first_tab.login import LoginModel, LoginView
 from util.setting_manager import SettingManager
@@ -76,7 +78,9 @@ class LoginWidget(BaseController):
 
             else:
                 message_str = reply.readAll().data().decode('utf-8')
-                logging.error(f"{METHOD} login: {message_str}")
+                error_body = json.loads(message_str)
+                logging.error(f"{METHOD} login: {error_body}")
+                Toast().toast(error_body["message"])
 
         self.api_manager.login(login_info, api_handler)
 
@@ -97,7 +101,9 @@ class LoginWidget(BaseController):
 
             else:
                 message_str = reply.readAll().data().decode('utf-8')
-                logging.error(f"{METHOD} regist: {message_str}")
+                error_body = json.loads(message_str)
+                logging.error(f"{METHOD} regist: {error_body}")
+                Toast().toast(error_body["message"])
 
         self.api_manager.regist(registration_info, api_handler)
 

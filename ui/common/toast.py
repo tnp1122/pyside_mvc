@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QGraphicsOpacityEffe
 class Toast(QWidget):
     _instance = None
     toasted_signal = Signal()
-    animation_duration = 300
+    animation_duration = 500
     background_color = "#D9D9D9"
 
     def __new__(cls, *args, **kwargs):
@@ -48,7 +48,7 @@ class Toast(QWidget):
 
         self.initialized = True
 
-    def toast(self, text="", duration=2500):
+    def toast(self, text="", duration=4000):
         self.lb.setText(text)
         self.resize(self.sizeHint())
 
