@@ -1,13 +1,10 @@
-from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QPushButton
+from PySide6.QtWidgets import QPushButton, QWidget
 
 from ui.common import BaseController
 from ui.tabs.experiment.window import ExperimentWindowModel, ExperimentWindowView
 
 
 class ExperimentWindowController(BaseController):
-    is_void_signal = Signal()
-
     def __init__(self, parent=None):
         super().__init__(ExperimentWindowModel, ExperimentWindowView, parent)
 
@@ -16,6 +13,20 @@ class ExperimentWindowController(BaseController):
 
     def add_tab(self, widget, tab_name):
         self.view.addTab(self.view.with_container(widget), tab_name)
+
+    def get_index(self, widget):
+        for i in range(self.view.count()):
+            container = self.view.widget(i)
+            if container.findChild(QWidget, widget.objectName()) == widget:
+                return i
+        return -1
+
+    def remove_tab(self, widget):
+        index = self.get_index(widget)
+        self.view.removeTab(index)
+
+    def remove_tab_with_index(self, index):
+        self.view.removeTab(index)
 
 
 def main():

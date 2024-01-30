@@ -14,6 +14,10 @@ class ExperimentController(BaseController):
     def add_experiment(self):
         add_experiment = AddExperimentController()
         self.view.window_widget.add_tab(add_experiment.view, "새 실험")
+        add_experiment.experiment_added_signal.connect(lambda controller: self.update_view(controller))
+
+    def update_view(self, controller: add_experiment):
+        self.view.window_widget.remove_tab(controller.view)
 
 
 def main():

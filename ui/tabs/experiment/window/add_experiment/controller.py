@@ -1,5 +1,6 @@
 import logging
 
+from PySide6.QtCore import Signal, QObject
 from PySide6.QtNetwork import QNetworkReply
 
 from data.api.api_manager import APIManager
@@ -13,6 +14,7 @@ WIDGET = "[Add Experiment Controller]"
 
 class AddExperimentController(BaseController):
     api_manager = APIManager()
+    experiment_added_signal = Signal(QObject)
 
     def __init__(self, parent=None):
         super().__init__(AddExperimentModel, AddExperimentView, parent)
@@ -31,8 +33,8 @@ class AddExperimentController(BaseController):
 
         def api_handler(reply):
             if reply.error() == QNetworkReply.NoError:
-                json_str = reply.readAll().data().decode("utf-8")
-                print(f"실험 추가 응답: {json_str}")
+                # json_str = reply.readAll().data().decode("utf-8")
+                self.experiment_added_signal.emit(self)
             else:
                 logging.error(f"{WIDGET} add_experiment-{reply.errorString()}")
                 Toast().toast(reply.errorString())
