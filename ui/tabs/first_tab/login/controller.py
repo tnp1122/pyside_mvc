@@ -82,7 +82,7 @@ class LoginWidget(BaseController):
                 logging.error(f"{METHOD} login: {error_body}")
                 Toast().toast(error_body["message"])
 
-        self.api_manager.login(login_info, api_handler)
+        self.api_manager.login(api_handler, login_info)
 
     def regist(self):
         name = self.model.name
@@ -105,7 +105,7 @@ class LoginWidget(BaseController):
                 logging.error(f"{METHOD} regist: {error_body}")
                 Toast().toast(error_body["message"])
 
-        self.api_manager.regist(registration_info, api_handler)
+        self.api_manager.regist(api_handler, registration_info)
 
     def on_enter_pressed(self, index):
         if index == 0:

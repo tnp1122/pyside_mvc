@@ -37,7 +37,7 @@ class AddExperimentController(BaseController):
                 logging.error(f"{WIDGET} add_experiment-{reply.errorString()}")
                 Toast().toast(reply.errorString())
 
-        self.api_manager.add_experiment(experiment, api_handler)
+        self.api_manager.add_experiment(api_handler, experiment)
 
 
 def main():

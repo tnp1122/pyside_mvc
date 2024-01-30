@@ -49,8 +49,8 @@ class AdminController(BaseController):
             else:
                 logging.error(f"{WIDGET} approve_handler: {reply.errorString()}")
 
-        body = {"approve": approved}
-        self.api_manager.approve_user(api_handler, body, self.user_list[index]["id"])
+        result = {"approve": approved}
+        self.api_manager.approve_user(api_handler, result, self.user_list[index]["id"])
 
 
 def main():
