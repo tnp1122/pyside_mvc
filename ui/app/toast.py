@@ -68,11 +68,24 @@ class Toast(QWidget):
 
 
 def main():
-    from PySide6.QtWidgets import QApplication
+    from PySide6.QtWidgets import QApplication, QLineEdit, QPushButton
 
     app = QApplication([])
-    widget = Toast()
-    widget.toast("토스트", 1000)
+    widget = QWidget()
+
+    widget.setMinimumSize(300, 300)
+    lyt = QVBoxLayout(widget)
+    et = QLineEdit("토스트")
+    btn = QPushButton("토스트")
+    space = QWidget()
+    toast = Toast(space)
+    btn.clicked.connect(lambda: toast.toast(et.text(), 1000))
+
+    lyt.addWidget(et)
+    lyt.addWidget(btn)
+    lyt.addWidget(space)
+
+    widget.show()
     app.exec()
 
 
