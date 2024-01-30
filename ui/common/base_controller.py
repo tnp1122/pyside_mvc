@@ -37,3 +37,15 @@ class BaseController(QObject):
     def on_controller_initialized(self):
         # print("부모 컨트롤러 초기화 후")
         pass
+
+
+class StackedWidgetController(BaseController):
+    def __init__(self, Model, View, parent=None, args=None):
+        super().__init__(Model, View, parent, args)
+
+    def set_current_index(self, index):
+        self.view.setCurrentIndex(index.value)
+        self.model.current_index = index
+
+    def get_current_index(self):
+        return self.model.current_index
