@@ -1,6 +1,3 @@
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QWidget, QVBoxLayout
-
 from ui.common import BaseStackedWidgetView
 from ui.tabs.first_tab.home import HomeController
 from ui.tabs.first_tab.login import LoginWidget
@@ -25,10 +22,3 @@ class FirstTabView(BaseStackedWidgetView):
                 self.addWidget(self.with_container(self.home.view))
             elif FirstTabIndex(index) == FirstTabIndex.SETTING:
                 self.addWidget(self.with_container(self.setting.view))
-
-    def with_container(self, widget):
-        container = QWidget(self)
-        lyt = QVBoxLayout(container)
-        lyt.addWidget(widget, stretch=1, alignment=Qt.AlignHCenter)
-
-        return container

@@ -1,5 +1,6 @@
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QStackedWidget, QTabWidget, QTableWidget, QGraphicsView, QTreeView, QSplitter, \
-    QScrollArea
+    QScrollArea, QVBoxLayout
 
 
 class BaseViewMixin:
@@ -13,6 +14,13 @@ class BaseViewMixin:
     def on_view_initialized(self):
         # print(f"on view initiailized")
         pass
+
+    def with_container(self, widget):
+        container = QWidget(self)
+        lyt = QVBoxLayout(container)
+        lyt.addWidget(widget, stretch=1, alignment=Qt.AlignHCenter)
+
+        return container
 
 
 class BaseWidgetView(BaseViewMixin, QWidget):
