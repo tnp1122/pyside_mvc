@@ -1,6 +1,5 @@
 from .base_controller import *
 from .base_view import *
-from .colored_button import ColoredButton
-from .image_button import ImageButton
+from .button import *
 from .logo import Logo
 from .mile_stone import *
