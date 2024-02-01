@@ -12,8 +12,11 @@ def main():
     if file_name:
         logging.basicConfig(filename=file_name, filemode="w")
     else:
-        logging.basicConfig(level=logging.DEBUG)
-
+        logging.basicConfig(
+            format='%(asctime)s:%(levelname)s:%(message)s',
+            datefmt='%Y-%m-%d %I:%M:%S %p',
+            level=logging.DEBUG
+        )
     app = QApplication([])
     main_app = AppController()
     main_app.view.show()
