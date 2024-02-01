@@ -13,7 +13,7 @@ def main():
         logging.basicConfig(filename=file_name, filemode="w")
     else:
         logging.basicConfig(
-            format='%(asctime)s:%(levelname)s:%(message)s',
+            format='[%(levelname)s] %(asctime)s:%(message)s',
             datefmt='%Y-%m-%d %I:%M:%S %p',
             level=logging.DEBUG
         )
