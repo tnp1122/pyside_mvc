@@ -1,0 +1,3 @@
+from ui.tabs.target_material.target_list_table.model import TargetListTableModel
+from ui.tabs.target_material.target_list_table.view import TargetListTableView
+from ui.tabs.target_material.target_list_table.controller import TargetListTableController
