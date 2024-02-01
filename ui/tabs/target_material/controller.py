@@ -34,9 +34,7 @@ class TargetMaterialController(BaseController):
         self.update_experiment_list()
 
     def save_new_target_list(self):
-        new_targets = [s.strip() for s in self.view.target_list_table.get_new_list() if s.strip()]
-        print(f"added row: {self.view.target_list_table.get_new_list()}")
-        print(f"new targets: {new_targets}")
+        new_targets = [s.strip() for s in self.view.target_list_table.get_new_items() if s.strip()]
         body = {}
         body["targets"] = [{"name": target} for target in new_targets]
         index = self.view.cb.currentIndex()
