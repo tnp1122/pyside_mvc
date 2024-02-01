@@ -8,6 +8,9 @@ class ExperimentController(BaseController):
         super().__init__(ExperimentModel, ExperimentView, parent)
 
     def init_controller(self):
+        pass
+
+    def late_init(self):
         super().init_controller()
         self.view.explorer.view.btn_add.clicked.connect(self.add_experiment)
 

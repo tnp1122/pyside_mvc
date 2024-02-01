@@ -18,6 +18,9 @@ class AdminController(BaseController):
         super().__init__(AdminModel, AdminView, parent)
 
     def init_controller(self):
+        pass
+
+    def late_init(self):
         super().init_controller()
 
         self.view.btn_get_waiting_users.clicked.connect(self.update_user_list)

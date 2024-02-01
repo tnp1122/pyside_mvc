@@ -1,11 +1,18 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QObject, Signal
 from PySide6.QtWidgets import QWidget, QStackedWidget, QTabWidget, QTableWidget, QGraphicsView, QTreeView, QSplitter, \
     QScrollArea, QVBoxLayout
 
 
+class LateInit(QObject):
+    signal = Signal()
+
+    def __init__(self):
+        super().__init__()
+
+
 class BaseViewMixin:
     def __init__(self, args=None):
-        pass
+        self._late_init = LateInit()
 
     def init_view(self):
         # print(f"parent init view")
@@ -14,6 +21,9 @@ class BaseViewMixin:
     def on_view_initialized(self):
         # print(f"on view initiailized")
         pass
+
+    def late_init(self):
+        self._late_init.signal.emit()
 
     def with_container(self, widget):
         container = QWidget(self)

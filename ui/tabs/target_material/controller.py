@@ -20,6 +20,9 @@ class TargetMaterialController(BaseController):
         super().__init__(TargetMaterialModel, TargetMaterialView, parent)
 
     def init_controller(self):
+        pass
+
+    def late_init(self):
         super().init_controller()
 
         self.view.cb.currentIndexChanged.connect(self.update_target_list)

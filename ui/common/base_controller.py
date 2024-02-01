@@ -9,6 +9,7 @@ class BaseController(QObject):
             self._view = View(parent, args)
         else:
             self._view = View(parent)
+        self.view._late_init.signal.connect(self.late_init)
         self.init_controller()
         self.on_controller_initialized()
 
@@ -25,6 +26,9 @@ class BaseController(QObject):
         self.on_view_initialized()
 
         # print(f"parent init controller")
+
+    def late_init(self):
+        pass
 
     def init_view(self):
         self.view.init_view()
