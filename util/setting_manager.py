@@ -21,8 +21,8 @@ class SettingManager:
     def _set_value(self, key, value):
         self.settings.setValue(key, value)
 
-    def _get_value(self, key):
-        return self.settings.value(key)
+    def _get_value(self, key, default_value=None):
+        return self.settings.value(key, default_value)
 
     def _remove_value(self, key):
         self.settings.remove(key)

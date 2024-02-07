@@ -29,7 +29,6 @@ class UserListTableView(BaseTableWidgetView):
         self.setRowCount(0)
 
     def set_table_items(self, user_list):
-        print("user_list:", user_list)
         self.clear_table()
         self.mapper_approve = QSignalMapper(self)
         self.mapper_reject = QSignalMapper(self)
