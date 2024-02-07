@@ -7,6 +7,7 @@ from PySide6.QtCore import QByteArray, QUrl
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from dotenv import load_dotenv
 
+from ui.common.toast import Toast
 from util.setting_manager import SettingManager
 
 load_dotenv()
@@ -101,6 +102,26 @@ class APIManager:
             return
 
         callback(reply)
+
+    def on_failure(self, reply):
+        json_str = reply.readAll().data().decode("utf-8")
+        error_body = json.loads(json_str)["message"]
+        code = error_body["code"]
+        if code == "required" or code == "null" or code == "empty":
+            msg = "누락된 항목이 있습니다."
+        elif code == "unique":
+            msg = "중복된 항목이 있습니다."
+        elif code == "not_a_list":
+            msg = "로직 에러"
+        elif code == "max_length":
+            msg = "입력 가능한 길이를 초과했습니다."
+        elif code == "min_length":
+            msg = "길이가 너무 짧습니다."
+        else:
+            msg = f"{error_body}"
+
+        logging.error(msg)
+        Toast().toast(msg)
 
     """ user """
 
