@@ -105,11 +105,11 @@ class APIManager:
     """ user """
 
     def regist(self, callback, registration_info):
-        endpoint = f"user/regist/"
+        endpoint = "user/regist/"
         self._call_api(POST, endpoint, callback, registration_info)
 
     def login(self, callback, login_info):
-        endpoint = f"user/login/"
+        endpoint = "user/login/"
         self._call_api(POST, endpoint, callback, login_info)
 
     def refresh_token(self, callback, body, origin_api):
@@ -117,13 +117,13 @@ class APIManager:
         self._call_api(POST, endpoint, callback, body, origin_api)
 
     def get_user_info(self, callback):
-        endpoint = f"user/info/"
+        endpoint = "user/info/"
         self._call_api(GET, endpoint, callback)
 
     """ admin """
 
     def get_user_list(self, callback):
-        endpoint = f"admin/waiting-users/"
+        endpoint = "admin/waiting-users/"
         self._call_api(GET, endpoint, callback)
 
     def approve_user(self, callback, result, user_id):
@@ -133,11 +133,11 @@ class APIManager:
     """ experiment """
 
     def get_experiment_list(self, callback):
-        endpoint = f"experiment/"
+        endpoint = "experiment/"
         self._call_api(GET, endpoint, callback)
 
     def add_experiment(self, callback, experiment):
-        endpoint = f"experiment/"
+        endpoint = "experiment/"
         self._call_api(POST, endpoint, callback, experiment)
 
     def get_target_list(self, callback, experiment_id):
