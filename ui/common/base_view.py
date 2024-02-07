@@ -1,6 +1,7 @@
 from PySide6.QtCore import Qt, QObject, Signal
+from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QWidget, QStackedWidget, QTabWidget, QTableWidget, QGraphicsView, QTreeView, QSplitter, \
-    QScrollArea, QVBoxLayout
+    QScrollArea, QVBoxLayout, QSizePolicy, QTableWidgetItem, QHBoxLayout
 
 
 class LateInit(QObject):
@@ -51,12 +52,6 @@ class BaseTabWidgetView(BaseViewMixin, QTabWidget):
         BaseViewMixin.__init__(self, args)
 
 
-class BaseTableWidgetView(BaseViewMixin, QTableWidget):
-    def __init__(self, parent=None, args=None):
-        QTableWidget.__init__(self, parent)
-        BaseViewMixin.__init__(self, args)
-
-
 class BaseGraphicsView(BaseViewMixin, QGraphicsView):
     def __init__(self, parent=None, args=None):
         QGraphicsView.__init__(self, parent)
@@ -79,3 +74,61 @@ class BaseScrollAreaView(BaseViewMixin, QScrollArea):
     def __init__(self, parent=None, args=None):
         QScrollArea.__init__(self, parent)
         BaseViewMixin.__init__(self, args)
+
+
+class BaseTableWidgetView(BaseViewMixin, QTableWidget):
+
+    def __init__(self, parent=None, args=None):
+        QTableWidget.__init__(self, parent)
+        BaseViewMixin.__init__(self, args)
+
+    def set_table_items(self, items):
+        from ui.common import CurvedCornerButton
+        self.clear_table()
+
+        for row, item in enumerate(items):
+            self.insertRow(row)
+            cell = QTableWidgetItem(item["name"])
+
+            self.setItem(row, 0, cell)
+            self.set_editable(cell, False)
+
+        count = self.rowCount()
+        self.insertRow(count)
+        btn = CurvedCornerButton("추가")
+        btn.clicked.connect(self.add_new_row)
+        self._adjust_button_size(btn)
+
+        lyt_btn = QHBoxLayout()
+        lyt_btn.addWidget(btn)
+        lyt_btn.setContentsMargins(0, 0, 0, 0)
+        lyt_btn.setSpacing(5)
+        container = QWidget()
+        container.setLayout(lyt_btn)
+
+        self.setCellWidget(count, 0, container)
+
+    def clear_table(self):
+        self.clearContents()
+        self.setRowCount(0)
+
+    def _adjust_button_size(self, button):
+        button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        button.setStyleSheet("QPushButton { text-align: center; padding: 5px; }")
+
+    def set_editable(self, cell, editable=True):
+        flags = cell.flags()
+        if editable:
+            flags |= Qt.ItemIsEditable
+        else:
+            flags &= ~Qt.ItemIsEditable
+        cell.setFlags(flags)
+
+    def add_new_row(self):
+        count = self.rowCount()
+        font = QFont()
+        font.setBold(True)
+        item = QTableWidgetItem("")
+        item.setFont(font)
+        self.insertRow(count)
+        self.setItem(count, 0, item)

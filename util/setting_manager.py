@@ -3,6 +3,8 @@ from PySide6.QtCore import QSettings
 ACCESS_TOKEN = "access_token"
 REFRESH_TOKEN = "refresh_token"
 USE_NETWORK_DB = "use_network_db"
+NOT_USE_METAL_SAMPLE = "not_use_metal_sample"
+NOT_USE_ADDITIVE_SAMPLE = "not_use_additive_sample"
 
 
 class SettingManager:
@@ -50,6 +52,28 @@ class SettingManager:
 
     def get_use_network_db(self):
         return self._get_value(USE_NETWORK_DB)
+
+    def set_not_use_metal_samples(self, samples):
+        if isinstance(samples, set):
+            samples = list(samples)
+        self._set_value(NOT_USE_METAL_SAMPLE, samples)
+
+    def get_not_use_metal_samples(self):
+        not_use = self._get_value(NOT_USE_METAL_SAMPLE, [])
+        not_use = set([int(sample_id) for sample_id in not_use])
+
+        return not_use
+
+    def set_not_use_additive_samples(self, samples):
+        if isinstance(samples, set):
+            samples = list(samples)
+        self._set_value(NOT_USE_ADDITIVE_SAMPLE, samples)
+
+    def get_not_use_additive_samples(self):
+        not_use = self._get_value(NOT_USE_ADDITIVE_SAMPLE, [])
+        not_use = set([int(sample_id) for sample_id in not_use])
+
+        return not_use
 
 
 def main():

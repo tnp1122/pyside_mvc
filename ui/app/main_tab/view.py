@@ -4,6 +4,7 @@ from ui.common import BaseTabWidgetView
 from ui.tabs.admin import AdminController
 from ui.tabs.experiment import ExperimentController
 from ui.tabs.first_tab import FirstTabController
+from ui.tabs.sensor import SensorController
 from ui.tabs.target_material import TargetMaterialController
 
 
@@ -16,7 +17,7 @@ class MainTabView(BaseTabWidgetView):
 
         self.first = FirstTabController()
         self.experiment = ExperimentController()
-        self.sample = QWidget()
+        self.sensor = SensorController()
         self.combination = QWidget()
         self.target = TargetMaterialController()
         self.data = QWidget()
@@ -24,7 +25,7 @@ class MainTabView(BaseTabWidgetView):
 
         self.addTab(self.first.view, "메인")
         self.addTab(self.experiment.view, "실험")
-        self.addTab(self.sample, "시료")
+        self.addTab(self.sensor.view, "시료")
         self.addTab(self.combination, "조합")
         self.addTab(self.target.view, "타겟 물질")
         self.addTab(self.data, "데이터")

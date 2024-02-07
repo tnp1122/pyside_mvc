@@ -168,3 +168,54 @@ class APIManager:
     def add_targets(self, callback, experiment_id, targets):
         endpoint = f"experiment/{experiment_id}/target/"
         self._call_api(POST, endpoint, callback, targets)
+
+    """ sensor """
+    METAL = "sensor/metal/"
+    ADDITIVE = "sensor/additive/"
+    SOLVENT = "sensor/solvent/"
+
+    """ ### metal ### """
+
+    def get_metals(self, callback):
+        endpoint = self.METAL
+        self._call_api(GET, endpoint, callback)
+
+    def add_metals(self, callback, metals):
+        endpoint = self.METAL
+        self._call_api(POST, endpoint, callback, metals)
+
+    def get_metal_samples(self, callback):
+        endpoint = self.METAL + "sample/"
+        self._call_api(GET, endpoint, callback)
+
+    def add_metal_samples(self, callback, metal_samples):
+        endpoint = self.METAL + f"sample/"
+        self._call_api(POST, endpoint, callback, metal_samples)
+
+    """ ### additive ### """
+
+    def get_additives(self, callback):
+        endpoint = self.ADDITIVE
+        self._call_api(GET, endpoint, callback)
+
+    def add_additives(self, callback, additives):
+        endpoint = self.ADDITIVE
+        self._call_api(POST, endpoint, callback, additives)
+
+    def get_additive_samples(self, callback):
+        endpoint = self.ADDITIVE + "sample/"
+        self._call_api(GET, endpoint, callback)
+
+    def add_additive_samples(self, callback, additive_samples):
+        endpoint = self.ADDITIVE + f"sample/"
+        self._call_api(POST, endpoint, callback, additive_samples)
+
+    """ ### solvent ### """
+
+    def get_solvents(self, callback):
+        endpoint = self.SOLVENT
+        self._call_api(GET, endpoint, callback)
+
+    def add_solvents(self, callback, solvents):
+        endpoint = self.SOLVENT
+        self._call_api(POST, endpoint, callback, solvents)
