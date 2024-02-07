@@ -33,24 +33,6 @@ class TargetMaterialController(BaseController):
 
         self.update_experiment_list()
 
-    def save_new_target_list(self):
-        new_targets = [s.strip() for s in self.view.target_list_table.get_new_items() if s.strip()]
-        body = {}
-        body["targets"] = [{"name": target} for target in new_targets]
-        index = self.view.cb.currentIndex()
-        experiment_id = self.experiment_list[index]["id"]
-
-        def api_handler(reply):
-            if reply.error() == QNetworkReply.NoError:
-                print(f"add success")
-                self.update_target_list(index)
-            else:
-                msg = f"{WIDGET} save_new_target_list-{reply.errorString()}"
-                logging.error(msg)
-                Toast().toast(msg)
-
-        self.api_manager.add_targets(api_handler, experiment_id, body)
-
     def update_experiment_list(self):
         def api_handler(reply):
             if reply.error() == QNetworkReply.NoError:
@@ -66,9 +48,9 @@ class TargetMaterialController(BaseController):
 
     def update_target_list(self, index):
         experiment_id = self.experiment_list[index]["id"]
+
         def api_handler(reply):
             if reply.error() == QNetworkReply.NoError:
-                print(f"update_target_list")
                 json_str = reply.readAll().data().decode("utf-8")
                 self.target_list = json.loads(json_str)["targets"]
                 self.view.set_target_list_table_items(self.target_list)
@@ -78,6 +60,23 @@ class TargetMaterialController(BaseController):
                 Toast().toast(msg)
 
         self.api_manager.get_target_list(api_handler, experiment_id)
+
+    def save_new_target_list(self):
+        new_targets = [s.strip() for s in self.view.target_list_table.get_new_items() if s.strip()]
+        body = {}
+        body["targets"] = [{"name": target} for target in new_targets]
+        index = self.view.cb.currentIndex()
+        experiment_id = self.experiment_list[index]["id"]
+
+        def api_handler(reply):
+            if reply.error() == QNetworkReply.NoError:
+                self.update_target_list(index)
+            else:
+                msg = f"{WIDGET} save_new_target_list-{reply.errorString()}"
+                logging.error(msg)
+                Toast().toast(msg)
+
+        self.api_manager.add_targets(api_handler, experiment_id, body)
 
 
 def main():
