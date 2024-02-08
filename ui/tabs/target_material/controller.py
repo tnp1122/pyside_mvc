@@ -63,8 +63,11 @@ class TargetMaterialController(BaseController):
 
     def save_new_target_list(self):
         new_targets = [s.strip() for s in self.view.target_list_table.get_new_items() if s.strip()]
-        body = {}
-        body["targets"] = [{"name": target} for target in new_targets]
+        body = {"targets": [{"name": target} for target in new_targets]}
+
+        if not body["targets"]:
+            return
+
         index = self.view.cb.currentIndex()
         experiment_id = self.experiment_list[index]["id"]
 
@@ -72,9 +75,7 @@ class TargetMaterialController(BaseController):
             if reply.error() == QNetworkReply.NoError:
                 self.update_target_list(index)
             else:
-                msg = f"{WIDGET} save_new_target_list-{reply.errorString()}"
-                logging.error(msg)
-                Toast().toast(msg)
+                self.api_manager.on_failure(reply)
 
         self.api_manager.add_targets(api_handler, experiment_id, body)
 
