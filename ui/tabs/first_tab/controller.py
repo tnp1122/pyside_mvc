@@ -6,6 +6,12 @@ class FirstTabController(StackedWidgetController):
     def __init__(self, parent=None):
         super().__init__(FirstTabModel, FirstTabView, parent)
 
+    def init_controller(self):
+        pass
+
+    def late_init(self):
+        super().init_controller()
+
 
 def main():
     from PySide6.QtWidgets import QApplication

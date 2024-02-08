@@ -1,12 +1,10 @@
 import json
-import logging
 
 from PySide6.QtNetwork import QNetworkReply
 from PySide6.QtWidgets import QWidget, QHBoxLayout
 
 from data.api.api_manager import APIManager
-from ui.common import BaseTabWidgetView, BaseController, ColoredButton, BaseWidgetView
-from ui.common.toast import Toast
+from ui.common import BaseTabWidgetView, BaseController, ColoredButton, BaseWidgetView, TabWidgetController
 
 
 class SensorBaseTabModel:
@@ -32,6 +30,13 @@ class SensorBaseTabView(BaseTabWidgetView):
         self.sample_tab_name = sample_name
         self.subject_tab_name = subject_name
 
+        self.btn_cancel = ColoredButton("취소", background_color="gray")
+        self.btn_save = ColoredButton("저장", background_color="red")
+        self.btns = QWidget(self)
+        lyt = QHBoxLayout(self.btns)
+        lyt.addWidget(self.btn_cancel)
+        lyt.addWidget(self.btn_save)
+
     def init_view(self):
         super().init_view()
 
@@ -40,13 +45,6 @@ class SensorBaseTabView(BaseTabWidgetView):
         if self.sample_tab_name == "":
             self.setTabEnabled(0, False)
             self.setTabVisible(0, False)
-
-        self.btn_cancel = ColoredButton("취소", background_color="gray")
-        self.btn_save = ColoredButton("저장", background_color="red")
-        self.btns = QWidget(self)
-        lyt = QHBoxLayout(self.btns)
-        lyt.addWidget(self.btn_cancel)
-        lyt.addWidget(self.btn_save)
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -73,7 +71,7 @@ class SensorBaseTabView(BaseTabWidgetView):
         self.subject.set_table_items(subject_items)
 
 
-class SensorBaseTabController(BaseController):
+class SensorBaseTabController(TabWidgetController):
     api_manager = APIManager()
     samples = []
     subjects = []
@@ -84,6 +82,9 @@ class SensorBaseTabController(BaseController):
         super().__init__(SensorBaseTabModel, SensorBaseTabView, parent, subject_name)
 
     def init_controller(self):
+        pass
+
+    def late_init(self):
         super().init_controller()
 
         if self.subject_name != "solvent":

@@ -1,8 +1,11 @@
-from ui.common import BaseController
+from ui.common import TabWidgetController
 from ui.tabs.sensor import SensorModel, SensorView
 
 
-class SensorController(BaseController):
+class SensorController(TabWidgetController):
+    initialized_tabs = []
+    tab_count = 0
+
     def __init__(self, parent=None):
         super().__init__(SensorModel, SensorView, parent)
 

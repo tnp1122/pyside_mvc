@@ -43,6 +43,31 @@ class BaseController(QObject):
         pass
 
 
+class TabWidgetController(BaseController):
+    initialized_tabs = []
+    tab_count = 0
+
+    def __init__(self, Model, View, parent=None, args=None):
+        super().__init__(Model, View, parent, args)
+
+    def init_controller(self):
+        super().init_controller()
+
+        self.view.currentChanged.connect(self.check_tab)
+        self.tab_count = self.view.count()
+
+        self.view.widget(0).late_init()
+        self.initialized_tabs.append(0)
+
+    def check_tab(self, index):
+        if index not in self.initialized_tabs:
+            self.view.widget(index).late_init()
+            self.initialized_tabs.append(index)
+
+        if self.tab_count == len(self.initialized_tabs):
+            self.view.currentChanged.disconnect()
+
+
 class StackedWidgetController(BaseController):
     def __init__(self, Model, View, parent=None, args=None):
         super().__init__(Model, View, parent, args)
