@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QHeaderView
 from ui.common import BaseTableWidgetView
 
 
-class TargetListTableView(BaseTableWidgetView):
+class TargetTableView(BaseTableWidgetView):
     add_signal = Signal(int)
     confirm_signal = Signal(int)
 

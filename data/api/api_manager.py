@@ -162,7 +162,7 @@ class APIManager:
 
     """ experiment """
 
-    def get_experiment_list(self, callback):
+    def get_experiments(self, callback):
         endpoint = "experiment/"
         self._call_api(GET, endpoint, callback)
 
@@ -170,7 +170,7 @@ class APIManager:
         endpoint = "experiment/"
         self._call_api(POST, endpoint, callback, experiment)
 
-    def get_target_list(self, callback, experiment_id):
+    def get_targets(self, callback, experiment_id):
         endpoint = f"experiment/{experiment_id}/target/"
         self._call_api(GET, endpoint, callback)
 

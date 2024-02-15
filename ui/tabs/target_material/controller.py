@@ -13,8 +13,8 @@ WIDGET = "[Target Material Controller]"
 
 class TargetMaterialController(BaseController):
     api_manager = APIManager()
-    experiment_list = []
-    target_list = []
+    experiments = []
+    targets = []
 
     def __init__(self, parent=None):
         super().__init__(TargetMaterialModel, TargetMaterialView, parent)
@@ -25,55 +25,55 @@ class TargetMaterialController(BaseController):
     def late_init(self):
         super().init_controller()
 
-        self.view.cb.currentIndexChanged.connect(self.update_target_list)
+        self.view.cmb.currentIndexChanged.connect(self.update_targets)
 
-        self.view.btn_refresh.clicked.connect(self.update_experiment_list)
-        self.view.btn_cancle.clicked.connect(self.view.target_list_table.cancel_added_items)
-        self.view.btn_save.clicked.connect(self.save_new_target_list)
+        self.view.btn_refresh.clicked.connect(self.update_experiments)
+        self.view.btn_cancle.clicked.connect(self.view.tb_target.cancel_added_items)
+        self.view.btn_save.clicked.connect(self.save_new_targets)
 
-        self.update_experiment_list()
+        self.update_experiments()
 
-    def update_experiment_list(self):
+    def update_experiments(self):
         def api_handler(reply):
             if reply.error() == QNetworkReply.NoError:
                 json_str = reply.readAll().data().decode("utf-8")
-                self.experiment_list = json.loads(json_str)["experiments"]
-                self.view.set_combo_box_items(self.experiment_list)
+                self.experiments = json.loads(json_str)["experiments"]
+                self.view.set_experiment_cmb_items(self.experiments)
             else:
-                msg = f"{WIDGET} update_experiment_list-{reply.errorString()}"
+                msg = f"{WIDGET} update_experiments-{reply.errorString()}"
                 logging.error(msg)
                 Toast().toast(msg)
 
-        self.api_manager.get_experiment_list(api_handler)
+        self.api_manager.get_experiments(api_handler)
 
-    def update_target_list(self, index):
-        experiment_id = self.experiment_list[index]["id"]
+    def update_targets(self, index):
+        experiment_id = self.experiments[index]["id"]
 
         def api_handler(reply):
             if reply.error() == QNetworkReply.NoError:
                 json_str = reply.readAll().data().decode("utf-8")
-                self.target_list = json.loads(json_str)["targets"]
-                self.view.set_target_list_table_items(self.target_list)
+                self.targets = json.loads(json_str)["targets"]
+                self.view.set_target_table_items(self.targets)
             else:
-                msg = f"{WIDGET} update_target_list-{reply.errorString()}"
+                msg = f"{WIDGET} update_targets-{reply.errorString()}"
                 logging.error(msg)
                 Toast().toast(msg)
 
-        self.api_manager.get_target_list(api_handler, experiment_id)
+        self.api_manager.get_targets(api_handler, experiment_id)
 
-    def save_new_target_list(self):
-        new_targets = [s.strip() for s in self.view.target_list_table.get_new_items() if s.strip()]
+    def save_new_targets(self):
+        new_targets = [s.strip() for s in self.view.tb_target.get_new_items() if s.strip()]
         body = {"targets": [{"name": target} for target in new_targets]}
 
         if not body["targets"]:
             return
 
         index = self.view.cb.currentIndex()
-        experiment_id = self.experiment_list[index]["id"]
+        experiment_id = self.experiments[index]["id"]
 
         def api_handler(reply):
             if reply.error() == QNetworkReply.NoError:
-                self.update_target_list(index)
+                self.update_targets(index)
             else:
                 self.api_manager.on_failure(reply)
 

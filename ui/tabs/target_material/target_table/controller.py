@@ -1,17 +1,17 @@
 from ui.common import TableWidgetController
-from ui.tabs.target_material.target_list_table import TargetListTableModel, TargetListTableView
+from ui.tabs.target_material.target_table import TargetTableModel, TargetTableView
 
 
-class TargetListTableController(TableWidgetController):
+class TargetTableController(TableWidgetController):
     def __init__(self, parent=None):
-        super().__init__(TargetListTableModel, TargetListTableView, parent)
+        super().__init__(TargetTableModel, TargetTableView, parent)
 
 
 def main():
     from PySide6.QtWidgets import QApplication
 
     app = QApplication([])
-    widget = TargetListTableController()
+    widget = TargetTableController()
     target_list = ["타겟1", "타겟2"]
     widget.set_table_items(target_list)
     widget.view.show()

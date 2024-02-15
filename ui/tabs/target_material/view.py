@@ -3,7 +3,7 @@ import os
 from PySide6.QtWidgets import QVBoxLayout, QComboBox, QHBoxLayout
 
 from ui.common import BaseWidgetView, ColoredButton, ImageButton
-from ui.tabs.target_material.target_list_table import TargetListTableController
+from ui.tabs.target_material.target_table import TargetTableController
 
 
 class TargetMaterialView(BaseWidgetView):
@@ -15,28 +15,28 @@ class TargetMaterialView(BaseWidgetView):
 
         img_refresh = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                   "../../../static/image/refresh.png")
-        self.cb = QComboBox()
+        self.cmb = QComboBox()
         self.btn_refresh = ImageButton(image=img_refresh)
         self.btn_cancle = ColoredButton("취소", background_color="gray")
         self.btn_save = ColoredButton("저장", background_color="red")
 
         lyt_top = QHBoxLayout()
-        lyt_top.addWidget(self.cb)
+        lyt_top.addWidget(self.cmb)
         lyt_top.addWidget(self.btn_refresh)
         lyt_top.addStretch()
         lyt_top.addWidget(self.btn_cancle)
         lyt_top.addWidget(self.btn_save)
 
-        self.target_list_table = TargetListTableController()
+        self.tb_target = TargetTableController()
 
         lyt = QVBoxLayout(self)
         lyt.addLayout(lyt_top)
-        lyt.addWidget(self.target_list_table.view)
+        lyt.addWidget(self.tb_target.view)
 
-    def set_combo_box_items(self, experiments):
-        self.cb.clear()
+    def set_experiment_cmb_items(self, experiments):
+        self.cmb.clear()
         for experiment in experiments:
-            self.cb.addItem(experiment["name"])
+            self.cmb.addItem(experiment["name"])
 
-    def set_target_list_table_items(self, target_list):
-        self.target_list_table.set_table_items(target_list)
+    def set_target_table_items(self, targets):
+        self.tb_target.set_table_items(targets)
