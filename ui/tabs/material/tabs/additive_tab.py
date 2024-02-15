@@ -1,6 +1,6 @@
-from ui.tabs.sensor.tabs.base_tab import SensorBaseTabController
-from ui.tabs.sensor.tabs.tables.additive_sample_table import AdditiveSampleTableController
-from ui.tabs.sensor.tabs.tables.additive_table import AdditiveTableController
+from ui.tabs.material.tabs.base_tab import SensorBaseTabController
+from ui.tabs.material.tabs.tables.additive_sample_table import AdditiveSampleTableController
+from ui.tabs.material.tabs.tables.additive_table import AdditiveTableController
 
 
 class AdditiveTabController(SensorBaseTabController):

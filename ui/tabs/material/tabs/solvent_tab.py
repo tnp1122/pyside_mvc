@@ -1,5 +1,5 @@
-from ui.tabs.sensor.tabs.base_tab import SensorBaseTabController
-from ui.tabs.sensor.tabs.tables.solvent_table import SolventTableController
+from ui.tabs.material.tabs.base_tab import SensorBaseTabController
+from ui.tabs.material.tabs.tables.solvent_table import SolventTableController
 
 
 class SolventTabController(SensorBaseTabController):

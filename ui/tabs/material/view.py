@@ -1,9 +1,9 @@
 from ui.common import BaseTabWidgetView
-from ui.tabs.sensor.tabs import MetalTabController, AdditiveTabController
-from ui.tabs.sensor.tabs.solvent_tab import SolventTabController
+from ui.tabs.material.tabs import MetalTabController, AdditiveTabController
+from ui.tabs.material.tabs.solvent_tab import SolventTabController
 
 
-class SensorView(BaseTabWidgetView):
+class MaterialView(BaseTabWidgetView):
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -15,17 +15,17 @@ class SensorView(BaseTabWidgetView):
         self.additive = AdditiveTabController()
         self.solvent = SolventTabController()
 
-        self.setObjectName("sensor")
-        self.tabBar().setObjectName("sensor_tabbar")
+        self.setObjectName("material")
+        self.tabBar().setObjectName("material_tabbar")
 
         background_color = "#5E6C80"
 
         style = f"""
-            #sensor::pane {{
+            #material::pane {{
                 background-color: {background_color};
                 border: 6px solid {background_color};
             }}
-            #sensor_tabbar::tab:selected {{
+            #material_tabbar::tab:selected {{
                 background-color: {background_color};
                 color: white;
             }}

@@ -178,10 +178,10 @@ class APIManager:
         endpoint = f"experiment/{experiment_id}/target/"
         self._call_api(POST, endpoint, callback, targets)
 
-    """ sensor """
-    METAL = "sensor/metal/"
-    ADDITIVE = "sensor/additive/"
-    SOLVENT = "sensor/solvent/"
+    """ material """
+    METAL = "material/metal/"
+    ADDITIVE = "material/additive/"
+    SOLVENT = "material/solvent/"
 
     """ ### metal ### """
 

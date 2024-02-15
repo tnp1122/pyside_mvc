@@ -1,3 +1,3 @@
-class SensorModel:
+class MaterialModel:
     def __init__(self):
         pass

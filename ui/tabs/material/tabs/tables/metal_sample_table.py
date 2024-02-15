@@ -1,4 +1,4 @@
-from ui.tabs.sensor.tabs.tables.sample_table import SampleTableController
+from ui.tabs.material.tabs.tables.sample_table import SampleTableController
 
 
 class MetalSampleTableController(SampleTableController):
