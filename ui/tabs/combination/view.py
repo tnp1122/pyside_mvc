@@ -51,9 +51,6 @@ class CombinationView(BaseWidgetView):
 
         self.select_sensor_widget = SelectSensorWidget()
 
-    def add_new_combination(self):
-        pass
-
     def set_experiment_cmb_items(self, experiments):
         self.cmb_experiment.clear()
         if experiments:
@@ -69,6 +66,11 @@ class CombinationView(BaseWidgetView):
                 self.cmb_combination.addItem(combination["name"])
         else:
             self.cmb_combination.addItem("조합을 생성하세요.")
+
+    def add_to_grid(self, widget: QPushButton, x, y):
+        self.lyt_grid.addWidget(widget, y, x)
+        widget.clicked.connect(self.mapper_clicked.map)
+        self.mapper_clicked.setMapping(widget, f"{x}, {y}")
 
     def init_grid(self):
         label_title = LabelTitle()
@@ -109,18 +111,6 @@ class CombinationView(BaseWidgetView):
                 sensor = association["sensor"]
                 widget.widget().set_solvent(sensor["solvent"])
                 widget.widget().set_additive(sensor["additive"])
-
-    def add_to_grid(self, widget: QPushButton, x, y):
-        self.lyt_grid.addWidget(widget, y, x)
-        widget.clicked.connect(self.mapper_clicked.map)
-        self.mapper_clicked.setMapping(widget, f"{x}, {y}")
-
-    # def get_cell(self, x, y):
-    #     cell = Cell()
-    #     cell.clicked.connect(self.mapper_clicked.map)
-    #     self.mapper_clicked.setMapping(cell, f"{x}, {y}")
-    #
-    #     return cell
 
     def switch_cell_style(self, editable: bool):
         for column in range(1, 9):
