@@ -19,7 +19,7 @@ class ExperimentController(BaseController):
         self.view.window_widget.add_tab(add_experiment.view, "새 실험")
         add_experiment.experiment_added_signal.connect(lambda controller: self.update_view(controller))
 
-    def update_view(self, controller: add_experiment):
+    def update_view(self, controller: AddExperimentController):
         self.view.window_widget.remove_tab(controller.view)
 
 
