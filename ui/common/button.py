@@ -1,24 +1,25 @@
 import os
 
 from PySide6.QtCore import QSize
-from PySide6.QtGui import QPixmap, QIcon
+from PySide6.QtGui import QPixmap, QIcon, QTransform
 from PySide6.QtWidgets import QPushButton, QApplication, QWidget, QVBoxLayout
 
 
 class ImageButton(QPushButton):
-    def __init__(self, text=None, image=None, size=None, parent=None):
+    def __init__(self, text=None, image=None, size=None, degree=0, parent=None):
         super().__init__(text, parent)
 
         if image:
             if isinstance(image, QPixmap):
-                pixmap = image
+                self.pixmap = image
             else:
-                pixmap = QPixmap(image)
-            self.setIcon(QIcon(pixmap))
+                self.pixmap = QPixmap(image)
+
+            self.set_transformed_icon(degree)
             if size:
                 icon_size = QSize(*size)
             else:
-                icon_size = pixmap.rect().size()
+                icon_size = self.pixmap.rect().size()
             self.setIconSize(icon_size)
             self.setFixedSize(icon_size)
         self.setStyleSheet("""
@@ -26,6 +27,10 @@ class ImageButton(QPushButton):
                 border: 0px;
             }
         """)
+
+    def set_transformed_icon(self, degree):
+        rotated_pixmap = self.pixmap.transformed(QTransform().rotate(degree))
+        self.setIcon(QIcon(rotated_pixmap))
 
 
 class ColoredButton(QPushButton):

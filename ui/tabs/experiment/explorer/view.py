@@ -24,8 +24,8 @@ class ExplorerView(BaseWidgetView):
         lyt_top = QHBoxLayout()
         self.btn_add = ColoredButton("실험 추가")
         expand_img = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                                  "../../../../static/image/expand_left.png")
-        self.btn_toggle = ImageButton(image=expand_img, size=(30, 30))
+                                  "../../../../static/image/expand_arrow.png")
+        self.btn_toggle = ImageButton(image=expand_img, size=(30, 30), degree=90)
         lyt_top.addWidget(self.btn_add)
         lyt_top.addStretch()
         lyt_top.addWidget(self.btn_toggle)

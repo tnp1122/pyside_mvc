@@ -38,7 +38,7 @@ class TreeRow(QWidget):
         super().__init__()
 
         self.children = []
-        self.is_expended = True
+        self.is_expanded = True
 
         self.is_directory = is_directory
         self.parent = parent
@@ -61,8 +61,8 @@ class TreeRow(QWidget):
 
         if self.level == 0:
             return
-        img_expend = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                                  "../../static/image/expand_left.png")
+        img_expand = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                                  "../../static/image/expand_arrow.png")
         if self.is_directory:
             img_icon = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                     "../../static/image/icon_directory.png")
@@ -73,7 +73,7 @@ class TreeRow(QWidget):
                                "../../static/image/icon_add.png")
 
         icon_size = (self.icon_size, self.icon_size)
-        self.btn_expend = ImageButton(image=img_expend, size=icon_size)
+        self.btn_expand = ImageButton(image=img_expand, size=icon_size, degree=self.get_expand_icon_degree())
         self.icon = ImageButton(image=img_icon, size=icon_size)
         self.lb_title = QLabel(self.title)
         self.btn_add = ImageButton(image=img_add, size=icon_size)
@@ -85,7 +85,7 @@ class TreeRow(QWidget):
         self.lb_title.setFont(font)
 
         if self.is_directory:
-            lyt_title.addWidget(self.btn_expend)
+            lyt_title.addWidget(self.btn_expand)
         else:
             padding = QWidget()
             padding.setFixedWidth(self.icon_size)
@@ -104,8 +104,19 @@ class TreeRow(QWidget):
     def set_signal(self):
         self.icon.installEventFilter(self)
         self.lb_title.installEventFilter(self)
-        self.btn_expend.clicked.connect(self.expend)
+        self.btn_expand.clicked.connect(self.expand)
         self.btn_add.clicked.connect(self.add_snapshot)
+
+    def get_expand_icon_degree(self):
+        return 0 if self.is_expanded else 270
+
+    def expand(self):
+        self.is_expanded = not self.is_expanded
+
+        self.btn_expand.set_transformed_icon(self.get_expand_icon_degree())
+
+        for child in self.children:
+            child.setVisible(self.is_expanded)
 
     def add_child(self, child_value):
         is_directory = isinstance(child_value, dict)
@@ -146,7 +157,7 @@ class TreeRow(QWidget):
 
         if event.type() == QEvent.MouseButtonDblClick:
             if event.button() == Qt.LeftButton:
-                self.expend()
+                self.expand()
 
         return super().eventFilter(obj, event)
 
@@ -169,11 +180,6 @@ class TreeRow(QWidget):
 
         if self.parent and self.parent.is_root:
             self.clicked_signal.emit(info)
-
-    def expend(self):
-        self.is_expended = not self.is_expended
-        for child in self.children:
-            child.setVisible(self.is_expended)
 
     def add_snapshot(self):
         print(f"[add] level: {self.level}")
