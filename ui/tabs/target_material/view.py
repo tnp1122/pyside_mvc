@@ -2,7 +2,7 @@ import os
 
 from PySide6.QtWidgets import QVBoxLayout, QComboBox, QHBoxLayout
 
-from ui.common import BaseWidgetView, ColoredButton, ImageButton
+from ui.common import BaseWidgetView, ColoredButton, RefreshButton
 from ui.tabs.target_material.target_table import TargetTableController
 
 
@@ -13,10 +13,8 @@ class TargetMaterialView(BaseWidgetView):
     def init_view(self):
         super().init_view()
 
-        img_refresh = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                                  "../../../static/image/refresh.png")
         self.cmb = QComboBox()
-        self.btn_refresh = ImageButton(image=img_refresh)
+        self.btn_refresh = RefreshButton()
         self.btn_cancle = ColoredButton("취소", background_color="gray")
         self.btn_save = ColoredButton("저장", background_color="red")
 

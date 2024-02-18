@@ -1,3 +1,5 @@
+import os
+
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QPixmap, QIcon
 from PySide6.QtWidgets import QPushButton, QApplication, QWidget, QVBoxLayout
@@ -47,6 +49,13 @@ class CurvedCornerButton(QPushButton):
             border-radius: 5px;
             padding: 3px;
         """)
+
+
+class RefreshButton(ImageButton):
+    def __init__(self):
+        img = os.path.join(os.path.abspath(os.path.dirname(__file__)),
+                           "../../static/image/refresh.png")
+        super().__init__(image=img)
 
 
 def main():
