@@ -81,6 +81,7 @@ class BaseTableWidgetView(BaseViewMixin, QTableWidget):
     def __init__(self, parent=None, args=None):
         QTableWidget.__init__(self, parent)
         BaseViewMixin.__init__(self, args)
+        self.cellClicked.connect(self.on_cell_clicked)
 
     def set_table_items(self, items):
         from ui.common import CurvedCornerButton
@@ -107,6 +108,9 @@ class BaseTableWidgetView(BaseViewMixin, QTableWidget):
         container.setLayout(lyt_btn)
 
         self.setCellWidget(count, 0, container)
+
+    def on_cell_clicked(self, row, column):
+        self.editItem(self.item(row, column))
 
     def clear_table(self):
         self.clearContents()
