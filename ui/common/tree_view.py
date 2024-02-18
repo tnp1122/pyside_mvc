@@ -55,7 +55,6 @@ class TreeRow(QWidget):
         lyt.setContentsMargins(0, 0, 0, 0)
         lyt.setSpacing(2)
 
-        lyt.addStretch()
         lyt.addLayout(lyt_title)
         lyt.addLayout(self.lyt_children)
         lyt.addStretch()
