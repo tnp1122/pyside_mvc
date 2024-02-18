@@ -160,24 +160,6 @@ class APIManager:
         endpoint = f"admin/approve-user/{user_id}"
         self._call_api(POST, endpoint, callback, result)
 
-    """ experiment """
-
-    def get_experiments(self, callback):
-        endpoint = "experiment/"
-        self._call_api(GET, endpoint, callback)
-
-    def add_experiment(self, callback, experiment):
-        endpoint = "experiment/"
-        self._call_api(POST, endpoint, callback, experiment)
-
-    def get_targets(self, callback, experiment_id):
-        endpoint = f"experiment/{experiment_id}/target/"
-        self._call_api(GET, endpoint, callback)
-
-    def add_targets(self, callback, experiment_id, targets):
-        endpoint = f"experiment/{experiment_id}/target/"
-        self._call_api(POST, endpoint, callback, targets)
-
     """ material """
     METAL = "material/metal/"
     ADDITIVE = "material/additive/"
@@ -198,7 +180,7 @@ class APIManager:
         self._call_api(GET, endpoint, callback)
 
     def add_metal_samples(self, callback, metal_samples):
-        endpoint = self.METAL + f"sample/"
+        endpoint = self.METAL + "sample/"
         self._call_api(POST, endpoint, callback, metal_samples)
 
     """ ### additive ### """
@@ -216,7 +198,7 @@ class APIManager:
         self._call_api(GET, endpoint, callback)
 
     def add_additive_samples(self, callback, additive_samples):
-        endpoint = self.ADDITIVE + f"sample/"
+        endpoint = self.ADDITIVE + "sample/"
         self._call_api(POST, endpoint, callback, additive_samples)
 
     """ ### solvent ### """
@@ -228,3 +210,32 @@ class APIManager:
     def add_solvents(self, callback, solvents):
         endpoint = self.SOLVENT
         self._call_api(POST, endpoint, callback, solvents)
+
+    """ experiment """
+    EXPERIMENT = "experiment/"
+
+    def get_experiments(self, callback):
+        endpoint = self.EXPERIMENT
+        self._call_api(GET, endpoint, callback)
+
+    def add_experiment(self, callback, experiment):
+        endpoint = self.EXPERIMENT
+        self._call_api(POST, endpoint, callback, experiment)
+
+    def get_targets(self, callback, experiment_id):
+        endpoint = self.EXPERIMENT + f"{experiment_id}/target/"
+        self._call_api(GET, endpoint, callback)
+
+    def add_targets(self, callback, experiment_id, targets):
+        endpoint = self.EXPERIMENT + f"{experiment_id}/target/"
+        self._call_api(POST, endpoint, callback, targets)
+
+    """ sensor """
+
+    def get_sensor_combination(self, callback, experiment_id):
+        endpoint = self.EXPERIMENT + f"{experiment_id}/sensor-combination/"
+        self._call_api(GET, endpoint, callback)
+
+    def add_sensor_combination(self, callback, experiment_id, sensor_combination):
+        endpoint = self.EXPERIMENT + f"{experiment_id}/sensor-combination/"
+        self._call_api(POST, endpoint, callback, sensor_combination)
