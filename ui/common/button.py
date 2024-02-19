@@ -63,6 +63,17 @@ class RefreshButton(ImageButton):
         super().__init__(image=img)
 
 
+class ClickableLabel(QLabel):
+    clicked = Signal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def mouseDoubleClickEvent(self, event):
+        self.clicked.emit()
+        super().mouseDoubleClickEvent(event)
+
+
 def main():
     app = QApplication([])
     image = "../../static/image/cogwheel.png"
