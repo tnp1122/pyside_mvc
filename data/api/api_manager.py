@@ -239,3 +239,10 @@ class APIManager:
     def add_sensor_combination(self, callback, experiment_id, sensor_combination):
         endpoint = self.EXPERIMENT + f"{experiment_id}/sensor-combination/"
         self._call_api(POST, endpoint, callback, sensor_combination)
+
+    """ plate """
+    PLATE = "plate/"
+
+    def add_plate(self, callback, plate):
+        endpoint = self.PLATE
+        self._call_api(POST, endpoint, callback, plate)
