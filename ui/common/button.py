@@ -1,8 +1,8 @@
 import os
 
-from PySide6.QtCore import QSize
+from PySide6.QtCore import QSize, Signal
 from PySide6.QtGui import QPixmap, QIcon, QTransform
-from PySide6.QtWidgets import QPushButton, QApplication, QWidget, QVBoxLayout
+from PySide6.QtWidgets import QPushButton, QApplication, QWidget, QVBoxLayout, QLabel
 
 
 class ImageButton(QPushButton):
@@ -34,13 +34,13 @@ class ImageButton(QPushButton):
 
 
 class ColoredButton(QPushButton):
-    def __init__(self, text, color=None, background_color=None, parent=None):
+    def __init__(self, text, color=None, background_color=None, padding=None, parent=None):
         super().__init__(text, parent)
         style = f"""
             color: {color or "white"};
             background-color: {background_color or "#5E6C80"};
             border: 0px;
-            padding: 5px;
+            padding: {padding or "5px"};
         """
         self.setStyleSheet(style)
 
