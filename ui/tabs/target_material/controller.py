@@ -68,7 +68,7 @@ class TargetMaterialController(BaseController):
         if not body["targets"]:
             return
 
-        index = self.view.cb.currentIndex()
+        index = self.view.cmb.currentIndex()
         experiment_id = self.experiments[index]["id"]
 
         def api_handler(reply):
