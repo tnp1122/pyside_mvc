@@ -3,9 +3,10 @@ from datetime import datetime
 
 from PySide6.QtCore import Signal, QSignalMapper, Qt
 from PySide6.QtWidgets import QHeaderView, QTableWidgetItem, QCheckBox, QWidget, QHBoxLayout, QPushButton, QComboBox, \
-    QLabel, QCalendarWidget, QVBoxLayout
+    QLabel
 
-from ui.common import BaseTableWidgetView, ImageButton, TableWidgetController, ColoredButton
+from ui.common import BaseTableWidgetView, ImageButton, TableWidgetController
+from ui.common.date_picker import DatePicker
 from util.setting_manager import SettingManager
 
 
@@ -110,7 +111,7 @@ class SampleTableView(BaseTableWidgetView):
 
         def open_date_picker():
             self.date_picker = DatePicker(set_date_, self)
-            self.date_picker.show()
+            self.date_picker.exec()
 
         current_date = datetime.now().strftime("%Y-%m-%d")
         img_calendar = os.path.join(os.path.abspath(os.path.dirname(__file__)),
@@ -203,28 +204,3 @@ class SampleTableController(TableWidgetController):
 
     def update_subject(self, subject_items):
         self.view.update_subjects(subject_items)
-
-
-class DatePicker(QWidget):
-    def __init__(self, set_date, parent=None):
-        super().__init__()
-        self.setWindowTitle("제작 날짜")
-        self.set_date = set_date
-
-        btn_cancel = ColoredButton("취소", background_color="gray")
-        btn_confirm = ColoredButton("확인", background_color="red")
-        btn_confirm.clicked.connect(self.on_confirm)
-        self.calendar = QCalendarWidget()
-
-        lyt_btn = QHBoxLayout()
-        lyt_btn.addStretch()
-        lyt_btn.addWidget(btn_cancel)
-        lyt_btn.addWidget(btn_confirm)
-        lyt = QVBoxLayout(self)
-        lyt.addLayout(lyt_btn)
-        lyt.addWidget(self.calendar)
-
-    def on_confirm(self):
-        date = self.calendar.selectedDate()
-        self.set_date(date)
-        self.close()
