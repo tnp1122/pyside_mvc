@@ -7,6 +7,7 @@ from PySide6.QtWidgets import QHeaderView, QTableWidgetItem, QCheckBox, QWidget,
 
 from ui.common import BaseTableWidgetView, ImageButton, TableWidgetController
 from ui.common.date_picker import DatePicker
+from ui.common.toast import Toast
 from util.setting_manager import SettingManager
 
 
@@ -21,7 +22,8 @@ class SampleTableView(BaseTableWidgetView):
 
     samples = []
     subjects = []
-    not_use_samples = set()
+    use_samples = set()
+    use_sample_ids = set()
 
     def __init__(self, parent=None, args=None):
         super().__init__(parent)
@@ -38,18 +40,19 @@ class SampleTableView(BaseTableWidgetView):
         self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeToContents)
 
-        self.not_use_samples = self.get_not_use_samples()
+        self.use_samples = set()  # (sample_id, subject_id)
+        self.use_sample_ids = self.get_use_sample_ids()
 
-    def get_not_use_samples(self):
+    def get_use_sample_ids(self):
         if self.is_metal:
-            return self.setting_manager.get_not_use_metal_samples()
-        return self.setting_manager.get_not_use_additive_samples()
+            return self.setting_manager.get_use_metal_samples()
+        return self.setting_manager.get_use_additive_samples()
 
-    def set_not_use_samples(self, samples):
+    def set_use_samples(self):
         if self.is_metal:
-            self.setting_manager.set_not_use_metal_samples(samples)
+            self.setting_manager.set_use_metal_samples(self.use_sample_ids)
         else:
-            self.setting_manager.set_not_use_additive_samples(samples)
+            self.setting_manager.set_use_additive_samples(self.use_sample_ids)
 
     def set_table_items(self, items):
         self.clear_table()
@@ -68,7 +71,7 @@ class SampleTableView(BaseTableWidgetView):
             made_at = QTableWidgetItem(dt_obj.strftime("%Y-%m-%d"))
 
             cb_use = QCheckBox()
-            if sample_id not in self.not_use_samples:
+            if sample_id in self.use_sample_ids:
                 cb_use.setChecked(True)
             cb_use.stateChanged.connect(self.mapper_change_use.map)
             self.mapper_change_use.setMapping(cb_use, row)
@@ -163,19 +166,31 @@ class SampleTableView(BaseTableWidgetView):
         lb_date.setText(date_str)
 
     def on_change_use(self, row):
-        subject_id = self.samples[row]["id"]
+        sample_id = self.samples[row]["id"]
+        subject_id = self.samples[row][self.subject]["id"]
+        sample = (sample_id, subject_id)
 
-        widget_check = self.cellWidget(row, 3)
-        lyt_check = widget_check.layout()
-        is_checked = lyt_check.itemAt(0).widget().isChecked()
+        cell_check = self.cellWidget(row, 3)
+        check_box: QCheckBox = cell_check.layout().itemAt(0).widget()
+        is_checked = check_box.isChecked()
 
         if is_checked:
-            if subject_id in self.not_use_samples:
-                self.not_use_samples.remove(subject_id)
-        else:
-            self.not_use_samples.add(subject_id)
+            if self.subject == "additive":
+                for use_sample in self.use_samples:
+                    if sample[1] == use_sample[1]:
+                        message = "하나의 첨가제 당 한 종류의 시료만 사용 가능합니다."
+                        Toast().toast(message)
+                        check_box.setChecked(not is_checked)
+                        return
 
-        self.set_not_use_samples(self.not_use_samples)
+            self.use_samples.add(sample)
+            self.use_sample_ids.add(sample_id)
+        else:
+            if sample in self.use_samples:
+                self.use_samples.remove(sample)
+                self.use_sample_ids.remove(sample_id)
+
+        self.set_use_samples()
 
 
 class SampleTableController(TableWidgetController):
