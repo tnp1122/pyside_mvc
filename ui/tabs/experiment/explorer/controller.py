@@ -1,5 +1,6 @@
 from ui.common import BaseController
 from ui.tabs.experiment.explorer import ExplorerModel, ExplorerView
+from util.convert import convert_to_ordered_dict
 
 
 class ExplorerController(BaseController):
@@ -26,7 +27,8 @@ class ExplorerController(BaseController):
                 }
             }
         }
-        self.view.tree.set_tree(data)
+        ordered_dict = convert_to_ordered_dict(data)
+        self.view.tree.set_tree(ordered_dict)
 
 
 def main():

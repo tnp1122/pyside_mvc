@@ -1,4 +1,5 @@
 import os
+from collections import OrderedDict
 
 from PySide6.QtCore import Qt, QEvent, Signal
 from PySide6.QtGui import QFont
@@ -16,13 +17,15 @@ class TreeView(BaseScrollAreaView):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
+        self.data = OrderedDict()
+
     def set_tree(self, data):
-        tree_root = TreeRow()
-        tree_root.add_child(data)
+        self.root = TreeRow()
+        self.root.add_child(data)
 
         tree = QWidget()
         lyt = QVBoxLayout(tree)
-        lyt.addWidget(tree_root)
+        lyt.addWidget(self.root)
         lyt.addStretch()
         lyt.setAlignment(Qt.AlignTop)
         self.setWidget(tree)
@@ -32,9 +35,9 @@ class TreeRow(QWidget):
     icon_size = 15
     font_size = 11
 
-    clicked_signal = Signal(dict)
+    clicked_signal = Signal(list)
 
-    def __init__(self, is_directory=True, parent=None, title="폴더 이름", level=0):
+    def __init__(self, is_directory=True, parent=None, title="폴더 이름", level=0, index=-1):
         super().__init__()
 
         self.children = []
@@ -45,6 +48,7 @@ class TreeRow(QWidget):
         self.title = title
         self.level = level
         self.is_root = self.level == 0
+        self.index = index
 
         self.init_view()
 
@@ -57,7 +61,6 @@ class TreeRow(QWidget):
 
         lyt.addLayout(lyt_title)
         lyt.addLayout(self.lyt_children)
-        lyt.addStretch()
 
         if self.level == 0:
             return
@@ -77,7 +80,7 @@ class TreeRow(QWidget):
         self.icon = ImageButton(image=img_icon, size=icon_size)
         self.lb_title = QLabel(self.title)
         self.btn_add = ImageButton(image=img_add, size=icon_size)
-        if self.level != 3:
+        if self.level != 2 and self.level != 3:
             self.btn_add.setVisible(False)
 
         font = QFont()
@@ -105,7 +108,7 @@ class TreeRow(QWidget):
         self.icon.installEventFilter(self)
         self.lb_title.installEventFilter(self)
         self.btn_expand.clicked.connect(self.expand)
-        self.btn_add.clicked.connect(self.add_snapshot)
+        self.btn_add.clicked.connect(self.bubble_clicked_event)
 
     def get_expand_icon_degree(self):
         return 0 if self.is_expanded else 270
@@ -121,19 +124,19 @@ class TreeRow(QWidget):
     def add_child(self, child_value):
         is_directory = isinstance(child_value, dict)
         if is_directory:
-            for title, child_dict in child_value.items():
-                self.make_child(title, child_dict)
+            for index, (title, child_dict) in enumerate(child_value.items()):
+                self.make_child(title, index, child_dict)
             return
 
-        for title in child_value:
-            self.make_child(title=title)
+        for index, title in enumerate(child_value):
+            self.make_child(title, index)
 
-    def make_child(self, title, child_dict=None):
+    def make_child(self, title, index, child_dict=None):
         is_directory = child_dict is not None
         padding = QWidget()
         padding.setFixedWidth(self.icon_size)
 
-        child = TreeRow(is_directory, self, title, self.level + 1)
+        child = TreeRow(is_directory, self, title, self.level + 1, index)
         if is_directory:
             child.add_child(child_dict)
         self.children.append(child)
@@ -169,20 +172,27 @@ class TreeRow(QWidget):
         style = ""
         self.lb_title.setStyleSheet(style)
 
-    def on_click(self):
-        if self.parent and self.parent.title:
-            self.parent.on_child_click(self.title, self.level == 4)
+    # def on_click(self):
+    #     if self.parent and self.parent.title:
+    #         self.parent.on_child_click(self.title, self.level == 4)
+    #
+    # def on_child_click(self, title, from_bottom=False):
+    #     info = {self.title: title}
+    #     if self.parent and not self.parent.is_root:
+    #         self.parent.on_child_click(info, from_bottom)
+    #
+    #     if self.parent and self.parent.is_root:
+    #         self.clicked_signal.emit(info)
+    #         print(info)
 
-    def on_child_click(self, title, from_bottom=False):
-        info = {self.title: title}
-        if self.parent and not self.parent.is_root:
-            self.parent.on_child_click(info, from_bottom)
+    def bubble_clicked_event(self, index=None):
+        indexes = index if index else []
+        if self.parent:
+            indexes.insert(0, self.index)
+            self.parent.bubble_clicked_event(indexes)
+            return
 
-        if self.parent and self.parent.is_root:
-            self.clicked_signal.emit(info)
-
-    def add_snapshot(self):
-        print(f"[add] level: {self.level}")
+        self.clicked_signal.emit(indexes)
 
 
 def main():
@@ -190,6 +200,19 @@ def main():
 
     data = {
         'fish care': {
+            '조합 1': {
+                'Cr_230926': ['8H', '12H'],
+                'FE_230422': ['8H'],
+            },
+            '조합 2': {
+                'Mn_220222': ['8H', '12H'],
+                'DDDDD_231212': ['8H']
+            },
+            '조합 3': {
+                'Cu_240115': ['4H', '8H', '12H']
+            }
+        },
+        'fish care2': {
             '조합 1': {
                 'Cr_230926': ['8H', '12H'],
                 'FE_230422': ['8H'],
