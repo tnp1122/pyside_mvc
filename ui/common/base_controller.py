@@ -1,5 +1,8 @@
 from PySide6.QtCore import QObject
 
+from data.api.api_manager import APIManager
+from util.setting_manager import SettingManager
+
 
 class BaseController(QObject):
     def __init__(self, Model, View, parent=None, args=None):
@@ -9,6 +12,9 @@ class BaseController(QObject):
             self._view = View(parent, args)
         else:
             self._view = View(parent)
+        self.api_manager = APIManager()
+        self.setting_manager = SettingManager()
+
         self.view._late_init.signal.connect(self.late_init)
         self.init_controller()
         self.on_controller_initialized()
