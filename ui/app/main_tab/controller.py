@@ -3,9 +3,6 @@ from ui.common import TabWidgetController
 
 
 class MainTabController(TabWidgetController):
-    initialized_tabs = []
-    tab_count = 0
-
     def __init__(self, parent=None):
         super().__init__(MainTabModel, MainTabView, parent)
 
