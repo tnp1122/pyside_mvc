@@ -218,6 +218,10 @@ class APIManager:
         endpoint = self.EXPERIMENT
         self._call_api(GET, endpoint, callback)
 
+    def get_experiment_tree(self, callback):
+        endpoint = self.EXPERIMENT + "tree/"
+        self._call_api(GET, endpoint, callback)
+
     def add_experiment(self, callback, experiment):
         endpoint = self.EXPERIMENT
         self._call_api(POST, endpoint, callback, experiment)

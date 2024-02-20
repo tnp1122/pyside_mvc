@@ -1,7 +1,7 @@
 from ui.common import BaseController
 from ui.tabs.experiment import ExperimentModel, ExperimentView
 from ui.tabs.experiment.window.add_experiment import AddExperimentController
-from ui.tabs.experiment.window.add_plate import AddPlateController
+from ui.tabs.experiment.window.add_plate import AddPlateController, AddPlateView
 
 
 class ExperimentController(BaseController):
@@ -24,13 +24,33 @@ class ExperimentController(BaseController):
     def add_experiment(self):
         add_experiment = AddExperimentController()
         self.view.window_widget.add_tab(add_experiment.view, "새 실험")
-        add_experiment.experiment_added_signal.connect(lambda controller: self.remove_tab(controller))
+        add_experiment.experiment_added_signal.connect(lambda controller: self.on_experiment_added(controller))
 
     def on_tree_add_button(self, indexes: list):
         if len(indexes) == 2:
+            experiment_index = indexes[0]
+            combination_index = indexes[1]
+
             add_plate = AddPlateController()
+
+            def on_combination_loaded():
+                view: AddPlateView = add_plate.view
+                if view.cmb_experiment.currentIndex() == experiment_index:
+                    view.cmb_combination.setCurrentIndex(combination_index)
+
+            add_plate.plate_added_signal.connect(lambda controller: self.on_plate_added(controller))
+            add_plate.experiment_loaded.connect(lambda: add_plate.view.cmb_experiment.setCurrentIndex(experiment_index))
+            add_plate.combination_loaded.connect(on_combination_loaded)
+
             self.view.window_widget.add_tab(add_plate.view, "새 플레이트")
-            add_plate.plate_added_signal.connect(lambda controller: self.remove_tab(controller))
+
+    def on_experiment_added(self, controller: AddExperimentController):
+        self.view.explorer.update_tree_view()
+        self.remove_tab(controller)
+
+    def on_plate_added(self, controller: AddPlateController):
+        self.view.explorer.update_tree_view()
+        self.remove_tab(controller)
 
 
 def main():

@@ -9,6 +9,8 @@ from ui.tabs.experiment.window.add_plate import AddPlateModel, AddPlateView
 
 
 class AddPlateController(BaseController):
+    experiment_loaded = Signal()
+    combination_loaded = Signal()
     plate_added_signal = Signal(QObject)
 
     experiments = []
@@ -36,18 +38,6 @@ class AddPlateController(BaseController):
         self.update_experiments()
         self.update_metals()
 
-    def update_experiments(self):
-        def api_handler(reply):
-            if reply.error() == QNetworkReply.NoError:
-                json_str = reply.readAll().data().decode("utf-8")
-                self.experiments = json.loads(json_str)["experiments"]
-                self.view.set_experiment_cmb_items(self.experiments)
-                self.combinations = [[] for _ in self.experiments]
-            else:
-                self.api_manager.on_failure(reply)
-
-        self.api_manager.get_experiments(api_handler)
-
     def on_experiment_changed(self, event):
         if event > -1:
             if self.experiments:
@@ -67,6 +57,19 @@ class AddPlateController(BaseController):
             self.metal_index = event
             self.on_data_changed()
 
+    def update_experiments(self):
+        def api_handler(reply):
+            if reply.error() == QNetworkReply.NoError:
+                json_str = reply.readAll().data().decode("utf-8")
+                self.experiments = json.loads(json_str)["experiments"]
+                self.view.set_experiment_cmb_items(self.experiments)
+                self.combinations = [[] for _ in self.experiments]
+                self.experiment_loaded.emit()
+            else:
+                self.api_manager.on_failure(reply)
+
+        self.api_manager.get_experiments(api_handler)
+
     def update_combinations(self):
         ex_index = self.experiment_index
 
@@ -76,6 +79,7 @@ class AddPlateController(BaseController):
                 combination = json.loads(json_str)["sensor_combinations"]
                 self.combinations[ex_index] = combination
                 self.view.set_combination_cmb_items(self.combinations[ex_index])
+                self.combination_loaded.emit()
             else:
                 self.api_manager.on_failure(reply)
 
