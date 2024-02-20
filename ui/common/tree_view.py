@@ -9,6 +9,8 @@ from ui.common import ImageButton, BaseScrollAreaView
 
 
 class TreeView(BaseScrollAreaView):
+    margin = 4
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -18,13 +20,15 @@ class TreeView(BaseScrollAreaView):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self.data = OrderedDict()
+        self.root = TreeRow()
 
     def set_tree(self, data):
-        self.root = TreeRow()
+        self.root.clear()
         self.root.add_child(data)
 
         tree = QWidget()
         lyt = QVBoxLayout(tree)
+        lyt.setContentsMargins(self.margin, self.margin, self.margin, self.margin)
         lyt.addWidget(self.root)
         lyt.addStretch()
         lyt.setAlignment(Qt.AlignTop)
@@ -57,7 +61,7 @@ class TreeRow(QWidget):
         lyt_title = QHBoxLayout()
         self.lyt_children = QVBoxLayout()
         lyt.setContentsMargins(0, 0, 0, 0)
-        lyt.setSpacing(2)
+        lyt.setSpacing(0)
 
         lyt.addLayout(lyt_title)
         lyt.addLayout(self.lyt_children)
@@ -94,15 +98,30 @@ class TreeRow(QWidget):
             padding.setFixedWidth(self.icon_size)
             lyt_title.addWidget(padding)
 
+        # style_padding = "padding: 2px; border: 0px;"
+        # self.btn_expand.setStyleSheet(style_padding)
+        # self.icon.setStyleSheet(style_padding)
+        # self.lb_title.setStyleSheet(style_padding)
+        # self.btn_add.setStyleSheet(style_padding)
         lyt_title.addWidget(self.icon)
         lyt_title.addWidget(self.lb_title)
         lyt_title.addWidget(self.btn_add)
         lyt_title.addStretch()
 
-        style = "border: solid 2px red;"
-        self.icon.setStyleSheet(style)
-
         self.set_signal()
+
+    def clear(self):
+        for child in self.children:
+            child.clear()
+            child.deleteLater()
+        self.children = []
+
+        layout = self.lyt_children
+        while layout.count():
+            lyt_child = layout.takeAt(0)
+            while lyt_child.count():
+                widget = lyt_child.takeAt(0).widget()
+                widget.deleteLater()
 
     def set_signal(self):
         self.icon.installEventFilter(self)
@@ -154,10 +173,6 @@ class TreeRow(QWidget):
         if event.type() == QEvent.Leave:
             self.on_mouse_leave()
 
-        if event.type() == QEvent.MouseButtonPress:
-            if event.button() == Qt.LeftButton:
-                self.on_click()
-
         if event.type() == QEvent.MouseButtonDblClick:
             if event.button() == Qt.LeftButton:
                 self.expand()
@@ -171,19 +186,6 @@ class TreeRow(QWidget):
     def on_mouse_leave(self):
         style = ""
         self.lb_title.setStyleSheet(style)
-
-    # def on_click(self):
-    #     if self.parent and self.parent.title:
-    #         self.parent.on_child_click(self.title, self.level == 4)
-    #
-    # def on_child_click(self, title, from_bottom=False):
-    #     info = {self.title: title}
-    #     if self.parent and not self.parent.is_root:
-    #         self.parent.on_child_click(info, from_bottom)
-    #
-    #     if self.parent and self.parent.is_root:
-    #         self.clicked_signal.emit(info)
-    #         print(info)
 
     def bubble_clicked_event(self, index=None):
         indexes = index if index else []
