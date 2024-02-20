@@ -24,3 +24,4 @@ class ExperimentView(BaseWidgetView):
         self.splitter.addWidget(self.explorer.view)
         self.splitter.addWidget(self.window_widget.view)
         lyt.addWidget(self.splitter)
+        self.splitter.setSizes([1, 1000])
