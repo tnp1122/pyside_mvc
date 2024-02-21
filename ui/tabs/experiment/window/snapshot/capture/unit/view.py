@@ -5,6 +5,7 @@ from PySide6.QtGui import QPixmap, Qt, QFont
 from PySide6.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout, QComboBox, QWidget, QSizePolicy, QFileDialog
 
 from ui.common import BaseWidgetView, ImageButton
+from ui.tabs.experiment.window.snapshot.capture.unit.mask_manager import MaskManagerController
 from util.setting_manager import SettingManager
 
 
@@ -16,7 +17,7 @@ class PlateCaptureUnitView(BaseWidgetView):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.file_name = ""
+        self.image_path = ""
 
     def mouseReleaseEvent(self, event):
         size = self.size()
@@ -45,6 +46,7 @@ class PlateCaptureUnitView(BaseWidgetView):
         self.btn_edit_mask = ImageButton(image=img_lasso, size=(20, 20))
         self.btn_load_img = ImageButton(image=img_load_img, size=(20, 20))
         self.btn_trash_bin = ImageButton(image=img_trash_bin, size=(20, 20))
+        self.btn_edit_mask.clicked.connect(self.open_mask_manager)
         self.btn_load_img.clicked.connect(self.open_file_dialog)
         lyt_bottom = QHBoxLayout()
         lyt_bottom.addStretch()
@@ -101,18 +103,19 @@ class PlateCaptureUnitView(BaseWidgetView):
 
     def open_mask_manager(self):
         if self.has_image:
-            pass
+            self.mask_manager = MaskManagerController(origin_image=self.image_path)
+            self.mask_manager.view.exec()
 
     def open_file_dialog(self):
         image_path = self.setting_manager.get_path_to_load_image()
         image_path = image_path if image_path and os.path.exists(image_path) else ""
 
-        self.file_name, _ = QFileDialog.getOpenFileName(self, "Open Image", image_path,
+        self.image_path, _ = QFileDialog.getOpenFileName(self, "Open Image", image_path,
                                                         "Image Files (*.png *.jpg *.jpeg *.bmp *.gif)")
-        if self.file_name:
-            path_list = self.file_name.split("/")[:-1]
+        if self.image_path:
+            path_list = self.image_path.split("/")[:-1]
             image_path = "/".join(path_list)
             self.setting_manager.set_path_to_load_image(image_path)
 
-            pixmap = QPixmap(self.file_name)
+            pixmap = QPixmap(self.image_path)
             self.set_image(pixmap)
