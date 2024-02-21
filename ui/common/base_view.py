@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt, QObject, Signal
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QWidget, QStackedWidget, QTabWidget, QTableWidget, QGraphicsView, QTreeView, QSplitter, \
-    QScrollArea, QVBoxLayout, QSizePolicy, QTableWidgetItem, QPushButton
+    QScrollArea, QVBoxLayout, QSizePolicy, QTableWidgetItem, QPushButton, QDialog
 
 
 class LateInit(QObject):
@@ -41,6 +41,12 @@ class BaseViewMixin:
 class BaseWidgetView(BaseViewMixin, QWidget):
     def __init__(self, parent=None, args=None):
         QWidget.__init__(self, parent)
+        BaseViewMixin.__init__(self, args)
+
+
+class BaseDialogView(BaseViewMixin, QDialog):
+    def __init__(self, parent=None, args=None):
+        QDialog.__init__(self, parent)
         BaseViewMixin.__init__(self, args)
 
 
