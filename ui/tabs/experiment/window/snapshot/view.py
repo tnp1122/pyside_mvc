@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QTabWidget
 
 from ui.common import BaseTabWidgetView
 from ui.tabs.experiment.window.snapshot.capture import PlateCaptureController
@@ -10,6 +10,8 @@ class PlateSnapshotView(BaseTabWidgetView):
 
     def init_view(self):
         super().init_view()
+
+        self.setTabPosition(QTabWidget.South)
 
         self.plate_capture = PlateCaptureController()
         self.color_extract = QWidget()
