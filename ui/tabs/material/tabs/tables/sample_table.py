@@ -134,6 +134,9 @@ class SampleTableView(BaseTableWidgetView):
 
         self.setCellWidget(count, 1, cmb_subject)
         self.setCellWidget(count, 2, widget_date)
+        empty_widget = QTableWidgetItem("")
+        self.set_editable(empty_widget, False)
+        self.setItem(count, 3, empty_widget)
         self.set_subjects(count)
 
     def update_subjects(self, subjects):
