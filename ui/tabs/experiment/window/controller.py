@@ -11,8 +11,8 @@ class ExperimentWindowController(BaseController):
     def init_controller(self):
         super().init_controller()
 
-    def add_tab(self, widget, tab_name):
-        self.view.addTab(self.view.with_container(widget, mode=1), tab_name)
+    def add_tab(self, widget, mode, tab_name):
+        self.view.addTab(self.view.with_container(widget, mode=mode), tab_name)
 
     def get_index(self, widget):
         for i in range(self.view.count()):

@@ -24,7 +24,7 @@ class ExperimentController(BaseController):
 
     def add_experiment(self):
         add_experiment = AddExperimentController()
-        self.view.window_widget.add_tab(add_experiment.view, "새 실험")
+        self.view.window_widget.add_tab(add_experiment.view, 0, "새 실험")
         add_experiment.experiment_added_signal.connect(lambda controller: self.on_experiment_added(controller))
 
     def on_tree_add_button(self, indexes: list):
@@ -43,7 +43,7 @@ class ExperimentController(BaseController):
             add_plate.experiment_loaded.connect(lambda: add_plate.view.cmb_experiment.setCurrentIndex(experiment_index))
             add_plate.combination_loaded.connect(on_combination_loaded)
 
-            self.view.window_widget.add_tab(add_plate.view, "새 플레이트")
+            self.view.window_widget.add_tab(add_plate.view, 0, "새 플레이트")
 
         elif len(indexes) == 3:
             experiment_index = indexes[0]
@@ -52,7 +52,7 @@ class ExperimentController(BaseController):
 
             snapshot = PlateSnapshotController()
 
-            self.view.window_widget.add_tab(snapshot.view, "")
+            self.view.window_widget.add_tab(snapshot.view, 1, "")
 
     def on_experiment_added(self, controller: AddExperimentController):
         self.view.explorer.update_tree_view()
