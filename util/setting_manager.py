@@ -9,6 +9,7 @@ EXPERIMENTER_NAME = "experimenter_name"
 USE_METAL_SAMPLE = "use_metal_sample"
 USE_ADDITIVE_SAMPLE = "use_additive_sample"
 USE_TARGET_MATERIAL = "use_target_material"
+PATH_TO_LOAD_IMAGE = "path_to_load_image"
 
 
 class SettingManager:
@@ -111,6 +112,12 @@ class SettingManager:
             use_targets = json_object.get(str(experiment_id), [])
             return set(use_targets)
         return json_object
+
+    def set_path_to_load_image(self, image_path):
+        self._set_value(PATH_TO_LOAD_IMAGE, image_path)
+
+    def get_path_to_load_image(self):
+        return self._get_value(PATH_TO_LOAD_IMAGE)
 
 
 def main():

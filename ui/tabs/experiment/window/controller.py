@@ -12,7 +12,7 @@ class ExperimentWindowController(BaseController):
         super().init_controller()
 
     def add_tab(self, widget, tab_name):
-        self.view.addTab(self.view.with_container(widget), tab_name)
+        self.view.addTab(self.view.with_container(widget, mode=1), tab_name)
 
     def get_index(self, widget):
         for i in range(self.view.count()):

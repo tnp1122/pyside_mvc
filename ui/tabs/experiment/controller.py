@@ -2,6 +2,7 @@ from ui.common import BaseController
 from ui.tabs.experiment import ExperimentModel, ExperimentView
 from ui.tabs.experiment.window.add_experiment import AddExperimentController
 from ui.tabs.experiment.window.add_plate import AddPlateController, AddPlateView
+from ui.tabs.experiment.window.snapshot import PlateSnapshotController
 
 
 class ExperimentController(BaseController):
@@ -43,6 +44,15 @@ class ExperimentController(BaseController):
             add_plate.combination_loaded.connect(on_combination_loaded)
 
             self.view.window_widget.add_tab(add_plate.view, "새 플레이트")
+
+        elif len(indexes) == 3:
+            experiment_index = indexes[0]
+            combination_index = indexes[1]
+            plate_index = indexes[2]
+
+            snapshot = PlateSnapshotController()
+
+            self.view.window_widget.add_tab(snapshot.view, "")
 
     def on_experiment_added(self, controller: AddExperimentController):
         self.view.explorer.update_tree_view()
