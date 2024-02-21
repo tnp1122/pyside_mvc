@@ -2,8 +2,8 @@ from PySide6.QtGui import QIntValidator, QDoubleValidator
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QFrame, QLabel
 
 from ui.common import MileStoneRadio, BaseDialogView
-from ui.tabs.experiment.window.capture.mask_manager import Masking
-from ui.tabs.experiment.window.capture.mask_manager.mask_graphics.controller import MaskGraphicsController
+from ui.tabs.experiment.window.snapshot.capture.unit.mask_manager import Masking
+from ui.tabs.experiment.window.snapshot.capture.unit.mask_manager.mask_graphics.controller import MaskGraphicsController
 
 
 class MaskManagerView(BaseDialogView):
