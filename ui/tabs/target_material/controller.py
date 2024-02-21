@@ -25,11 +25,13 @@ class TargetMaterialController(BaseController):
     def late_init(self):
         super().init_controller()
 
-        self.view.cmb.currentIndexChanged.connect(self.update_targets)
+        view: TargetMaterialView = self.view
 
-        self.view.btn_refresh.clicked.connect(self.update_experiments)
-        self.view.btn_cancle.clicked.connect(self.view.tb_target.cancel_added_items)
-        self.view.btn_save.clicked.connect(self.save_new_targets)
+        view.cmb.currentIndexChanged.connect(self.update_targets)
+
+        view.btn_refresh.clicked.connect(self.update_experiments)
+        view.btn_cancle.clicked.connect(view.tb_target.cancel_added_items)
+        view.btn_save.clicked.connect(self.save_new_targets)
 
         self.update_experiments()
 
@@ -48,6 +50,7 @@ class TargetMaterialController(BaseController):
 
     def update_targets(self, index):
         experiment_id = self.experiments[index]["id"]
+        self.view.tb_target.view.update_experiment_id(experiment_id)
 
         def api_handler(reply):
             if reply.error() == QNetworkReply.NoError:
