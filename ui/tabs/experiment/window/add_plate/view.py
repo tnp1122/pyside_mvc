@@ -6,9 +6,12 @@ from PySide6.QtWidgets import QLabel, QComboBox, QHBoxLayout, QWidget, QVBoxLayo
 
 from ui.common import BaseWidgetView, ImageButton, ColoredButton, ClickableLabel
 from ui.common.date_picker import DatePicker
+from util.setting_manager import SettingManager
 
 
 class AddPlateView(BaseWidgetView):
+    setting_manager = SettingManager()
+
     min_width = 250
     padding_title = 30
     width_box = 145
@@ -105,7 +108,7 @@ class AddPlateView(BaseWidgetView):
         lyt_datetime.addWidget(wig_datetime_input)
 
         lb_note = QLabel("식별 문구")
-        self.et_note = QLineEdit("")
+        self.et_note = QLineEdit(self.setting_manager.get_experimenter_name())
         self.et_note.setFixedWidth(self.width_box)
         lyt_note = QHBoxLayout()
         lyt_note.addWidget(lb_note)
