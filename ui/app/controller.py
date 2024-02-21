@@ -22,11 +22,14 @@ class AppController(BaseController):
     def init_controller(self):
         super().init_controller()
 
-        self.view.info_bar.view.btn_setting.clicked.connect(self.show_setting_widget)
-        self.view.tabs.view.first.view.setting.view.btn.clicked.connect(self.show_first_widget)
-        self.view.tabs.view.first.view.setting.view.btn_logout.clicked.connect(self.do_logout)
-        self.view.tabs.view.first.view.login.set_home_signal.connect(self.update_user_info)
-        self.view.tabs.view.currentChanged.connect(self.tab_switched_handler)
+        view: AppView = self.view
+
+        view.resize(1280, 720)
+        view.info_bar.view.btn_setting.clicked.connect(self.show_setting_widget)
+        view.tabs.view.first.view.setting.view.btn.clicked.connect(self.show_first_widget)
+        view.tabs.view.first.view.setting.view.btn_logout.clicked.connect(self.do_logout)
+        view.tabs.view.first.view.login.set_home_signal.connect(self.update_user_info)
+        view.tabs.view.currentChanged.connect(self.tab_switched_handler)
 
         self.update_user_info()
 
