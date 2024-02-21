@@ -26,10 +26,14 @@ class BaseViewMixin:
     def late_init(self):
         self._late_init.signal.emit()
 
-    def with_container(self, widget):
-        container = QWidget(self)
+    def with_container(self, widget, mode=0):
+        container = QWidget()
         lyt = QVBoxLayout(container)
-        lyt.addWidget(widget, stretch=1, alignment=Qt.AlignHCenter)
+        if mode == 0:
+            lyt.addWidget(widget, stretch=1, alignment=Qt.AlignHCenter)
+        else:
+            lyt.addWidget(widget)
+        lyt.setContentsMargins(0, 0, 0, 0)
 
         return container
 
@@ -84,7 +88,6 @@ class BaseTableWidgetView(BaseViewMixin, QTableWidget):
         self.cellClicked.connect(self.on_cell_clicked)
 
     def set_table_items(self, items):
-        from ui.common import CurvedCornerButton
         self.clear_table()
 
         for row, item in enumerate(items):
@@ -100,12 +103,7 @@ class BaseTableWidgetView(BaseViewMixin, QTableWidget):
         btn.clicked.connect(self.add_new_row)
         self._adjust_button_size(btn)
 
-        lyt_btn = QHBoxLayout()
-        lyt_btn.addWidget(btn)
-        lyt_btn.setContentsMargins(0, 0, 0, 0)
-        lyt_btn.setSpacing(5)
-        container = QWidget()
-        container.setLayout(lyt_btn)
+        container = self.with_container(btn, mode=1)
 
         self.setCellWidget(count, 0, container)
 
