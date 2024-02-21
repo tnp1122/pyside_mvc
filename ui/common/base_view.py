@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt, QObject, Signal
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QWidget, QStackedWidget, QTabWidget, QTableWidget, QGraphicsView, QTreeView, QSplitter, \
-    QScrollArea, QVBoxLayout, QSizePolicy, QTableWidgetItem, QHBoxLayout
+    QScrollArea, QVBoxLayout, QSizePolicy, QTableWidgetItem, QPushButton
 
 
 class LateInit(QObject):
@@ -97,9 +97,14 @@ class BaseTableWidgetView(BaseViewMixin, QTableWidget):
             self.setItem(row, 0, cell)
             self.set_editable(cell, False)
 
+        self.set_add_button()
+
+    def set_add_button(self):
         count = self.rowCount()
         self.insertRow(count)
-        btn = CurvedCornerButton("추가")
+        self.setSpan(count, 0, 1, self.horizontalHeader().length())
+
+        btn = QPushButton("추가")
         btn.clicked.connect(self.add_new_row)
         self._adjust_button_size(btn)
 

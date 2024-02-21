@@ -89,21 +89,7 @@ class SampleTableView(BaseTableWidgetView):
             self.set_editable(subject, False)
             self.set_editable(made_at, False)
 
-        count = self.rowCount()
-        self.insertRow(count)
-        self.setSpan(count, 0, 1, self.horizontalHeader().length())
-
-        btn = QPushButton("추가")
-        btn.clicked.connect(self.add_new_row)
-        self._adjust_button_size(btn)
-
-        container = QWidget()
-        lyt_btn = QHBoxLayout(container)
-        lyt_btn.addWidget(btn)
-        lyt_btn.setContentsMargins(0, 0, 0, 0)
-        lyt_btn.setSpacing(5)
-
-        self.setCellWidget(count, 0, container)
+        self.set_add_button()
 
     def add_new_row(self):
         count = self.rowCount()
