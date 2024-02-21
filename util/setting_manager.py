@@ -1,8 +1,9 @@
 from PySide6.QtCore import QSettings
 
+USE_NETWORK_DB = "use_network_db"
 ACCESS_TOKEN = "access_token"
 REFRESH_TOKEN = "refresh_token"
-USE_NETWORK_DB = "use_network_db"
+EXPERIMENTER_NAME = "experimenter_name"
 USE_METAL_SAMPLE = "use_metal_sample"
 USE_ADDITIVE_SAMPLE = "use_additive_sample"
 
@@ -29,6 +30,12 @@ class SettingManager:
     def _remove_value(self, key):
         self.settings.remove(key)
 
+    def set_use_network_db(self, value):
+        self._set_value(USE_NETWORK_DB, value)
+
+    def get_use_network_db(self):
+        return self._get_value(USE_NETWORK_DB)
+
     def set_access_token(self, value):
         self._set_value(ACCESS_TOKEN, value)
 
@@ -47,11 +54,14 @@ class SettingManager:
     def remove_refresh_token(self):
         self._remove_value(REFRESH_TOKEN)
 
-    def set_use_network_db(self, value):
-        self._set_value(USE_NETWORK_DB, value)
+    def set_experimenter_name(self, name):
+        self._set_value(EXPERIMENTER_NAME, name)
 
-    def get_use_network_db(self):
-        return self._get_value(USE_NETWORK_DB)
+    def get_experimenter_name(self):
+        return self._get_value(EXPERIMENTER_NAME)
+
+    def remove_experimenter_name(self):
+        self._remove_value(EXPERIMENTER_NAME)
 
     def set_use_metal_samples(self, samples):
         if isinstance(samples, set):

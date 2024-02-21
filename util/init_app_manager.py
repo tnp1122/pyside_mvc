@@ -27,4 +27,5 @@ class InitAppManager:
     def logout(self):
         self.setting_manager.remove_access_token()
         self.setting_manager.remove_refresh_token()
+        self.setting_manager.remove_experimenter_name()
         self.user_info = {}

@@ -40,6 +40,7 @@ class AppController(BaseController):
                 self.model.role = user_info["role"]
 
                 self.model.first_tab_index = FirstTabIndex.HOME
+                self.setting_manager.set_experimenter_name(self.model.name)
             else:
                 print(reply)
                 print(reply.error)
