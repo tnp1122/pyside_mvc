@@ -1,40 +1,44 @@
 from PySide6.QtGui import QIntValidator, QDoubleValidator
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QFrame, QLabel
 
-from ui.common import MileStoneRadio, BaseDialogView
+from ui.common import MileStoneRadio, BaseDialogView, ColoredButton
 from ui.tabs.experiment.window.snapshot.capture.unit.mask_manager import Masking
 from ui.tabs.experiment.window.snapshot.capture.unit.mask_manager.mask_graphics.controller import MaskGraphicsController
 
 
 class MaskManagerView(BaseDialogView):
     def __init__(self, parent=None, origin_image=None):
-        self._origin_image = origin_image
+        self.origin_image = origin_image
         super().__init__(parent)
 
-    @property
-    def origin_image(self):
-        return self._origin_image
+    def closeEvent(self, event):
+        self.graphics.close()
+        self.masking.close()
+
+        super().closeEvent(event)
 
     def init_view(self):
         self.setWindowTitle("마스크 영역 지정")
-        lyt = QVBoxLayout(self)
 
         self.view_radio = MileStoneRadio(["원본", "마스킹 구역 지정", "마스킹 영역 보기"])
-        lyt.addWidget(self.view_radio)
+        self.btn_apply = ColoredButton("적용", background_color="red")
+
+        lyt_btn = QHBoxLayout()
+        lyt_btn.addWidget(self.view_radio)
+        lyt_btn.addWidget(self.btn_apply)
 
         self.graphics = MaskGraphicsController()
         self.graphics.set_scene(self.origin_image)
-        lyt.addWidget(self.graphics.view)
 
         self.lyt_bottom_district = self.init_bottom_district()
-        lyt.addLayout(self.lyt_bottom_district)
-
         self.lyt_bottom_masking = self.init_bottom_masking()
-        lyt.addLayout(self.lyt_bottom_masking)
-
         self.set_bottom_lyt(0)
-        # self.emit_ui_initialized_signal()
-        # self.ui_initialized_signal.emit()
+
+        self.lyt = QVBoxLayout(self)
+        self.lyt.addLayout(lyt_btn)
+        self.lyt.addWidget(self.graphics.view)
+        self.lyt.addLayout(self.lyt_bottom_district)
+        self.lyt.addLayout(self.lyt_bottom_masking)
 
     def set_bottom_lyt(self, index):
         if index == 0:

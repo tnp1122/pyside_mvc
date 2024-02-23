@@ -13,11 +13,17 @@ class PlateCaptureUnitView(BaseWidgetView):
     setting_manager = SettingManager()
 
     clicked = Signal()
+    mask_manager_apply_clicked = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self.image_path = ""
+
+    def closeEvent(self, event):
+        self.mask_manager.close()
+        
+        super().closeEvent(event)
 
     def mouseReleaseEvent(self, event):
         size = self.size()
@@ -92,6 +98,10 @@ class PlateCaptureUnitView(BaseWidgetView):
         self.wig_no_image.render(pixmap)
         self.set_image(pixmap, no_image=True)
 
+    def set_cropped_image(self, x, y, width, height):
+        cropped_pixmap = self.pixmap.copy(x, y, width, height)
+        self.lb_image.setPixmap(cropped_pixmap.scaled(self.lb_image.size(), Qt.KeepAspectRatio))
+
     def set_image_size(self, width=None, height=None):
         w = width if width else self.lb_image.width()
         h = height if height else self.lb_image.height()
@@ -104,6 +114,7 @@ class PlateCaptureUnitView(BaseWidgetView):
     def open_mask_manager(self):
         if self.has_image:
             self.mask_manager = MaskManagerController(origin_image=self.image_path)
+            self.mask_manager.view.btn_apply.clicked.connect(lambda: self.mask_manager_apply_clicked.emit())
             self.mask_manager.view.exec()
 
     def open_file_dialog(self):
@@ -111,7 +122,7 @@ class PlateCaptureUnitView(BaseWidgetView):
         image_path = image_path if image_path and os.path.exists(image_path) else ""
 
         self.image_path, _ = QFileDialog.getOpenFileName(self, "Open Image", image_path,
-                                                        "Image Files (*.png *.jpg *.jpeg *.bmp *.gif)")
+                                                         "Image Files (*.png *.jpg *.jpeg *.bmp *.gif)")
         if self.image_path:
             path_list = self.image_path.split("/")[:-1]
             image_path = "/".join(path_list)
