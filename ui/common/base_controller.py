@@ -50,10 +50,11 @@ class BaseController(QObject):
 
 
 class TabWidgetController(BaseController):
-    initialized_tabs = []
-    tab_count = 0
 
     def __init__(self, Model, View, parent=None, args=None):
+        self.initialized_tabs = []
+        self.tab_count = 0
+
         super().__init__(Model, View, parent, args)
 
     def init_controller(self):
