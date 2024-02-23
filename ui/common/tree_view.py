@@ -22,6 +22,13 @@ class TreeView(BaseScrollAreaView):
         self.data = OrderedDict()
         self.root = TreeRow()
 
+    def closeEvent(self, event):
+        self.data = None
+        self.root.close()
+        self.deleteLater()
+
+        super().closeEvent(event)
+
     def set_tree(self, data):
         self.root.clear()
         self.root.add_child(data)
@@ -55,6 +62,12 @@ class TreeRow(QWidget):
         self.index = index
 
         self.init_view()
+
+    def closeEvent(self, event):
+        self.clear()
+        self.deleteLater()
+
+        super().closeEvent(event)
 
     def init_view(self):
         lyt = QVBoxLayout(self)
@@ -112,8 +125,7 @@ class TreeRow(QWidget):
 
     def clear(self):
         for child in self.children:
-            child.clear()
-            child.deleteLater()
+            child.close()
         self.children = []
 
         layout = self.lyt_children
@@ -122,6 +134,8 @@ class TreeRow(QWidget):
             while lyt_child.count():
                 widget = lyt_child.takeAt(0).widget()
                 widget.deleteLater()
+                widget.close()
+
 
     def set_signal(self):
         self.icon.installEventFilter(self)

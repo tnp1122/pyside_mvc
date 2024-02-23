@@ -4,6 +4,19 @@ from PySide6.QtWidgets import QWidget, QStackedWidget, QTabWidget, QTableWidget,
     QScrollArea, QVBoxLayout, QSizePolicy, QTableWidgetItem, QPushButton, QDialog
 
 
+def close_event_deco(cls):
+    def wrapper(func):
+        def closeEvent(self, event):
+            self.closing.emit()
+            self.deleteLater()
+            func(self, event)
+
+        return closeEvent
+
+    cls.closeEvent = wrapper(cls.closeEvent)
+    return cls
+
+
 class LateInit(QObject):
     signal = Signal()
 
@@ -38,55 +51,81 @@ class BaseViewMixin:
         return container
 
 
+@close_event_deco
 class BaseWidgetView(BaseViewMixin, QWidget):
+    closing = Signal()
+
     def __init__(self, parent=None, args=None):
         QWidget.__init__(self, parent)
         BaseViewMixin.__init__(self, args)
 
 
+@close_event_deco
 class BaseDialogView(BaseViewMixin, QDialog):
+    closing = Signal()
+
     def __init__(self, parent=None, args=None):
         QDialog.__init__(self, parent)
         BaseViewMixin.__init__(self, args)
 
 
+@close_event_deco
 class BaseStackedWidgetView(BaseViewMixin, QStackedWidget):
+    closing = Signal()
+
     def __init__(self, parent=None, args=None):
         QStackedWidget.__init__(self, parent)
         BaseViewMixin.__init__(self, args)
 
 
+@close_event_deco
 class BaseTabWidgetView(BaseViewMixin, QTabWidget):
+    closing = Signal()
+
     def __init__(self, parent=None, args=None):
         QTabWidget.__init__(self, parent)
         BaseViewMixin.__init__(self, args)
 
 
+@close_event_deco
 class BaseGraphicsView(BaseViewMixin, QGraphicsView):
+    closing = Signal()
+
     def __init__(self, parent=None, args=None):
         QGraphicsView.__init__(self, parent)
         BaseViewMixin.__init__(self, args)
 
 
+@close_event_deco
 class BaseTreeView(BaseViewMixin, QTreeView):
+    closing = Signal()
+
     def __init__(self, parent=None, args=None):
         QTreeView.__init__(self, parent)
         BaseViewMixin.__init__(self, args)
 
 
+@close_event_deco
 class BaseSplitterView(BaseViewMixin, QSplitter):
+    closing = Signal()
+
     def __init__(self, parent=None, args=None):
         QSplitter.__init__(self, parent)
         BaseViewMixin.__init__(self, args)
 
 
+@close_event_deco
 class BaseScrollAreaView(BaseViewMixin, QScrollArea):
+    closing = Signal()
+
     def __init__(self, parent=None, args=None):
         QScrollArea.__init__(self, parent)
         BaseViewMixin.__init__(self, args)
 
 
+@close_event_deco
 class BaseTableWidgetView(BaseViewMixin, QTableWidget):
+    closing = Signal()
 
     def __init__(self, parent=None, args=None):
         QTableWidget.__init__(self, parent)

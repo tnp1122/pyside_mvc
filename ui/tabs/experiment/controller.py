@@ -9,6 +9,8 @@ class ExperimentController(BaseController):
     def __init__(self, parent=None):
         super().__init__(ExperimentModel, ExperimentView, parent)
 
+        self.tabs = []
+
     def init_controller(self):
         pass
 
@@ -19,13 +21,24 @@ class ExperimentController(BaseController):
         view.explorer.view.btn_add.clicked.connect(self.add_experiment)
         view.explorer.view.tree.root.clicked_signal.connect(self.on_tree_add_button)
 
+        view.window_widget.view.tabCloseRequested.connect(lambda index: self.remove_tab_with_index(index))
+
+    def add_tab(self, controller: BaseController, mode, tab_name):
+        self.view.window_widget.add_tab(controller.view, mode, tab_name)
+        self.tabs.append(controller)
+
     def remove_tab(self, controller: BaseController):
-        self.view.window_widget.remove_tab(controller.view)
+        self.view.window_widget.remove_tab(controller)
+
+    def remove_tab_with_index(self, index):
+        self.remove_tab(self.tabs[index])
+        del self.tabs[index]
 
     def add_experiment(self):
         add_experiment = AddExperimentController()
-        self.view.window_widget.add_tab(add_experiment.view, 0, "새 실험")
         add_experiment.experiment_added_signal.connect(lambda controller: self.on_experiment_added(controller))
+
+        self.add_tab(add_experiment, 0, "새 실험")
 
     def on_tree_add_button(self, indexes: list):
         if len(indexes) == 2:
@@ -43,7 +56,7 @@ class ExperimentController(BaseController):
             add_plate.experiment_loaded.connect(lambda: add_plate.view.cmb_experiment.setCurrentIndex(experiment_index))
             add_plate.combination_loaded.connect(on_combination_loaded)
 
-            self.view.window_widget.add_tab(add_plate.view, 0, "새 플레이트")
+            self.add_tab(add_plate, 0, "새 플레이트")
 
         elif len(indexes) == 3:
             experiment_index = indexes[0]
@@ -52,7 +65,7 @@ class ExperimentController(BaseController):
 
             snapshot = PlateSnapshotController()
 
-            self.view.window_widget.add_tab(snapshot.view, 1, "")
+            self.add_tab(snapshot, 1, "새 스냅샷")
 
     def on_experiment_added(self, controller: AddExperimentController):
         self.view.explorer.update_tree_view()

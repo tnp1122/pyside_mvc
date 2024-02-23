@@ -8,6 +8,11 @@ class PlateCaptureView(BaseWidgetView):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+    def closeEvent(self, event):
+        self.capture_list.close()
+
+        super().closeEvent(event)
+
     def init_view(self):
         super().init_view()
 

@@ -9,10 +9,11 @@ class MaskManagerController(BaseController):
 
         super().__init__(MaskManagerModel, MaskManagerView, parent, origin_image)
 
-    def init_text(self):
-        self.view.ET_r.setText(str(self.graphics.model.circle_radius))
+    def close(self):
+        self.origin_image = None
+        self.graphics = None
 
-        self.view.ET_threshold.setText(str(self.view.masking.threshold))
+        super().close()
 
     def init_controller(self):
         super().init_controller()
@@ -30,6 +31,10 @@ class MaskManagerController(BaseController):
 
         self.view.masking.masked_image_updated_signal.connect(self.update_masking_view)
 
+    def init_text(self):
+        self.view.ET_r.setText(str(self.graphics.model.circle_radius))
+
+        self.view.ET_threshold.setText(str(self.view.masking.threshold))
 
     def on_select_changed(self, index):
         view_index = MaskViewIndex(index)
@@ -73,6 +78,7 @@ def main():
     app = QApplication([])
     image_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "../plate_image.jpg")
     widget = MaskManagerController(origin_image=image_path)
+    widget.late_init(origin_image=image_path)
     widget.view.show()
     app.exec()
 

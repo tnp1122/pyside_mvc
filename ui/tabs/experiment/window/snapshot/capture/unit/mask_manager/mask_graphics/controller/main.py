@@ -11,6 +11,12 @@ class MaskGraphicsController(BaseController):
     def __init__(self, parent=None):
         super().__init__(MaskGraphicsModel, MaskGraphicsView, parent)
 
+    def close(self):
+        self._border = None
+        self.mouse_handler.close()
+        self.view_handler.close()
+        super().close()
+
     @property
     def border(self):
         return self._border

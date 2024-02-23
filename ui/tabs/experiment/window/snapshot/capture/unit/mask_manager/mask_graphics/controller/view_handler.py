@@ -17,6 +17,10 @@ class ViewHandler:
     def border(self):
         return self._border
 
+    def close(self):
+        self._view = None
+        self._border = None
+
     def set_current_view(self, index):
 
         if index == MaskViewIndex.MASK:

@@ -63,13 +63,25 @@ class MouseHandler:
     def border(self):
         return self._border
 
+    def close(self):
+        self._model = None
+        self._view = None
+        self._border = None
+        self.mouse = None
+        self.resize_origin = None
+        self.additive_axes_origin = None
+        self.solvent_axes_origin = None
+        self.border_threshold = None
+
     def set_mouse_cursor(self):
         if not self.model.is_border_adjustable:
             return
 
-        if (Mouse.TOP in self.mouse and Mouse.LEFT in self.mouse) or (Mouse.BOTTOM in self.mouse and Mouse.RIGHT in self.mouse):
+        if (Mouse.TOP in self.mouse and Mouse.LEFT in self.mouse) or (
+                Mouse.BOTTOM in self.mouse and Mouse.RIGHT in self.mouse):
             self.view.setCursor(Qt.SizeFDiagCursor)
-        elif (Mouse.TOP in self.mouse and Mouse.RIGHT in self.mouse) or (Mouse.BOTTOM in self.mouse and Mouse.LEFT in self.mouse):
+        elif (Mouse.TOP in self.mouse and Mouse.RIGHT in self.mouse) or (
+                Mouse.BOTTOM in self.mouse and Mouse.LEFT in self.mouse):
             self.view.setCursor(Qt.SizeBDiagCursor)
         elif Mouse.TOP in self.mouse or Mouse.BOTTOM in self.mouse:
             self.view.setCursor(Qt.SizeVerCursor)

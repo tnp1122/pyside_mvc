@@ -31,6 +31,15 @@ class Masking(QObject):
 
         self.set_flare_mask()
 
+    def close(self):
+        self.origin_image = None
+        self.circle_mask = None
+        self.flare_mask = None
+        self.custom_mask = None
+        self.masked_array = None
+        self.mask_filled_image = None
+        self.deleteLater()
+
     def set_threshold(self, threshold):
         self.threshold = threshold
         self.set_flare_mask()

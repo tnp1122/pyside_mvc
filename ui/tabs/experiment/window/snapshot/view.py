@@ -8,6 +8,13 @@ class PlateSnapshotView(BaseTabWidgetView):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+    def closeEvent(self, event):
+        self.plate_capture.close()
+        self.color_extract.close()
+        self.color_graph.close()
+        self.color_difference.close()
+        super().closeEvent(event)
+
     def init_view(self):
         super().init_view()
 

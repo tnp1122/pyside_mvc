@@ -29,6 +29,16 @@ class CaptureListView(BaseScrollAreaView):
         self.units = []
         self.selected_index = -1
 
+    def closeEvent(self, event):
+        for unit in self.units:
+            unit.close()
+        self.units = None
+
+        self.btn_plus.close()
+        self.widget.close()
+
+        super().closeEvent(event)
+
     def init_view(self):
         super().init_view()
 

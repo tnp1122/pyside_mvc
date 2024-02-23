@@ -15,6 +15,7 @@ class BaseController(QObject):
         self.api_manager = APIManager()
         self.setting_manager = SettingManager()
 
+        self.view.closing.connect(self.close)
         self.view._late_init.signal.connect(self.late_init)
         self.init_controller()
         self.on_controller_initialized()
@@ -26,6 +27,14 @@ class BaseController(QObject):
     @property
     def view(self):
         return self._view
+
+    def close(self):
+        if self.view:
+            self.view.close()
+        self._view = None
+        self._model = None
+        self.api_manager = None
+        self.setting_manager = None
 
     def init_controller(self):
         self.init_view()
