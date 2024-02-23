@@ -39,6 +39,7 @@ class Masking(QObject):
         self.masked_array = None
         self.mask_filled_image = None
         self.deleteLater()
+        cv2.destroyAllWindows()
 
     def set_threshold(self, threshold):
         self.threshold = threshold
