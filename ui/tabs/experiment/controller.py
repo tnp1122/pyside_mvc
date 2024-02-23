@@ -1,5 +1,6 @@
 from ui.common import BaseController
 from ui.tabs.experiment import ExperimentModel, ExperimentView
+from ui.tabs.experiment.window import ExperimentWindowController
 from ui.tabs.experiment.window.add_experiment import AddExperimentController
 from ui.tabs.experiment.window.add_plate import AddPlateController, AddPlateView
 from ui.tabs.experiment.window.snapshot import PlateSnapshotController
@@ -28,7 +29,8 @@ class ExperimentController(BaseController):
         self.tabs.append(controller)
 
     def remove_tab(self, controller: BaseController):
-        self.view.window_widget.remove_tab(controller)
+        window_widget: ExperimentWindowController = self.view.window_widget
+        window_widget.remove_tab(controller)
 
     def remove_tab_with_index(self, index):
         self.remove_tab(self.tabs[index])
