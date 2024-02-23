@@ -48,7 +48,7 @@ class MaskManagerController(BaseController):
             self.graphics.model.is_border_adjustable = False
 
         if view_index == MaskViewIndex.MASK:
-            circle_mask_info = self.graphics.model.get_circle_mask_info()
+            circle_mask_info = self.graphics.get_circle_mask_info()
             self.view.masking.set_circle_mask(circle_mask_info)
 
     def set_circle_visible(self):
