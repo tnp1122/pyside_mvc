@@ -33,6 +33,9 @@ class PlateCaptureUnitController(BaseController):
         self.view.set_selected(is_selected)
 
     def on_mask_apply_clicked(self):
+        # 크롭된 마스크드 이미지: 유닛 라벨 설정용
+        # masked_array: 색 추출 용
+        # mask_info: 이미지 크롭 용
         self.masked_array = self.view.mask_manager.view.masking.masked_array
         self.mask_info = self.view.mask_manager.view.graphics.get_circle_mask_info()
         x = self.mask_info["x"]
@@ -44,11 +47,11 @@ class PlateCaptureUnitController(BaseController):
             width = self.mask_info['height']
             height = self.mask_info["width"]
 
-        self.view.set_cropped_image(x, y, width, height)
+        masked_pixmap = self.view.mask_manager.view.masking.get_pixmap()
+        self.view.set_masked_pixmap(masked_pixmap, x, y, width, height)
         np.savez_compressed('compressed_data.npz', self.masked_array.mask)
 
         self.view.mask_manager.close()
-
 
 
 def main():

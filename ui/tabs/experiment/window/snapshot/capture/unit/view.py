@@ -39,6 +39,7 @@ class PlateCaptureUnitView(BaseWidgetView):
         self.has_image = False
 
         self.pixmap = QPixmap()
+        self.masked_pixmap = QPixmap()
         self.lb_image = QLabel()
 
         self.cmb_target = QComboBox()
@@ -91,7 +92,7 @@ class PlateCaptureUnitView(BaseWidgetView):
             self.pixmap = image
         else:
             self.pixmap = QPixmap(image)
-        self.lb_image.setPixmap(self.pixmap.scaled(self.lb_image.size(), Qt.KeepAspectRatio))
+        self.set_pixmap(self.pixmap)
 
     def set_no_image(self):
         pixmap = QPixmap(self.wig_no_image.size())
@@ -99,8 +100,15 @@ class PlateCaptureUnitView(BaseWidgetView):
         self.set_image(pixmap, no_image=True)
 
     def set_cropped_image(self, x, y, width, height):
-        cropped_pixmap = self.pixmap.copy(x, y, width, height)
-        self.lb_image.setPixmap(cropped_pixmap.scaled(self.lb_image.size(), Qt.KeepAspectRatio))
+        self.cropped_pixmap = self.pixmap.copy(x, y, width, height)
+        self.set_pixmap(self.cropped_pixmap)
+
+    def set_masked_pixmap(self, pixmap, x, y, width, height):
+        self.masked_pixmap = pixmap.copy(x, y, width, height)
+        self.set_pixmap(self.masked_pixmap)
+
+    def set_pixmap(self, pixmap):
+        self.lb_image.setPixmap(pixmap.scaled(self.lb_image.size(), Qt.KeepAspectRatio))
 
     def set_image_size(self, width=None, height=None):
         w = width if width else self.lb_image.width()
