@@ -126,11 +126,14 @@ class PlateCaptureUnitView(BaseWidgetView):
             self.mask_manager.view.exec()
 
     def open_file_dialog(self):
-        image_path = self.setting_manager.get_path_to_load_image()
-        image_path = image_path if image_path and os.path.exists(image_path) else ""
+        base_path = self.setting_manager.get_path_to_load_image()
+        base_path = base_path if base_path and os.path.exists(base_path) else ""
 
-        self.image_path, _ = QFileDialog.getOpenFileName(self, "Open Image", image_path,
+        image_path, _ = QFileDialog.getOpenFileName(self, "Open Image", base_path,
                                                          "Image Files (*.png *.jpg *.jpeg *.bmp *.gif)")
+        if image_path:
+            self.image_path = image_path
+
         if self.image_path:
             path_list = self.image_path.split("/")[:-1]
             image_path = "/".join(path_list)
