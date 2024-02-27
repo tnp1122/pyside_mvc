@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QWidget, QTabWidget
 
 from ui.common import BaseTabWidgetView
 from ui.tabs.experiment.window.snapshot.capture import PlateCaptureController
+from ui.tabs.experiment.window.snapshot.extract import ColorExtractController
 
 
 class PlateSnapshotView(BaseTabWidgetView):
@@ -21,11 +22,11 @@ class PlateSnapshotView(BaseTabWidgetView):
         self.setTabPosition(QTabWidget.South)
 
         self.plate_capture = PlateCaptureController()
-        self.color_extract = QWidget()
+        self.color_extract = ColorExtractController()
         self.color_graph = QWidget()
         self.color_difference = QWidget()
 
         self.addTab(self.plate_capture.view, "플레이트 캡처")
-        self.addTab(self.color_extract, "색 추출")
+        self.addTab(self.color_extract.view, "색 추출")
         self.addTab(self.color_graph, "그래프")
         self.addTab(self.color_difference, "색 차이")

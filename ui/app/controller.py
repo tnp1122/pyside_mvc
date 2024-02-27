@@ -24,7 +24,7 @@ class AppController(BaseController):
 
         view: AppView = self.view
 
-        view.resize(1280, 720)
+        view.setMinimumSize(1280, 840)
         view.info_bar.view.btn_setting.clicked.connect(self.show_setting_widget)
         view.tabs.view.first.view.setting.view.btn.clicked.connect(self.show_first_widget)
         view.tabs.view.first.view.setting.view.btn_logout.clicked.connect(self.do_logout)
