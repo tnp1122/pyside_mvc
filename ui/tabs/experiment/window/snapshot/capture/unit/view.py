@@ -90,29 +90,25 @@ class PlateCaptureUnitView(BaseWidgetView):
         else:
             self.lb_image.setStyleSheet("border: 2px solid black;")
 
-    def set_image(self, image, no_image=False):
+    def set_image(self, pixmap):
+        self.lb_image.setPixmap(pixmap.scaled(self.lb_image.size(), Qt.KeepAspectRatio))
+
+    def set_pixmap(self, image, no_image=False):
         self.has_image = not no_image
         if isinstance(image, QPixmap):
             self._pixmap = image
         else:
             self._pixmap = QPixmap(image)
-        self.set_pixmap(self._pixmap)
+        self.set_image(self._pixmap)
 
     def set_no_image(self):
         pixmap = QPixmap(self.wig_no_image.size())
         self.wig_no_image.render(pixmap)
-        self.set_image(pixmap, no_image=True)
-
-    # def set_cropped_image(self, x, y, width, height):
-    #     self.cropped_pixmap = self.pixmap.copy(x, y, width, height)
-    #     self.set_pixmap(self.cropped_pixmap)
+        self.set_pixmap(pixmap, no_image=True)
 
     def set_masked_pixmap(self, pixmap, x, y, width, height):
         self.masked_pixmap = pixmap.copy(x, y, width, height)
-        self.set_pixmap(self.masked_pixmap)
-
-    def set_pixmap(self, pixmap):
-        self.lb_image.setPixmap(pixmap.scaled(self.lb_image.size(), Qt.KeepAspectRatio))
+        self.set_image(self.masked_pixmap)
 
     def set_image_size(self, width=None, height=None):
         w = width if width else self.lb_image.width()
@@ -141,4 +137,4 @@ class PlateCaptureUnitView(BaseWidgetView):
             self.setting_manager.set_path_to_load_image(image_path)
 
             pixmap = QPixmap(self.image_path)
-            self.set_image(pixmap)
+            self.set_pixmap(pixmap)
