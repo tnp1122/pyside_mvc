@@ -38,7 +38,7 @@ class PlateCaptureUnitView(BaseWidgetView):
         self.is_selected = False
         self.has_image = False
 
-        self.pixmap = QPixmap()
+        self._pixmap = QPixmap()    # 원본 이미지 유지
         self.masked_pixmap = QPixmap()
         self.lb_image = QLabel()
 
@@ -80,6 +80,10 @@ class PlateCaptureUnitView(BaseWidgetView):
 
         self.set_selected()
 
+    @property
+    def pixmap(self):
+        return self._pixmap
+
     def set_selected(self, is_selected=True):
         if is_selected:
             self.lb_image.setStyleSheet("border: 4px solid #05FF00; border-radius: 10px;")
@@ -89,19 +93,19 @@ class PlateCaptureUnitView(BaseWidgetView):
     def set_image(self, image, no_image=False):
         self.has_image = not no_image
         if isinstance(image, QPixmap):
-            self.pixmap = image
+            self._pixmap = image
         else:
-            self.pixmap = QPixmap(image)
-        self.set_pixmap(self.pixmap)
+            self._pixmap = QPixmap(image)
+        self.set_pixmap(self._pixmap)
 
     def set_no_image(self):
         pixmap = QPixmap(self.wig_no_image.size())
         self.wig_no_image.render(pixmap)
         self.set_image(pixmap, no_image=True)
 
-    def set_cropped_image(self, x, y, width, height):
-        self.cropped_pixmap = self.pixmap.copy(x, y, width, height)
-        self.set_pixmap(self.cropped_pixmap)
+    # def set_cropped_image(self, x, y, width, height):
+    #     self.cropped_pixmap = self.pixmap.copy(x, y, width, height)
+    #     self.set_pixmap(self.cropped_pixmap)
 
     def set_masked_pixmap(self, pixmap, x, y, width, height):
         self.masked_pixmap = pixmap.copy(x, y, width, height)
