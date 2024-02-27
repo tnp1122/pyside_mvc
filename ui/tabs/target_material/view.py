@@ -1,5 +1,3 @@
-import os
-
 from PySide6.QtWidgets import QVBoxLayout, QComboBox, QHBoxLayout
 
 from ui.common import BaseWidgetView, ColoredButton, RefreshButton
@@ -7,6 +5,8 @@ from ui.tabs.target_material.target_table import TargetTableController
 
 
 class TargetMaterialView(BaseWidgetView):
+    box_width = 140
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -14,6 +14,7 @@ class TargetMaterialView(BaseWidgetView):
         super().init_view()
 
         self.cmb = QComboBox()
+        self.cmb.setMinimumWidth(self.box_width)
         self.btn_refresh = RefreshButton()
         self.btn_cancle = ColoredButton("취소", background_color="gray")
         self.btn_save = ColoredButton("저장", background_color="red")
