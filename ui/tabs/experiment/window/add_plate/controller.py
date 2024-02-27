@@ -128,12 +128,8 @@ class AddPlateController(BaseController):
         metal_id = metal["id"]
         made_at = datetime_object.strftime('%Y-%m-%dT%H:%M:%S')
 
-        experiment_id = self.experiments[self.experiment_index]["id"]
-        targets = self.setting_manager.get_use_targets(experiment_id)
-
         plate = {
             "name": name,
-            "targets": list(targets),
             "additive_samples": additive_samples,
             "sensor_combination": combination_id,
             "metal_sample": metal_id,

@@ -100,19 +100,6 @@ class SettingManager:
 
         return use_additive_samples
 
-    def set_use_targets(self, experiment_id: int, target_ids: set):
-        use_targets = self.get_use_targets()
-        use_targets[str(experiment_id)] = list(target_ids)
-
-        self._set_json_value(USE_TARGET_MATERIAL, use_targets)
-
-    def get_use_targets(self, experiment_id: int = None):
-        json_object = self._get_json_data(USE_TARGET_MATERIAL)
-        if experiment_id:
-            use_targets = json_object.get(str(experiment_id), [])
-            return set(use_targets)
-        return json_object
-
     def set_path_to_load_image(self, image_path):
         self._set_value(PATH_TO_LOAD_IMAGE, image_path)
 
