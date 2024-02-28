@@ -63,7 +63,7 @@ class PlateCaptureUnitView(BaseWidgetView):
         lyt_bottom.addWidget(self.cmb_target)
         lyt_bottom.addWidget(self.btn_edit_mask)
         lyt_bottom.addWidget(self.btn_load_img)
-        lyt_bottom.addWidget(self.btn_trash_bin)
+        # lyt_bottom.addWidget(self.btn_trash_bin)
         lyt_bottom.addStretch()
 
         lyt = QVBoxLayout(self)
