@@ -23,7 +23,8 @@ class PlateCaptureUnitView(BaseWidgetView):
         self.origin_image: np.ndarray
 
     def closeEvent(self, event):
-        self.mask_manager.close()
+        if self.mask_manager:
+            self.mask_manager.close()
         self.origin_image = None
 
         super().closeEvent(event)
