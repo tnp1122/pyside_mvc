@@ -1,6 +1,7 @@
 from ui.common import TabWidgetController
 from ui.tabs.experiment.window.snapshot import PlateSnapshotModel, PlateSnapshotView
 from ui.tabs.experiment.window.snapshot.capture import PlateCaptureView
+from ui.tabs.experiment.window.snapshot.capture.capture_list import CaptureListView
 
 
 class PlateSnapshotController(TabWidgetController):
@@ -10,12 +11,12 @@ class PlateSnapshotController(TabWidgetController):
     def init_controller(self):
         super().init_controller()
 
-        capture_view: PlateCaptureView = self.view.plate_capture.view
-        capture_view.btn_save.clicked.connect(self.on_save_clicked)
+        capture_list_view: CaptureListView = self.view.plate_capture.view.capture_list.view
+        capture_list_view.mask_applied.connect(self.on_mask_applied)
 
-    def on_save_clicked(self):
+    def on_mask_applied(self):
         view: PlateSnapshotView = self.view
-        capture_view: PlateCaptureView = self.view.plate_capture.view
+        capture_view: PlateCaptureView = view.plate_capture.view
         capture_list = capture_view.capture_list
 
         view.color_extract.set_image_list(capture_list)

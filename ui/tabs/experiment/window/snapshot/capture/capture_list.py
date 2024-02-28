@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QSizePolicy, QWidget, QHBoxLayout, QPushButton, QVBoxLayout
 
@@ -14,6 +14,8 @@ class CaptureListModel:
 class CaptureListView(BaseScrollAreaView):
     unit_size = (300, 500)
     padding = 32
+
+    mask_applied = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -75,6 +77,7 @@ class CaptureListView(BaseScrollAreaView):
 
         new_unit = PlateCaptureUnitController()
         new_unit.set_image_size(*self.unit_size)
+        new_unit.mask_applied.connect(self.mask_applied.emit)
         new_unit.view.clicked.connect(lambda: self.set_selected_widget(count))
 
         self.units.append(new_unit)

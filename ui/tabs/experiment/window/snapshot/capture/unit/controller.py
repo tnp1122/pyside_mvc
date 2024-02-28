@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from PySide6.QtCore import Signal
 from PySide6.QtGui import QPixmap
 from numpy import ndarray
 
@@ -11,6 +12,8 @@ from util import image_converter as ic
 
 
 class PlateCaptureUnitController(BaseController):
+    mask_applied = Signal()
+
     def __init__(self, parent=None):
         super().__init__(PlateCaptureUnitModel, PlateCaptureUnitView, parent)
 
@@ -77,6 +80,7 @@ class PlateCaptureUnitController(BaseController):
         masked_pixmap = ic.array_to_q_pixmap(masking.mask_filled_image, True)
         self.view.set_masked_pixmap(masked_pixmap, x, y, width, height)
 
+        self.mask_applied.emit()
         mask_manager.close()
 
     def make_mean_colored_pixmap(self, x, y, r, width, height, cols, rows):
