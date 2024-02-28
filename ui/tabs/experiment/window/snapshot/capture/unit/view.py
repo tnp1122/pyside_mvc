@@ -1,11 +1,13 @@
 import os
 
+import numpy as np
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QPixmap, Qt, QFont
 from PySide6.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout, QComboBox, QWidget, QSizePolicy, QFileDialog
 
 from ui.common import BaseWidgetView, ImageButton
 from ui.tabs.experiment.window.snapshot.capture.unit.mask_manager import MaskManagerController
+from util import image_converter as ic
 from util.setting_manager import SettingManager
 
 
@@ -18,11 +20,12 @@ class PlateCaptureUnitView(BaseWidgetView):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.image_path = ""
+        self.origin_image: np.ndarray
 
     def closeEvent(self, event):
         self.mask_manager.close()
-        
+        self.origin_image = None
+
         super().closeEvent(event)
 
     def mouseReleaseEvent(self, event):
@@ -38,7 +41,7 @@ class PlateCaptureUnitView(BaseWidgetView):
         self.is_selected = False
         self.has_image = False
 
-        self._pixmap = QPixmap()    # 원본 이미지 유지
+        self._pixmap = QPixmap()  # 원본 이미지 유지하고 복사하여 사용
         self.masked_pixmap = QPixmap()
         self.lb_image = QLabel()
 
@@ -90,16 +93,23 @@ class PlateCaptureUnitView(BaseWidgetView):
         else:
             self.lb_image.setStyleSheet("border: 2px solid black;")
 
-    def set_image(self, pixmap):
+    def update_label(self, pixmap):
         self.lb_image.setPixmap(pixmap.scaled(self.lb_image.size(), Qt.KeepAspectRatio))
 
-    def set_pixmap(self, image, no_image=False):
+    def set_pixmap(self, pixmap, no_image=False):
+        if not isinstance(pixmap, QPixmap):
+            self.set_no_image()
+            return
+
         self.has_image = not no_image
-        if isinstance(image, QPixmap):
-            self._pixmap = image
-        else:
-            self._pixmap = QPixmap(image)
-        self.set_image(self._pixmap)
+        self._pixmap = pixmap
+        self.update_label(self._pixmap)
+
+    def set_image(self, image: np.ndarray):
+        self.origin_image = image
+        pixmap = ic.array_to_q_pixmap(image, True)
+
+        self.set_pixmap(pixmap)
 
     def set_no_image(self):
         pixmap = QPixmap(self.wig_no_image.size())
@@ -108,7 +118,7 @@ class PlateCaptureUnitView(BaseWidgetView):
 
     def set_masked_pixmap(self, pixmap, x, y, width, height):
         self.masked_pixmap = pixmap.copy(x, y, width, height)
-        self.set_image(self.masked_pixmap)
+        self.update_label(self.masked_pixmap)
 
     def set_image_size(self, width=None, height=None):
         w = width if width else self.lb_image.width()
@@ -121,7 +131,7 @@ class PlateCaptureUnitView(BaseWidgetView):
 
     def open_mask_manager(self):
         if self.has_image:
-            self.mask_manager = MaskManagerController(origin_image=self.image_path)
+            self.mask_manager = MaskManagerController(origin_image=self.origin_image)
             self.mask_manager.view.btn_apply.clicked.connect(lambda: self.mask_manager_apply_clicked.emit())
             self.mask_manager.view.exec()
 
@@ -130,14 +140,13 @@ class PlateCaptureUnitView(BaseWidgetView):
         base_path = base_path if base_path and os.path.exists(base_path) else ""
 
         image_path, _ = QFileDialog.getOpenFileName(self, "Open Image", base_path,
-                                                         "Image Files (*.png *.jpg *.jpeg *.bmp *.gif)")
+                                                    "Image Files (*.png *.jpg *.jpeg *.bmp *.gif)")
         if image_path:
-            self.image_path = image_path
+            path_list = image_path.split("/")[:-1]
+            base_image_path = "/".join(path_list)
+            self.setting_manager.set_path_to_load_image(base_image_path)
 
-        if self.image_path:
-            path_list = self.image_path.split("/")[:-1]
-            image_path = "/".join(path_list)
-            self.setting_manager.set_path_to_load_image(image_path)
+            self.origin_image = ic.path_to_nd_array(image_path)
 
-            pixmap = QPixmap(self.image_path)
+            pixmap = ic.array_to_q_pixmap(self.origin_image, True)
             self.set_pixmap(pixmap)

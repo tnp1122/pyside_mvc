@@ -117,8 +117,7 @@ class MaskManagerView(BaseDialogView):
 
     def init_bottom_masking(self):
         self.masking = Masking(self.origin_image)
-        self.set_circle_mask()
-        self.masking.get_pixmap()   # 마스크 set을 해둬야 캡쳐 유닛에서 픽스맵 가져올 수 있음
+        self.set_circle_mask()  # 마스크 set을 해둬야 캡쳐 유닛에서 픽스맵 가져올 수 있음
 
         lyt = QHBoxLayout()
         self.btn_show_masking = QPushButton("마스킹 영역 수정")

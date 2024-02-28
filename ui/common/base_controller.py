@@ -8,7 +8,7 @@ class BaseController(QObject):
     def __init__(self, Model, View, parent=None, args=None):
         super().__init__()
         self._model = Model()
-        if args:
+        if args is not None:
             self._view = View(parent, args)
         else:
             self._view = View(parent)

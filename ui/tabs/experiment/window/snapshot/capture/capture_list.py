@@ -23,9 +23,6 @@ class CaptureListView(BaseScrollAreaView):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        # self.setObjectName("capture_list_view")
-        # self.setStyleSheet("#capture_list_view {border: 0px;}")
-
         self.units = []
         self.selected_index = -1
 
@@ -108,6 +105,13 @@ class CaptureListController(BaseController):
         h = height
         view: CaptureListView = self.view
         view.set_unit_size(w, h)
+
+    def set_unit_image(self, image):
+        view: CaptureListView = self.view
+        index = view.selected_index
+
+        unit: PlateCaptureUnitController = view.units[index]
+        unit.set_image(image)
 
 
 def main():

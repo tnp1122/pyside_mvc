@@ -1,12 +1,13 @@
 import cv2
 import numpy as np
-from PySide6.QtGui import QImage, QPixmap
+from PySide6.QtGui import QPixmap
 from numpy import ndarray
 
 from ui.common import BaseController
 from ui.tabs.experiment.window.snapshot.capture.unit import PlateCaptureUnitModel, PlateCaptureUnitView
 from ui.tabs.experiment.window.snapshot.capture.unit.mask_manager import Masking, MaskGraphicsController, \
     MaskManagerController
+from util import image_converter as ic
 
 
 class PlateCaptureUnitController(BaseController):
@@ -40,6 +41,10 @@ class PlateCaptureUnitController(BaseController):
     def set_selected(self, is_selected):
         self.view.set_selected(is_selected)
 
+    def set_image(self, image):
+        view: PlateCaptureUnitView = self.view
+        view.set_image(image)
+
     def on_mask_apply_clicked(self):
         # mask_info: 이미지 크롭 용
         # masked_array: 색 추출 용
@@ -51,14 +56,14 @@ class PlateCaptureUnitController(BaseController):
         # 데이터 참조
         self.mask_info = graphics.get_circle_mask_info()
         info = self.mask_info
-        x = info["x"]
-        y = info["y"]
-        r = info["radius"]
+        x = int(info["x"])
+        y = int(info["y"])
+        r = int(info["radius"])
         if info["direction"] == 0:
-            width, height = info["width"], info["height"]
+            width, height = int(info["width"]), int(info["height"])
             cols, rows = info["additive_axes"], info["solvent_axes"]
         else:
-            width, height = info["height"], info["width"]
+            width, height = int(info["height"]), int(info["width"])
             cols, rows = info["solvent_axes"], info["additive_axes"]
 
         # 마스킹 데이터 저장
@@ -69,14 +74,14 @@ class PlateCaptureUnitController(BaseController):
         self.make_mean_colored_pixmap(x, y, r, width, height, cols, rows)
         self.make_cropped_original_pixmap(x, y, width, height)
 
-        masked_pixmap = masking.get_pixmap()
+        masked_pixmap = ic.array_to_q_pixmap(masking.mask_filled_image, True)
         self.view.set_masked_pixmap(masked_pixmap, x, y, width, height)
 
         mask_manager.close()
 
     def make_mean_colored_pixmap(self, x, y, r, width, height, cols, rows):
-        masked_image: np.ma.masked_array = self.masked_array
-        cropped_image = masked_image[y:y + height, x:x + width]
+        masked_array: np.ma.masked_array = self.masked_array
+        cropped_array = masked_array[y:y + height, x:x + width]
 
         # 색 평균 계산
         self.mean_colors = []
@@ -85,7 +90,7 @@ class PlateCaptureUnitController(BaseController):
             for cx in cols:
                 x1, x2 = int(cx - r), int(cx + r)
                 y1, y2 = int(cy - r), int(cy + r)
-                cell = cropped_image[y1:y2, x1:x2]
+                cell = cropped_array[y1:y2, x1:x2]
                 mean_R = np.mean(cell[:, :, 0])
                 mean_G = np.mean(cell[:, :, 1])
                 mean_B = np.mean(cell[:, :, 2])
@@ -93,18 +98,16 @@ class PlateCaptureUnitController(BaseController):
                 self.mean_colors[j].append(mean_color)
 
         # 색 평균 원 그리기
-        new_image = np.zeros_like(cropped_image[:, :, :], dtype=np.uint8)
+        new_array = np.zeros_like(cropped_array[:, :, :], dtype=np.uint8)
         for j, cy in enumerate(rows):
             for i, cx in enumerate(cols):
                 mean_color = self.mean_colors[j][i]
-                cv2.circle(new_image, (int(cx), int(cy)), r, mean_color, thickness=cv2.FILLED)
+                try:
+                    cv2.circle(new_array, (int(cx), int(cy)), r, mean_color, thickness=cv2.FILLED)
+                except:
+                    print(f"color: {mean_color}")
 
-        # 픽스맵 생성
-        converted_image = cv2.cvtColor(new_image, cv2.COLOR_BGR2RGB)
-        height, width, channel = converted_image.shape
-        bytes_per_line = 3 * width
-        q_image = QImage(converted_image, width, height, bytes_per_line, QImage.Format_RGB888)
-        self.mean_colored_pixmap = QPixmap.fromImage(q_image)
+        self.mean_colored_pixmap = ic.array_to_q_pixmap(new_array)
 
         return self.mean_colored_pixmap
 

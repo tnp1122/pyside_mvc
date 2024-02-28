@@ -1,6 +1,7 @@
 from ui.common import BaseController
-from ui.tabs.experiment.window.snapshot.capture.unit.mask_manager import MaskManagerView, MaskManagerModel
+from ui.tabs.experiment.window.snapshot.capture.unit.mask_manager import MaskManagerView, MaskManagerModel, Masking
 from util.enums import MaskViewIndex
+from util import image_converter as ic
 
 
 class MaskManagerController(BaseController):
@@ -55,7 +56,8 @@ class MaskManagerController(BaseController):
         self.graphics.set_circle_visible(not self.graphics.is_circle_visible())
 
     def update_masking_view(self):
-        self.graphics.set_masking_view(self.view.masking.get_pixmap())
+        masking: Masking = self.view.masking
+        self.graphics.set_masking_view(ic.array_to_q_pixmap(masking.mask_filled_image, True))
 
     def show_masking_view(self):
         self.view.masking.show_image()

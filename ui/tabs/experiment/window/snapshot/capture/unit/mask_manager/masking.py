@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 from PySide6.QtCore import QObject, Signal
-from PySide6.QtGui import QImage, QPixmap
 
 WINDOW_NAME = "masking"
 MASK_COLOR = (0, 0, 0)
@@ -13,7 +12,7 @@ class Masking(QObject):
 
     def __init__(self, origin_image):
         super().__init__()
-        self.origin_image = cv2.imread(origin_image)
+        self.origin_image = origin_image
 
         self.circle_mask = np.zeros_like(self.origin_image[:, :, :], dtype=np.uint8)
         self.flare_mask = np.ones_like(self.origin_image[:, :, :], dtype=np.uint8)
@@ -49,7 +48,6 @@ class Masking(QObject):
         if event == cv2.EVENT_LBUTTONDOWN:
             self.drawing = True
             cv2.circle(self.custom_mask, (x, y), self.drawing_thickness, MASK_COLOR, thickness=cv2.FILLED)
-            print(f"{x}, {y}: {self.custom_mask[y][x]}")
             self.update_overlay(x, y)
         elif event == cv2.EVENT_LBUTTONUP:
             self.drawing = False
@@ -57,7 +55,6 @@ class Masking(QObject):
         elif event == cv2.EVENT_RBUTTONDOWN:
             self.removing = True
             cv2.circle(self.custom_mask, (x, y), self.drawing_thickness, UNMASK_COLOR, thickness=cv2.FILLED)
-            print(f"{x}, {y}: {self.custom_mask[y][x]}")
             self.update_overlay(x, y)
         elif event == cv2.EVENT_RBUTTONUP:
             self.removing = False
@@ -79,7 +76,9 @@ class Masking(QObject):
             flare_masked_array = np.ma.masked_array(circle_masked_array, cv2.bitwise_not(self.flare_mask))
             self.masked_array = np.ma.masked_array(flare_masked_array, cv2.bitwise_not(self.custom_mask))
             self.mask_filled_image = self.masked_array.filled(0).astype(np.uint8)
-        height, width, _ = self.mask_filled_image.shape
+
+        converted_image = cv2.cvtColor(self.mask_filled_image, cv2.COLOR_RGB2BGR)
+        height, width, _ = converted_image.shape
         k = self.overlay_k
         x_start = max(0, mouse_x - k)
         y_start = max(0, mouse_y - k)
@@ -88,13 +87,13 @@ class Masking(QObject):
 
         bound_k = k * 3
         if x_start < bound_k or y_start < bound_k or x_end > width - bound_k or y_end > height - bound_k:
-            cv2.imshow(WINDOW_NAME, self.mask_filled_image)
+            cv2.imshow(WINDOW_NAME, converted_image)
             return
 
-        crop = self.mask_filled_image[y_start:y_end, x_start:x_end]
+        crop = converted_image[y_start:y_end, x_start:x_end]
         zoomed_in = cv2.resize(crop, (self.zoom_level, self.zoom_level))
 
-        overlay = self.mask_filled_image.copy()
+        overlay = converted_image.copy()
         overlay[y_start - k * 3:y_end + k * 3, x_start - k * 3:x_end + k * 3] = zoomed_in
 
         if mask_changed:
@@ -104,7 +103,8 @@ class Masking(QObject):
     def show_image(self):
         # masked_array에 마스킹은 표현되어 있지만 이미지로 보기 위해 마스킹을 검은색으로 채움
 
-        height, width, _ = self.mask_filled_image.shape
+        converted_image = cv2.cvtColor(self.mask_filled_image, cv2.COLOR_RGB2BGR)
+        height, width, _ = converted_image.shape
         window_width, window_height = 1920 * 0.8, 1080 * 0.8
         if width > height:
             resize_width = window_width
@@ -115,19 +115,8 @@ class Masking(QObject):
 
         cv2.namedWindow(WINDOW_NAME, flags=cv2.WINDOW_NORMAL)
         cv2.setMouseCallback(WINDOW_NAME, self.mouse_callback)
-        cv2.imshow(WINDOW_NAME, self.mask_filled_image)
+        cv2.imshow(WINDOW_NAME, converted_image)
         cv2.resizeWindow(WINDOW_NAME, int(resize_width), int(resize_height))
-
-    def get_pixmap(self):
-        # cv2용 이미지와 QPixmap용 색 배열이 달라 변환이 필요함
-        converted_image = cv2.cvtColor(self.mask_filled_image, cv2.COLOR_BGR2RGB)
-
-        height, width, channel = converted_image.shape
-        bytes_per_line = 3 * width
-        q_image = QImage(converted_image, width, height, bytes_per_line, QImage.Format_RGB888)
-        pixmap = QPixmap.fromImage(q_image)
-
-        return pixmap
 
     def mask(self):
         circle_masked_array = np.ma.masked_array(self.origin_image, cv2.bitwise_not(self.circle_mask))
