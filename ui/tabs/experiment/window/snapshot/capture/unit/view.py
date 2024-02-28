@@ -150,3 +150,8 @@ class PlateCaptureUnitView(BaseWidgetView):
 
             pixmap = ic.array_to_q_pixmap(self.origin_image, True)
             self.set_pixmap(pixmap)
+
+    def set_cmb(self, target_names):
+        self.cmb_target.clear()
+        for target_name in target_names:
+            self.cmb_target.addItem(target_name)

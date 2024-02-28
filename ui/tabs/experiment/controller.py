@@ -65,7 +65,8 @@ class ExperimentController(BaseController):
             combination_index = indexes[1]
             plate_index = indexes[2]
 
-            snapshot = PlateSnapshotController()
+            experiment_id = self.view.explorer.experiment_tree[experiment_index]["id"]
+            snapshot = PlateSnapshotController(experiment_id)
 
             self.add_tab(snapshot, 1, "새 스냅샷")
 

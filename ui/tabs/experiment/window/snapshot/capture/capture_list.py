@@ -3,7 +3,7 @@ from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QSizePolicy, QWidget, QHBoxLayout, QPushButton, QVBoxLayout
 
 from ui.common import BaseScrollAreaView, BaseController
-from ui.tabs.experiment.window.snapshot.capture.unit import PlateCaptureUnitController
+from ui.tabs.experiment.window.snapshot.capture.unit import PlateCaptureUnitController, PlateCaptureUnitView
 
 
 class CaptureListModel:
@@ -27,6 +27,8 @@ class CaptureListView(BaseScrollAreaView):
 
         self.units = []
         self.selected_index = -1
+
+        self.target_names = []
 
     def closeEvent(self, event):
         for unit in self.units:
@@ -78,7 +80,10 @@ class CaptureListView(BaseScrollAreaView):
         new_unit = PlateCaptureUnitController()
         new_unit.set_image_size(*self.unit_size)
         new_unit.mask_applied.connect(self.mask_applied.emit)
-        new_unit.view.clicked.connect(lambda: self.set_selected_widget(count))
+
+        unit_view: PlateCaptureUnitView = new_unit.view
+        unit_view.set_cmb(self.target_names)
+        unit_view.clicked.connect(lambda: self.set_selected_widget(count))
 
         self.units.append(new_unit)
         self.set_selected_widget(count)
@@ -94,6 +99,12 @@ class CaptureListView(BaseScrollAreaView):
         for index, unit in enumerate(self.units):
             is_selected = index == selected_index
             unit.set_selected(is_selected)
+
+    def set_target_names(self, target_names):
+        self.target_names = target_names
+        for unit in self.units:
+            unit_view: PlateCaptureUnitView = unit.view
+            unit_view.set_cmb(target_names)
 
 
 class CaptureListController(BaseController):
