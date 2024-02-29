@@ -1,5 +1,6 @@
 from ui.common import BaseController
 from ui.tabs.experiment import ExperimentModel, ExperimentView
+from ui.tabs.experiment.explorer import ExplorerController
 from ui.tabs.experiment.window import ExperimentWindowController
 from ui.tabs.experiment.window.add_experiment import AddExperimentController
 from ui.tabs.experiment.window.add_plate import AddPlateController, AddPlateView
@@ -25,7 +26,7 @@ class ExperimentController(BaseController):
         view.window_widget.view.tabCloseRequested.connect(lambda index: self.remove_tab_with_index(index))
 
     def add_tab(self, controller: BaseController, mode, tab_name):
-        self.view.window_widget.add_tab(controller.view, mode, tab_name)
+        self.view.window_widget.add_tab(controller, mode, tab_name)
         self.tabs.append(controller)
 
     def remove_tab(self, controller: BaseController):
@@ -65,8 +66,16 @@ class ExperimentController(BaseController):
             combination_index = indexes[1]
             plate_index = indexes[2]
 
-            experiment_id = self.view.explorer.experiment_tree[experiment_index]["id"]
-            snapshot = PlateSnapshotController(experiment_id)
+            explorer: ExplorerController = self.view.explorer
+            experiment = explorer.experiment_tree[experiment_index]
+            plate = experiment["sensor_combinations"][combination_index]["plates"][plate_index]
+
+            experiment_id = experiment["id"]
+            plate_name = plate["name"]
+            plate_made_at = plate["made_at"]
+
+            snapshot_info = {"experiment_id": experiment_id, "plate_name": plate_name, "plate_made_at": plate_made_at}
+            snapshot = PlateSnapshotController(snapshot_info=snapshot_info)
 
             self.add_tab(snapshot, 1, "새 스냅샷")
 

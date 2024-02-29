@@ -13,11 +13,13 @@ WIDGET = "[Plate Snapshot Controller]"
 
 
 class PlateSnapshotController(TabWidgetController):
-    def __init__(self, experiment_id=-1, parent=None):
-        self.experiment_id = experiment_id
+    def __init__(self, parent=None, snapshot_info=None):
+        self.experiment_id = snapshot_info.pop("experiment_id")
+        plate_info = snapshot_info
+
         self.targets = []
 
-        super().__init__(PlateSnapshotModel, PlateSnapshotView, parent)
+        super().__init__(PlateSnapshotModel, PlateSnapshotView, parent, plate_info)
 
     def init_controller(self):
         super().init_controller()

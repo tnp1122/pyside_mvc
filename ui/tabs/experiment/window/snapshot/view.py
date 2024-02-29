@@ -7,7 +7,9 @@ from ui.tabs.experiment.window.snapshot.extract import ColorExtractController
 
 
 class PlateSnapshotView(BaseTabWidgetView):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, plate_info=None):
+        self.plate_info = plate_info
+
         super().__init__(parent)
 
     def closeEvent(self, event):
@@ -22,7 +24,7 @@ class PlateSnapshotView(BaseTabWidgetView):
 
         self.setTabPosition(QTabWidget.South)
 
-        self.plate_capture = PlateCaptureController()
+        self.plate_capture = PlateCaptureController(plate_info=self.plate_info)
         self.color_extract = ColorExtractController()
         self.color_graph = QWidget()
         self.color_difference = QWidget()

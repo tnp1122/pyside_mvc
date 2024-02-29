@@ -8,8 +8,8 @@ from ui.tabs.experiment.window.snapshot.capture.image_viewer import ImageViewerV
 
 
 class PlateCaptureController(BaseController):
-    def __init__(self, parent=None):
-        super().__init__(PlateCaptureModel, PlateCaptureView, parent)
+    def __init__(self, parent=None, plate_info=None):
+        super().__init__(PlateCaptureModel, PlateCaptureView, parent, plate_info)
 
     def init_controller(self):
         pass
