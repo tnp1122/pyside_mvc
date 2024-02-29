@@ -83,7 +83,7 @@ class PlateCaptureView(BaseWidgetView):
         divider.setFrameShape(QFrame.VLine)
         divider.setFrameShadow(QFrame.Sunken)
 
-        lb_age = QLabel("프레이트 경과시간:")
+        lb_age = QLabel("플레이트 경과시간:")
         self.lb_snapshot_age = QLabel("")
         self.lb_snapshot_age.setFixedWidth(self.width_box)
         lyt_age = QHBoxLayout()
