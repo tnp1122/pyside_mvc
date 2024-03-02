@@ -86,7 +86,7 @@ class PlateSnapshotController(TabWidgetController):
 
             time_diff = captured_at_obj - plate_made_at_obj
             plate_age = int(time_diff.total_seconds() / 3600)
-            if plate_age < 1:
+            if plate_age < 0:
                 msg = "플레이트 촬영 시간은 제작시간 이후여야 합니다."
                 Toast().toast(msg)
                 logging.error(msg)
