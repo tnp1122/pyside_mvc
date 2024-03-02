@@ -8,23 +8,30 @@ from ui.common.toast import Toast
 from util.camera_manager import toupcam
 
 
+class CanNotFindDeviceError(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+        self.message = message
+
+
 class CameraManager(QObject):
     _instance = None
     signal_image = Signal(np.ndarray)
 
-    def __new__(cls):
+    def __new__(cls, parent=None):
         if not cls._instance:
             cls._instance = super(CameraManager, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self):
+    def __init__(self, parent=None):
         if not hasattr(self, "initialized"):
-            super().__init__()
+            if parent is not None:
+                super().__init__()
 
-            self.initialized = True
-            self.camera_unit = CameraUnit()
+                self.initialized = True
+                self.camera_unit = CameraUnit()
 
-            self.connect_to_camera()
+                self.connect_to_camera()
 
     def connect_to_camera(self):
         logging.info("connect to camera")
@@ -86,7 +93,14 @@ class CameraUnit(QObject):
         self.deleteLater()
 
     def connect_to_camera(self):
-        self.cam = toupcam.Toupcam.Open(self.cam_id)
+        try:
+            if toupcam.Toupcam.Replug(self.cam_id) > 0:
+                self.cam = toupcam.Toupcam.Open(self.cam_id)
+            else:
+                raise CanNotFindDeviceError("카메라 연결 상태를 확인하세요.")
+        except Exception as e:
+            raise e
+
         self.width, self.height = self.cam.get_Size()
         bufsize = ((self.width * 24 + 31) // 32 * 4) * self.height
         self.buf = bytes(bufsize)

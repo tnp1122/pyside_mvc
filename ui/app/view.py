@@ -2,6 +2,7 @@ from ui.app.main_tab import MainTabController
 from ui.app.info_bar import InfoBarController
 from ui.common.toast import Toast
 from ui.common import BaseWidgetView
+from util.camera_manager import CameraManager
 
 
 class AppView(BaseWidgetView):
@@ -19,6 +20,7 @@ class AppView(BaseWidgetView):
         super().init_view()
 
         self.toast = Toast(self)
+        CameraManager(self)
         self.tabs = MainTabController(self)
         self.info_bar = InfoBarController(self)
 
