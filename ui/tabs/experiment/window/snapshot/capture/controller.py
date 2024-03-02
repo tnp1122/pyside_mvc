@@ -26,7 +26,11 @@ class PlateCaptureController(BaseController):
         image_view: ImageViewerView = self.view.image_viewer.view
 
         if capture_list_view.units:
-            image = image_view.camera_manager.get_current_image()
+            try:
+                image = image_view.camera_manager.get_current_image()
+            except Exception:
+                image = None
+
             if image is not None:
                 capture_list.set_unit_image(image)
             else:

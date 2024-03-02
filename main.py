@@ -3,6 +3,8 @@ import os
 import sys
 from datetime import datetime
 
+from dotenv import load_dotenv
+
 
 def logging_config():
     current_directory = os.getcwd()
@@ -35,13 +37,18 @@ def exception_hook(exc_type, exc_value, exc_traceback):
     logging.error("Unhandled exception", exc_info=(exc_type, exc_value, exc_traceback))
 
 
-def main():
-    from dotenv import load_dotenv
+def init_local_storage():
+    current_directory = os.getcwd()
+    local_storage_path = os.getenv("LOCAL_STORAGE_PATH")
+    log_folder_path = os.path.join(current_directory, local_storage_path)
+    if not os.path.exists(log_folder_path):
+        os.makedirs(log_folder_path)
 
+
+def main():
     from PySide6.QtWidgets import QApplication
     from ui.app import AppController
 
-    load_dotenv()
     app = QApplication([])
     main_app = AppController()
     main_app.view.show()
@@ -49,6 +56,9 @@ def main():
 
 
 if __name__ == "__main__":
+    load_dotenv()
+
     logging_config()
+    init_local_storage()
     sys.excepthook = exception_hook
     main()

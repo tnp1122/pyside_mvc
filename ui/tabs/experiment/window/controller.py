@@ -2,7 +2,6 @@ from PySide6.QtWidgets import QPushButton, QWidget
 
 from ui.common import BaseController
 from ui.tabs.experiment.window import ExperimentWindowModel, ExperimentWindowView
-from ui.tabs.experiment.window.snapshot.capture import PlateCaptureView
 
 
 class ExperimentWindowController(BaseController):
@@ -23,8 +22,6 @@ class ExperimentWindowController(BaseController):
         view: ExperimentWindowView = self.view
 
         view.addTab(view.with_container(controller.view, mode=mode), tab_name)
-        capture_view: PlateCaptureView = controller.view.plate_capture.view
-        capture_view.set_tab_name.connect(lambda name: self.set_tab_name(controller, name))
 
     def remove_tab(self, controller: BaseController):
         index = self.get_index(controller.view)

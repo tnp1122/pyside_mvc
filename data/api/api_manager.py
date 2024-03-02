@@ -250,3 +250,7 @@ class APIManager:
     def add_plate(self, callback, plate):
         endpoint = self.PLATE
         self._call_api(POST, endpoint, callback, plate)
+
+    def add_snapshot(self, callback, plate_id, snapshot):
+        endpoint = self.PLATE + f"{plate_id}/snapshot/"
+        self._call_api(POST, endpoint, callback, snapshot)

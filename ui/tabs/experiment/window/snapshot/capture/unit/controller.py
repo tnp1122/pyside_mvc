@@ -13,6 +13,7 @@ from util import image_converter as ic
 
 class PlateCaptureUnitController(BaseController):
     mask_applied = Signal()
+    mask_info_cleared = Signal()
 
     def __init__(self, parent=None):
         super().__init__(PlateCaptureUnitModel, PlateCaptureUnitView, parent)
@@ -23,17 +24,24 @@ class PlateCaptureUnitController(BaseController):
         self.mean_colored_pixmap = QPixmap()
         self.cropped_original_pixmap = QPixmap()
 
+        self.capture_id = None
+
         view: PlateCaptureUnitView = self.view
         view.mask_manager_apply_clicked.connect(self.on_mask_apply_clicked)
+        view.clear_mask_info.connect(self.clear_mask_info)
 
     def close(self):
+        self.clear_mask_info()
+
+        super().close()
+
+    def clear_mask_info(self):
         self.masked_array = None
         self.mask_info = None
         self.mean_colors = None
         self.mean_colored_pixmap = None
         self.cropped_original_pixmap = None
-
-        super().close()
+        self.mask_info_cleared.emit()
 
     def init_controller(self):
         super().init_controller()
@@ -45,8 +53,23 @@ class PlateCaptureUnitController(BaseController):
         self.view.set_selected(is_selected)
 
     def set_image(self, image):
+        self.clear_mask_info()
         view: PlateCaptureUnitView = self.view
         view.set_image(image)
+
+    def get_transformed_mask_info(self):
+        info = self.mask_info
+        x = int(info["x"])
+        y = int(info["y"])
+        r = int(info["radius"])
+        if info["direction"] == 0:
+            width, height = int(info["width"]), int(info["height"])
+            cols, rows = info["additive_axes"], info["solvent_axes"]
+        else:
+            width, height = int(info["height"]), int(info["width"])
+            cols, rows = info["solvent_axes"], info["additive_axes"]
+
+        return x, y, r, width, height, cols, rows
 
     def on_mask_apply_clicked(self):
         # mask_info: 이미지 크롭 용
@@ -58,16 +81,7 @@ class PlateCaptureUnitController(BaseController):
 
         # 데이터 참조
         self.mask_info = graphics.get_circle_mask_info()
-        info = self.mask_info
-        x = int(info["x"])
-        y = int(info["y"])
-        r = int(info["radius"])
-        if info["direction"] == 0:
-            width, height = int(info["width"]), int(info["height"])
-            cols, rows = info["additive_axes"], info["solvent_axes"]
-        else:
-            width, height = int(info["height"]), int(info["width"])
-            cols, rows = info["solvent_axes"], info["additive_axes"]
+        x, y, r, width, height, cols, rows = self.get_transformed_mask_info()
 
         # 마스킹 데이터 저장
         self.masked_array = masking.masked_array
@@ -118,6 +132,16 @@ class PlateCaptureUnitController(BaseController):
     def make_cropped_original_pixmap(self, x, y, width, height):
         view: PlateCaptureUnitView = self.view
         self.cropped_original_pixmap = view.pixmap.copy(x, y, width, height)
+
+    def get_cropped_image_info(self):
+        x, y, _, width, height, _, _ = self.get_transformed_mask_info()
+
+        view: PlateCaptureUnitView = self.view
+        cropped_image = view.origin_image[y:y + height, x:x + width]
+
+        mean_color_mask_info = {"mean_colors": self.mean_colors, "mask_info": self.mask_info}
+
+        return cropped_image, mean_color_mask_info
 
 
 def main():

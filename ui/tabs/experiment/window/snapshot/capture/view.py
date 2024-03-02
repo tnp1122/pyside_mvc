@@ -1,7 +1,6 @@
 import os
 from datetime import datetime
 
-from PySide6.QtCore import Signal
 from PySide6.QtGui import QIntValidator, Qt
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QWidget, QLineEdit, QSizePolicy, QFrame
 
@@ -12,8 +11,6 @@ from ui.tabs.experiment.window.snapshot.capture.image_viewer import ImageViewerC
 
 
 class PlateCaptureView(BaseWidgetView):
-    set_tab_name = Signal(str)
-
     width_box = 145
     width_calendar = 20
     width_date = 57
@@ -22,6 +19,7 @@ class PlateCaptureView(BaseWidgetView):
 
     def __init__(self, parent=None, plate_info=None):
         self.plate_info = plate_info
+        self.captured_at = None
 
         super().__init__(parent)
 
@@ -33,11 +31,11 @@ class PlateCaptureView(BaseWidgetView):
     def init_view(self):
         super().init_view()
 
-        """ 제작 일시 """
-        lb_datetime = QLabel("제작 일시")
+        """ 촬영 일시 """
+        lb_datetime = QLabel("촬영 일시")
         lb_datetime.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
-        """ 제작 일 라벨 및 캘린더 버튼 """
+        """ 촬영 일 라벨 및 캘린더 버튼 """
         now = datetime.now()
         date = now.strftime("%y%m%d")
         self.lb_date = ClickableLabel(date)
@@ -45,39 +43,42 @@ class PlateCaptureView(BaseWidgetView):
         self.lb_date.clicked.connect(self.open_date_picker)
         img_calendar = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                                     "../../../../../../static/image/calendar.png")
-        btn_date = ImageButton(image=img_calendar, size=(self.width_calendar, self.width_calendar))
-        btn_date.clicked.connect(self.open_date_picker)
-        wig_date = QWidget()
-        wig_date.setObjectName("wig_date")
-        wig_date.setFixedHeight(self.height_et)
-        wig_date.setStyleSheet("#wig_date {border: 1px solid black;}")
-        lyt_date = QHBoxLayout(wig_date)
+        self.btn_date = ImageButton(image=img_calendar, size=(self.width_calendar, self.width_calendar))
+        self.btn_date.clicked.connect(self.open_date_picker)
+        self.wig_date = QWidget()
+        self.wig_date.setObjectName("wig_date")
+        self.wig_date.setFixedHeight(self.height_et)
+        lyt_date = QHBoxLayout(self.wig_date)
         lyt_date.setContentsMargins(4, 0, 4, 0)
         lyt_date.addWidget(self.lb_date)
-        lyt_date.addWidget(btn_date)
+        lyt_date.addWidget(self.btn_date)
 
-        """ 제작 시간 입력 및 라벨 """
+        """ 촬영 시간 입력 및 라벨 """
         validator = QIntValidator(0, 23)
         hour = "{:02d}".format(now.hour)
         self.et_time = QLineEdit(hour)
         self.et_time.setValidator(validator)
         self.et_time.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        self.et_time.setStyleSheet("border: 1px solid black; padding: 4px;")
         self.et_time.setFixedSize(self.width_time, self.height_et)
-        self.et_time.textChanged.connect(self.set_snapshot_age)
+        self.et_time.textChanged.connect(self.on_time_text_changed)
         lb_hour = QLabel("시")
 
-        """ 제작 시간 입력 박스 """
+        """ 촬영 시간 입력 박스 """
         wig_datetime_input = QWidget()
         wig_datetime_input.setFixedWidth(self.width_box)
         lyt_datetime_input = QHBoxLayout(wig_datetime_input)
         lyt_datetime_input.setContentsMargins(0, 0, 0, 0)
-        lyt_datetime_input.addWidget(wig_date)
+        lyt_datetime_input.addWidget(self.wig_date)
         lyt_datetime_input.addWidget(self.et_time)
         lyt_datetime_input.addWidget(lb_hour)
         lyt_datetime = QHBoxLayout()
         lyt_datetime.addWidget(lb_datetime)
         lyt_datetime.addWidget(wig_datetime_input)
+
+        if self.plate_info["snapshot_id"]:
+            self.set_et_editable(False)
+        else:
+            self.set_et_editable(True)
 
         divider = QFrame()
         divider.setFrameShape(QFrame.VLine)
@@ -116,6 +117,16 @@ class PlateCaptureView(BaseWidgetView):
 
         self.set_snapshot_age()
 
+    def set_et_editable(self, editable=False):
+        if editable:
+            self.btn_date.setVisible(True)
+            self.wig_date.setStyleSheet("#wig_date {border: 1px solid black;}")
+            self.et_time.setStyleSheet("border: 1px solid black; padding: 4px;")
+        else:
+            self.btn_date.setVisible(False)
+            self.wig_date.setStyleSheet("#wig_date {border: 0px;}")
+            self.et_time.setStyleSheet("border: 0px;")
+
     def set_date(self, date):
         date_string = date.toString("yyMMdd")
         self.lb_date.setText(date_string)
@@ -125,23 +136,24 @@ class PlateCaptureView(BaseWidgetView):
         self.date_picker = DatePicker(self.set_date, self)
         self.date_picker.exec()
 
-    def set_snapshot_age(self):
-        plate_name = self.plate_info["plate_name"]
+    def on_time_text_changed(self, event):
+        if int(event) <= 0:
+            self.et_time.setText("0")
 
+        elif int(event) > 23:
+            self.et_time.setText("23")
+
+        self.set_snapshot_age()
+
+    def set_snapshot_age(self):
         plate_made_at_str = self.plate_info["plate_made_at"]
         plate_made_at = datetime.strptime(plate_made_at_str, "%Y-%m-%dT%H:%M:%S")
 
-        made_hour = self.et_time.text() if self.et_time.text() else "0"
-        made_at_str = f"{self.lb_date.text()}_{made_hour}"
-        made_at = datetime.strptime(made_at_str, "%y%m%d_%H")
+        captured_hour = self.et_time.text()
+        captured_at_str = f"{self.lb_date.text()}_{captured_hour}"
+        self.captured_at = datetime.strptime(captured_at_str, "%y%m%d_%H")
 
-        time_diff = made_at - plate_made_at
+        time_diff = self.captured_at - plate_made_at
         plate_age = int(time_diff.total_seconds() / 3600)
 
-        tab_name = f"{plate_name}_{plate_age}H"
-
-        if len(tab_name) > 16:
-            tab_name = tab_name[:12] + "..." + tab_name[-3:]
-
         self.lb_snapshot_age.setText(f"{plate_age}H")
-        self.set_tab_name.emit(tab_name)

@@ -34,6 +34,6 @@ class PlateSnapshotView(BaseTabWidgetView):
         self.addTab(self.color_graph, "그래프")
         self.addTab(self.color_difference, "색 차이")
 
-    def set_target_names(self, target_names):
+    def set_targets(self, targets):
         capture_list_view: CaptureListView = self.plate_capture.view.capture_list.view
-        capture_list_view.set_target_names(target_names)
+        capture_list_view.set_targets(targets)

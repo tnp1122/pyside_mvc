@@ -15,7 +15,7 @@ class CaptureListView(BaseScrollAreaView):
     unit_size = (300, 500)
     padding = 32
 
-    mask_applied = Signal()
+    mask_changed = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -28,7 +28,7 @@ class CaptureListView(BaseScrollAreaView):
         self.units = []
         self.selected_index = -1
 
-        self.target_names = []
+        self.targets = []
 
     def closeEvent(self, event):
         for unit in self.units:
@@ -79,10 +79,11 @@ class CaptureListView(BaseScrollAreaView):
 
         new_unit = PlateCaptureUnitController()
         new_unit.set_image_size(*self.unit_size)
-        new_unit.mask_applied.connect(self.mask_applied.emit)
+        new_unit.mask_applied.connect(self.mask_changed.emit)
+        new_unit.mask_info_cleared.connect(self.mask_changed.emit)
 
         unit_view: PlateCaptureUnitView = new_unit.view
-        unit_view.set_cmb(self.target_names)
+        unit_view.set_targets(self.targets)
         unit_view.clicked.connect(lambda: self.set_selected_widget(count))
 
         self.units.append(new_unit)
@@ -100,11 +101,11 @@ class CaptureListView(BaseScrollAreaView):
             is_selected = index == selected_index
             unit.set_selected(is_selected)
 
-    def set_target_names(self, target_names):
-        self.target_names = target_names
+    def set_targets(self, targets):
+        self.targets = targets
         for unit in self.units:
             unit_view: PlateCaptureUnitView = unit.view
-            unit_view.set_cmb(target_names)
+            unit_view.set_targets(targets)
 
 
 class CaptureListController(BaseController):
@@ -126,6 +127,15 @@ class CaptureListController(BaseController):
 
         unit: PlateCaptureUnitController = view.units[index]
         unit.set_image(image)
+
+    def set_unit_id(self, plate_captures):
+        for plate_capture in plate_captures:
+            target_id = plate_capture["target"]
+            for unit in self.view.units:
+                unit_view: PlateCaptureUnitView = unit.view
+                if unit_view.get_selected_target_id() == target_id:
+                    unit.capture_id = plate_capture["id"]
+                    break
 
 
 def main():

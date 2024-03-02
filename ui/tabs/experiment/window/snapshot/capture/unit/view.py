@@ -16,16 +16,17 @@ class PlateCaptureUnitView(BaseWidgetView):
 
     clicked = Signal()
     mask_manager_apply_clicked = Signal()
+    clear_mask_info = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self.origin_image: np.ndarray
+        self.targets = []
 
     def closeEvent(self, event):
         if self.mask_manager:
             self.mask_manager.close()
-        self.origin_image = None
 
         super().closeEvent(event)
 
@@ -107,6 +108,7 @@ class PlateCaptureUnitView(BaseWidgetView):
         self.update_label(self._pixmap)
 
     def set_image(self, image: np.ndarray):
+        self.clear_mask_info.emit()
         self.origin_image = image
         pixmap = ic.array_to_q_pixmap(image, True)
 
@@ -147,12 +149,15 @@ class PlateCaptureUnitView(BaseWidgetView):
             base_image_path = "/".join(path_list)
             self.setting_manager.set_path_to_load_image(base_image_path)
 
-            self.origin_image = ic.path_to_nd_array(image_path)
+            image = ic.path_to_nd_array(image_path)
+            self.set_image(image)
 
-            pixmap = ic.array_to_q_pixmap(self.origin_image, True)
-            self.set_pixmap(pixmap)
-
-    def set_cmb(self, target_names):
+    def set_targets(self, targets):
+        self.targets = targets
         self.cmb_target.clear()
-        for target_name in target_names:
-            self.cmb_target.addItem(target_name)
+        for target in targets:
+            self.cmb_target.addItem(target["name"])
+
+    def get_selected_target_id(self):
+        selected_index = self.cmb_target.currentIndex()
+        return self.targets[selected_index]["id"]
