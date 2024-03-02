@@ -1,10 +1,33 @@
+import os
+
 import cv2
 import numpy as np
 from PySide6.QtGui import QImage, QPixmap
 
 
+def img_read(file_path):
+    npArr = np.fromfile(file_path, dtype=np.uint8)
+    return cv2.imdecode(npArr, cv2.IMREAD_COLOR)
+
+
+def img_write(file_path, img, params=None):
+    try:
+        ext = os.path.splitext(file_path)[1]
+        result, n = cv2.imencode(ext, img, params)
+
+        if result:
+            with open(file_path, mode='w+b') as f:
+                n.tofile(f)
+            return True
+        else:
+            return False
+    except Exception as e:
+        print(e)
+        return False
+
+
 def path_to_nd_array(image_path: str) -> np.ndarray:
-    image = cv2.imread(image_path)
+    image = img_read(image_path)
     return cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
 
