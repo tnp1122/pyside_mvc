@@ -25,7 +25,7 @@ class PlateCaptureUnitView(BaseWidgetView):
         self.targets = []
 
     def closeEvent(self, event):
-        if self.mask_manager:
+        if hasattr(self, "mask_manager") and self.mask_manager:
             self.mask_manager.close()
 
         super().closeEvent(event)
