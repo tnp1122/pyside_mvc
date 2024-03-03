@@ -1,5 +1,5 @@
 from ui.common import BaseController
-from ui.tabs.experiment.window.snapshot.capture.unit.mask_manager import MaskManagerView, MaskManagerModel, Masking
+from ui.tabs.experiment.window.snapshot.process.unit.mask_manager import MaskManagerView, MaskManagerModel, Masking
 from util.enums import MaskViewIndex
 from util import image_converter as ic
 

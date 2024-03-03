@@ -6,11 +6,11 @@ from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QWidget, QLineEd
 
 from ui.common import BaseWidgetView, ColoredButton, ImageButton, ClickableLabel
 from ui.common.date_picker import DatePicker
-from ui.tabs.experiment.window.snapshot.capture.capture_list import CaptureListController
-from ui.tabs.experiment.window.snapshot.capture.image_viewer import ImageViewerController
+from ui.tabs.experiment.window.snapshot.process.capture_list import CaptureListController
+from ui.tabs.experiment.window.snapshot.process.image_viewer import ImageViewerController
 
 
-class PlateCaptureView(BaseWidgetView):
+class PlateProcessView(BaseWidgetView):
     width_box = 145
     width_calendar = 20
     width_date = 57

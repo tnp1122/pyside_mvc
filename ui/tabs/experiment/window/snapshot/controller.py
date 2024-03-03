@@ -9,9 +9,9 @@ from PySide6.QtNetwork import QNetworkReply
 from ui.common import TabWidgetController
 from ui.common.toast import Toast
 from ui.tabs.experiment.window.snapshot import PlateSnapshotModel, PlateSnapshotView
-from ui.tabs.experiment.window.snapshot.capture import PlateCaptureView
-from ui.tabs.experiment.window.snapshot.capture.capture_list import CaptureListView, CaptureListController
-from ui.tabs.experiment.window.snapshot.capture.unit import PlateCaptureUnitView, PlateCaptureUnitController
+from ui.tabs.experiment.window.snapshot.process import PlateProcessView
+from ui.tabs.experiment.window.snapshot.process.capture_list import CaptureListView, CaptureListController
+from ui.tabs.experiment.window.snapshot.process.unit import PlateCaptureUnitView, PlateCaptureUnitController
 
 from util import image_converter as ic
 
@@ -36,10 +36,10 @@ class PlateSnapshotController(TabWidgetController):
     def init_controller(self):
         super().init_controller()
 
-        plate_capture_view: PlateCaptureView = self.view.plate_capture.view
-        plate_capture_view.btn_save.clicked.connect(self.on_save_button_clicked)
+        plate_process_view: PlateProcessView = self.view.plate_process.view
+        plate_process_view.btn_save.clicked.connect(self.on_save_button_clicked)
 
-        capture_list_view: CaptureListView = self.view.plate_capture.view.capture_list.view
+        capture_list_view: CaptureListView = self.view.plate_process.view.capture_list.view
         capture_list_view.mask_changed.connect(self.on_mask_changed)
 
         self.update_targets()
@@ -65,8 +65,8 @@ class PlateSnapshotController(TabWidgetController):
 
     def on_mask_changed(self):
         view: PlateSnapshotView = self.view
-        capture_view: PlateCaptureView = view.plate_capture.view
-        capture_list = capture_view.capture_list
+        process_view: PlateProcessView = view.plate_process.view
+        capture_list = process_view.capture_list
 
         view.color_extract.set_image_list(capture_list)
 
@@ -77,12 +77,12 @@ class PlateSnapshotController(TabWidgetController):
             pass
 
         else:
-            capture_view: PlateCaptureView = view.plate_capture.view
-            capture_list: CaptureListController = capture_view.capture_list
+            process_view: PlateProcessView = view.plate_process.view
+            capture_list: CaptureListController = process_view.capture_list
             capture_list_view: CaptureListView = capture_list.view
 
             plate_made_at_obj: datetime = datetime.strptime(self.plate_made_at, "%Y-%m-%dT%H:%M:%S")
-            captured_at_obj: datetime = capture_view.captured_at
+            captured_at_obj: datetime = process_view.captured_at
 
             time_diff = captured_at_obj - plate_made_at_obj
             plate_age = int(time_diff.total_seconds() / 3600)
@@ -132,7 +132,7 @@ class PlateSnapshotController(TabWidgetController):
 
                     self.snapshot_id = plate_snapshot["id"]
                     capture_list.set_unit_id(plate_captures)
-                    capture_view.set_et_editable(False)
+                    process_view.set_et_editable(False)
                     self.snapshot_added.emit(plate_age)
 
                     for index, unit in enumerate(capture_list_view.units):

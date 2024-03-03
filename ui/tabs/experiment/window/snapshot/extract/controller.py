@@ -1,6 +1,6 @@
 from ui.common import BaseController
-from ui.tabs.experiment.window.snapshot.capture.capture_list import CaptureListController
-from ui.tabs.experiment.window.snapshot.capture.unit import PlateCaptureUnitController
+from ui.tabs.experiment.window.snapshot.process.capture_list import CaptureListController
+from ui.tabs.experiment.window.snapshot.process.unit import PlateCaptureUnitController
 from ui.tabs.experiment.window.snapshot.extract import ColorExtractModel, ColorExtractView
 
 

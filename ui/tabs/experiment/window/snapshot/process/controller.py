@@ -2,14 +2,14 @@ import logging
 
 from ui.common import BaseController
 from ui.common.toast import Toast
-from ui.tabs.experiment.window.snapshot.capture import PlateCaptureModel, PlateCaptureView
-from ui.tabs.experiment.window.snapshot.capture.capture_list import CaptureListView, CaptureListController
-from ui.tabs.experiment.window.snapshot.capture.image_viewer import ImageViewerView
+from ui.tabs.experiment.window.snapshot.process import PlateProcessModel, PlateProcessView
+from ui.tabs.experiment.window.snapshot.process.capture_list import CaptureListView, CaptureListController
+from ui.tabs.experiment.window.snapshot.process.image_viewer import ImageViewerView
 
 
-class PlateCaptureController(BaseController):
+class PlateProcessController(BaseController):
     def __init__(self, parent=None, plate_info=None):
-        super().__init__(PlateCaptureModel, PlateCaptureView, parent, plate_info)
+        super().__init__(PlateProcessModel, PlateProcessView, parent, plate_info)
 
     def init_controller(self):
         pass
@@ -17,7 +17,7 @@ class PlateCaptureController(BaseController):
     def late_init(self):
         super().init_controller()
 
-        view: PlateCaptureView = self.view
+        view: PlateProcessView = self.view
         view.image_viewer.capture_clicked.connect(self.on_capture_clicked)
 
     def on_capture_clicked(self):
@@ -43,7 +43,7 @@ def main():
     from PySide6.QtWidgets import QApplication
 
     app = QApplication([])
-    widget = PlateCaptureController()
+    widget = PlateProcessController()
     widget.late_init()
     widget.view.show()
     app.exec()

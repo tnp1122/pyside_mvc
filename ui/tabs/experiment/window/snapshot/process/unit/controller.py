@@ -5,8 +5,8 @@ from PySide6.QtGui import QPixmap
 from numpy import ndarray
 
 from ui.common import BaseController
-from ui.tabs.experiment.window.snapshot.capture.unit import PlateCaptureUnitModel, PlateCaptureUnitView
-from ui.tabs.experiment.window.snapshot.capture.unit.mask_manager import Masking, MaskGraphicsController, \
+from ui.tabs.experiment.window.snapshot.process.unit import PlateCaptureUnitModel, PlateCaptureUnitView
+from ui.tabs.experiment.window.snapshot.process.unit.mask_manager import Masking, MaskGraphicsController, \
     MaskManagerController
 from util import image_converter as ic
 

@@ -6,7 +6,7 @@ from PySide6.QtGui import QPixmap, Qt, QFont
 from PySide6.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout, QComboBox, QWidget, QSizePolicy, QFileDialog
 
 from ui.common import BaseWidgetView, ImageButton
-from ui.tabs.experiment.window.snapshot.capture.unit.mask_manager import MaskManagerController
+from ui.tabs.experiment.window.snapshot.process.unit.mask_manager import MaskManagerController
 from util import image_converter as ic
 from util.setting_manager import SettingManager
 

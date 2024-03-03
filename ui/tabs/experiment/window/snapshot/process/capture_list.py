@@ -3,7 +3,7 @@ from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QSizePolicy, QWidget, QHBoxLayout, QPushButton, QVBoxLayout
 
 from ui.common import BaseScrollAreaView, BaseController
-from ui.tabs.experiment.window.snapshot.capture.unit import PlateCaptureUnitController, PlateCaptureUnitView
+from ui.tabs.experiment.window.snapshot.process.unit import PlateCaptureUnitController, PlateCaptureUnitView
 
 
 class CaptureListModel:
