@@ -122,10 +122,12 @@ class PlateProcessView(BaseWidgetView):
             self.btn_date.setVisible(True)
             self.wig_date.setStyleSheet("#wig_date {border: 1px solid black;}")
             self.et_time.setStyleSheet("border: 1px solid black; padding: 4px;")
+            self.et_time.setReadOnly(False)
         else:
             self.btn_date.setVisible(False)
             self.wig_date.setStyleSheet("#wig_date {border: 0px;}")
             self.et_time.setStyleSheet("border: 0px;")
+            self.et_time.setReadOnly(True)
 
     def set_date(self, date):
         date_string = date.toString("yyMMdd")

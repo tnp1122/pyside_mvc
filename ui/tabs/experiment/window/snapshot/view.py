@@ -29,7 +29,7 @@ class PlateSnapshotView(BaseTabWidgetView):
         self.color_graph = QWidget()
         self.color_difference = QWidget()
 
-        self.addTab(self.plate_process.view, "플레이트 캡처")
+        self.addTab(self.plate_process.view, "이미지 처리")
         self.addTab(self.color_extract.view, "색 추출")
         self.addTab(self.color_graph, "그래프")
         self.addTab(self.color_difference, "색 차이")

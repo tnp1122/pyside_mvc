@@ -123,7 +123,7 @@ class PlateCaptureUnitController(BaseController):
                 try:
                     cv2.circle(new_array, (int(cx), int(cy)), r, mean_color, thickness=cv2.FILLED)
                 except:
-                    print(f"color: {mean_color}")
+                    pass
 
         self.mean_colored_pixmap = ic.array_to_q_pixmap(new_array)
 
