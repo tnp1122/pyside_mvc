@@ -51,9 +51,7 @@ class PlateSnapshotController(TabWidgetController):
                 response = json.loads(json_str)["targets"]
                 self.set_targets(response)
             else:
-                msg = f"{WIDGET} update_targets-{reply.errorString()}"
-                logging.error(msg)
-                Toast().toast(msg)
+                self.api_manager.on_failure(reply)
 
         self.api_manager.get_targets(api_handler, self.experiment_id)
 

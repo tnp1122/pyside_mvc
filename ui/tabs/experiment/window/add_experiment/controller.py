@@ -33,11 +33,9 @@ class AddExperimentController(BaseController):
 
         def api_handler(reply):
             if reply.error() == QNetworkReply.NoError:
-                # json_str = reply.readAll().data().decode("utf-8")
                 self.experiment_added_signal.emit(self)
             else:
-                logging.error(f"{WIDGET} add_experiment-{reply.errorString()}")
-                Toast().toast(reply.errorString())
+                self.api_manager.on_failure(reply)
 
         self.api_manager.add_experiment(api_handler, experiment)
 
