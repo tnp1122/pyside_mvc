@@ -184,7 +184,7 @@ class CombinationController(BaseController):
         if self.combinations[self.experiment_index]:
             combination_name = self.combinations[self.experiment_index][self.combination_index]["name"] + " (2)"
         else:
-            combination_name = "새 조합"
+            combination_name = "new combination"
         self.view.et_combination_name.setText(combination_name)
         self.set_editable(True)
 

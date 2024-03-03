@@ -108,7 +108,7 @@ class AddPlateView(BaseWidgetView):
         lyt_datetime.addWidget(wig_datetime_input)
 
         lb_note = QLabel("식별 문구")
-        self.et_note = QLineEdit(self.setting_manager.get_experimenter_name())
+        self.et_note = QLineEdit()  # QLineEdit(self.setting_manager.get_experimenter_name())
         self.et_note.setFixedWidth(self.width_box)
         lyt_note = QHBoxLayout()
         lyt_note.addWidget(lb_note)
