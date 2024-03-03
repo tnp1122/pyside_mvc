@@ -41,6 +41,7 @@ class MouseHandler:
         self.mouse = [Mouse.NORMAL]
         self.status = Status.NORMAL
         self.trigger = Trigger.DEACTIVATE
+        self.moving_border = False
 
         self.resize_origin = None
         self.additive_axes_origin = None
@@ -104,6 +105,8 @@ class MouseHandler:
     def on_mouse_moved(self, event):
         if self.status == Status.NORMAL:
             self.check_mouse_position(event)
+            if self.moving_border:
+                self.resize(event)
 
         elif self.status == Status.RESIZE:
             self.resize(event)
@@ -119,6 +122,13 @@ class MouseHandler:
             self.additive_axes_origin = self.model.additive_axes
             self.solvent_axes_origin = self.model.solvent_axes
 
+            return
+
+        area = self.get_scene_rect(self.border.mask_area)
+        if area.contains(event.pos()):
+            self.trigger = Trigger.ACTIVATE
+            self.moving_border = True
+
         # elif self.mouse == Mouse.BOTTOM_RIGHT_LOT:
         #     self.border.set_movable(False)
         #     self.status = Status.ROTATE
@@ -131,6 +141,7 @@ class MouseHandler:
         self.border.set_movable(True)
         self.status = Status.NORMAL
         self.trigger = Trigger.DEACTIVATE
+        self.moving_border = False
         self.resize_origin = None
         self.additive_axes_origin = None
         self.solvent_axes_origin = None
@@ -243,6 +254,7 @@ class MouseHandler:
             self.border.set_bar_height(width, w_diff, is_vertical=False)
 
         self.set_circles_center()
+        self.main_controller.border_changed.emit()
 
     def set_intervals(self, w_adjust, h_adjust):
         if self.model.direction == 0:

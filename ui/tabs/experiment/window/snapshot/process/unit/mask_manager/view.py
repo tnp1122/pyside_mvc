@@ -29,6 +29,7 @@ class MaskManagerView(BaseDialogView):
 
         self.graphics = MaskGraphicsController()
         self.graphics.set_scene(self.origin_image)
+        self.graphics.border_changed.connect(self.update_border_position_text)
 
         self.lyt_bottom_district = self.init_bottom_district()
         self.lyt_bottom_masking = self.init_bottom_masking()
@@ -43,16 +44,18 @@ class MaskManagerView(BaseDialogView):
         self.init_text()
 
     def init_text(self):
-        from ui.tabs.experiment.window.snapshot.process.unit.mask_manager.mask_graphics import MaskGraphicsModel
-        model: MaskGraphicsModel = self.graphics.model
-
-        self.ET_x.setText(str(model.area_x))
-        self.ET_y.setText(str(model.area_y))
-        self.ET_w.setText(str(model.area_width))
-        self.ET_h.setText(str(model.area_height))
-        self.ET_r.setText(str(model.circle_radius))
+        self.update_border_position_text()
+        self.ET_r.setText(str(self.graphics.model.circle_radius))
 
         self.ET_threshold.setText(str(self.masking.threshold))
+
+    def update_border_position_text(self):
+        model = self.graphics.model
+
+        self.ET_x.setText(str(int(model.area_x)))
+        self.ET_y.setText(str(int(model.area_y)))
+        self.ET_w.setText(str(int(model.area_width)))
+        self.ET_h.setText(str(int(model.area_height)))
 
     def set_bottom_lyt(self, index):
         if index == 0:

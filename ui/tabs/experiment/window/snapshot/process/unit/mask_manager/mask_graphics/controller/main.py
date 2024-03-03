@@ -1,13 +1,19 @@
+from PySide6.QtCore import Signal
 from PySide6.QtGui import QImage
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton
 
 from ui.common import BaseController
-from ui.tabs.experiment.window.snapshot.process.unit.mask_manager.mask_graphics import MaskGraphicsModel, MaskGraphicsView
-from ui.tabs.experiment.window.snapshot.process.unit.mask_manager.mask_graphics.controller.mouse_handler import MouseHandler
-from ui.tabs.experiment.window.snapshot.process.unit.mask_manager.mask_graphics.controller.view_handler import ViewHandler
+from ui.tabs.experiment.window.snapshot.process.unit.mask_manager.mask_graphics import MaskGraphicsModel, \
+    MaskGraphicsView
+from ui.tabs.experiment.window.snapshot.process.unit.mask_manager.mask_graphics.controller.mouse_handler import \
+    MouseHandler
+from ui.tabs.experiment.window.snapshot.process.unit.mask_manager.mask_graphics.controller.view_handler import \
+    ViewHandler
 
 
 class MaskGraphicsController(BaseController):
+    border_changed = Signal()
+
     def __init__(self, parent=None):
         super().__init__(MaskGraphicsModel, MaskGraphicsView, parent)
 
@@ -45,12 +51,6 @@ class MaskGraphicsController(BaseController):
         self.set_direction(self.model.direction)
         self.set_circle_visible(self.model.is_circle_visible)
         self.set_circle_radius(self.model.circle_radius)
-
-    def set_position(self, x=None, y=None, width=None, height=None):
-
-        if x is not None:
-            self.model.area_x = x
-            self.border.setRect
 
     def is_circle_visible(self):
         return self.model.is_circle_visible
