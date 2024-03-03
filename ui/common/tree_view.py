@@ -97,7 +97,7 @@ class TreeRow(QWidget):
         self.icon = ImageButton(image=img_icon, size=icon_size)
         self.lb_title = QLabel(self.title)
         self.btn_add = ImageButton(image=img_add, size=icon_size)
-        if self.level != 2 and self.level != 3:
+        if self.level != 1 and self.level != 2 and self.level != 3:
             self.btn_add.setVisible(False)
 
         font = QFont()

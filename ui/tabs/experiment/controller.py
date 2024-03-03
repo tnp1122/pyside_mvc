@@ -1,3 +1,5 @@
+from PySide6.QtCore import Signal
+
 from ui.common import BaseController
 from ui.tabs.experiment import ExperimentModel, ExperimentView
 from ui.tabs.experiment.explorer import ExplorerController
@@ -8,6 +10,8 @@ from ui.tabs.experiment.window.snapshot import PlateSnapshotController
 
 
 class ExperimentController(BaseController):
+    request_add_combination = Signal()
+
     def __init__(self, parent=None):
         super().__init__(ExperimentModel, ExperimentView, parent)
 
@@ -46,7 +50,10 @@ class ExperimentController(BaseController):
     def on_tree_add_button(self, indexes: list):
         view: ExperimentView = self.view
 
-        if len(indexes) == 2:
+        if len(indexes) == 1:
+            self.request_add_combination.emit()
+
+        elif len(indexes) == 2:
             experiment_index = indexes[0]
             combination_index = indexes[1]
 

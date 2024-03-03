@@ -1,5 +1,6 @@
 from ui.app.main_tab import MainTabModel, MainTabView
 from ui.common import TabWidgetController
+from ui.tabs.experiment import ExperimentController
 
 
 class MainTabController(TabWidgetController):
@@ -8,6 +9,10 @@ class MainTabController(TabWidgetController):
 
     def init_controller(self):
         super().init_controller()
+
+        view: MainTabView = self.view
+        experiment: ExperimentController = view.experiment
+        experiment.request_add_combination.connect(lambda: view.setCurrentIndex(3))
 
     def set_first_tab(self, index, switch=True):
         if switch:
