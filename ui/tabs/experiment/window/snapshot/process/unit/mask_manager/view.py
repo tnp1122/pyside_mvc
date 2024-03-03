@@ -7,6 +7,9 @@ from ui.tabs.experiment.window.snapshot.process.unit.mask_manager.mask_graphics.
 
 
 class MaskManagerView(BaseDialogView):
+    width_pos_text = 50
+    width_radius_text = 35
+
     def __init__(self, parent=None, origin_image=None):
         self.origin_image = origin_image
         super().__init__(parent)
@@ -108,11 +111,21 @@ class MaskManagerView(BaseDialogView):
         self.ET_h.setValidator(validator)
         self.ET_r.setValidator(validator_int)
 
-        self.ET_x.setFixedWidth(70)
-        self.ET_y.setFixedWidth(70)
-        self.ET_w.setFixedWidth(70)
-        self.ET_h.setFixedWidth(70)
-        self.ET_r.setFixedWidth(40)
+        self.ET_x.setFixedWidth(self.width_pos_text)
+        self.ET_y.setFixedWidth(self.width_pos_text)
+        self.ET_w.setFixedWidth(self.width_pos_text)
+        self.ET_h.setFixedWidth(self.width_pos_text)
+        self.ET_r.setFixedWidth(self.width_radius_text)
+
+        style = "border: 0px;"
+        self.ET_x.setStyleSheet(style)
+        self.ET_y.setStyleSheet(style)
+        self.ET_w.setStyleSheet(style)
+        self.ET_h.setStyleSheet(style)
+        self.ET_x.setReadOnly(True)
+        self.ET_y.setReadOnly(True)
+        self.ET_w.setReadOnly(True)
+        self.ET_h.setReadOnly(True)
 
         lyt.addWidget(self.btn_set_horizontal)
         lyt.addWidget(self.btn_set_vertical)
