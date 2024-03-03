@@ -32,9 +32,10 @@ class Trigger(Enum):
 
 
 class MouseHandler:
-    def __init__(self, model, view):
-        self._model = model
-        self._view = view
+    def __init__(self, main_controller):
+        self.main_controller = main_controller
+        self._model = main_controller.model
+        self._view = main_controller.view
         self._border = self.view.scene.border
 
         self.mouse = [Mouse.NORMAL]
@@ -276,6 +277,8 @@ class MouseHandler:
             self.model.solvent_axes = vertical_axes
             self.model.additive_axes = horizontal_axes
 
+        self.set_circles_center()
+
     def get_new_axes(self, size, axes, adjust):
         intervals = [0] * len(axes)
         intervals[0] = axes[0]
@@ -302,7 +305,10 @@ class MouseHandler:
         return Mouse.LEFT in self.mouse or Mouse.RIGHT in self.mouse
 
     def set_circles_center(self):
-        pass
+        from ui.tabs.experiment.window.snapshot.process.unit.mask_manager import MaskGraphicsController
+
+        main_controller: MaskGraphicsController = self.main_controller
+        main_controller.set_circles_center()
 
     # def rotate(self, event):
     #     x2, y2 = event.scenePos().x(), event.scenePos().y()

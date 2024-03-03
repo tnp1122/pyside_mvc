@@ -79,8 +79,8 @@ def main():
 
     app = QApplication([])
     image_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "../plate_image.jpg")
-    widget = MaskManagerController(origin_image=image_path)
-    widget.late_init(origin_image=image_path)
+    image = ic.path_to_nd_array(image_path)
+    widget = MaskManagerController(origin_image=image)
     widget.view.show()
     app.exec()
 

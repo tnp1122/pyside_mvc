@@ -37,7 +37,7 @@ class MaskGraphicsController(BaseController):
 
         self._border = self.view.scene.border
 
-        self.mouse_handler = MouseHandler(self.model, self.view)
+        self.mouse_handler = MouseHandler(self)
         self.view_handler = ViewHandler(self.view)
         self.set_border()
 
