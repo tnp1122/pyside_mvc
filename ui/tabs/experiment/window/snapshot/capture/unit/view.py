@@ -107,8 +107,9 @@ class PlateCaptureUnitView(BaseWidgetView):
         self._pixmap = pixmap
         self.update_label(self._pixmap)
 
-    def set_image(self, image: np.ndarray):
-        self.clear_mask_info.emit()
+    def set_image(self, image: np.ndarray, clear_mask=True):
+        if clear_mask:
+            self.clear_mask_info.emit()
         self.origin_image = image
         pixmap = ic.array_to_q_pixmap(image, True)
 
@@ -161,3 +162,9 @@ class PlateCaptureUnitView(BaseWidgetView):
     def get_selected_target_id(self):
         selected_index = self.cmb_target.currentIndex()
         return self.targets[selected_index]["id"]
+
+    def change_cmb_with_target_id(self, target_id):
+        for index, target in enumerate(self.targets):
+            if target["id"] == target_id:
+                self.cmb_target.setCurrentIndex(index)
+                break

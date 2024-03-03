@@ -1,3 +1,6 @@
+import copy
+import json
+
 import cv2
 import numpy as np
 from PySide6.QtCore import Signal
@@ -85,8 +88,8 @@ class PlateCaptureUnitController(BaseController):
 
         # 마스킹 데이터 저장
         self.masked_array = masking.masked_array
-        np.savez_compressed('compressed_data.npz', self.masked_array.mask)
-
+#         np.savez_compressed('compressed_data.npz', self.masked_array.mask)
+# m
         # 픽스맵 생성
         self.make_mean_colored_pixmap(x, y, r, width, height, cols, rows)
         self.make_cropped_original_pixmap(x, y, width, height)
@@ -139,10 +142,35 @@ class PlateCaptureUnitController(BaseController):
         view: PlateCaptureUnitView = self.view
         cropped_image = view.origin_image[y:y + height, x:x + width]
 
-        mean_color_mask_info = {"mean_colors": self.mean_colors, "mask_info": self.mask_info}
+        copied_mask_info = copy.deepcopy(self.mask_info)
+        copied_mask_info["x"], copied_mask_info["y"] = 0, 0
+        mean_color_mask_info = {"mean_colors": self.mean_colors, "mask_info": copied_mask_info}
 
-        return cropped_image, mean_color_mask_info
+        return cropped_image, mean_color_mask_info, self.masked_array.mask
 
+    def set_capture_unit(self, plate_capture, snapshot_path, snapshot_age):
+        view: PlateCaptureUnitView = self.view
+
+        self.capture_id = plate_capture["id"]
+        view.change_cmb_with_target_id(plate_capture["target"])
+
+        target_name = view.cmb_target.currentText()
+
+        image_path, mcmi_path, npz_path = ic.get_snapshot_path(snapshot_path, snapshot_age, target_name, False)
+
+        cropped_image = ic.path_to_nd_array(image_path, True)
+
+        with open(mcmi_path, "r") as mcmi_file:
+            mean_color_mask_info = json.load(mcmi_file)
+        self.mean_colors = mean_color_mask_info["mean_colors"]
+        self.mask_info = mean_color_mask_info["mask_info"]
+
+        mask = np.load(npz_path)
+        self.masked_array = np.ma.masked_array(cropped_image, mask)
+        mask_filled_image = self.masked_array.filled(0).astype(np.uint8)
+
+        view.set_image(cropped_image, False)
+        # view.set_image(mask_filled_image, False)
 
 def main():
     from PySide6.QtWidgets import QApplication

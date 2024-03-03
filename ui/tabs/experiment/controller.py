@@ -1,6 +1,7 @@
 from ui.common import BaseController
+from ui.common.tree_view import TreeRow
 from ui.tabs.experiment import ExperimentModel, ExperimentView
-from ui.tabs.experiment.explorer import ExplorerController
+from ui.tabs.experiment.explorer import ExplorerController, ExplorerView
 from ui.tabs.experiment.window import ExperimentWindowController
 from ui.tabs.experiment.window.add_experiment import AddExperimentController
 from ui.tabs.experiment.window.add_plate import AddPlateController, AddPlateView
@@ -20,8 +21,12 @@ class ExperimentController(BaseController):
         super().init_controller()
 
         view: ExperimentView = self.view
-        view.explorer.view.btn_add.clicked.connect(self.add_experiment)
-        view.explorer.view.tree.root.clicked_signal.connect(self.on_tree_add_button)
+        explorer_view: ExplorerView = view.explorer.view
+        tree_root: TreeRow = explorer_view.tree.root
+
+        explorer_view.btn_add.clicked.connect(self.add_experiment)
+        tree_root.clicked.connect(self.add_tab_handler)
+        tree_root.double_clicked.connect(self.add_tab_handler)
 
         view.window_widget.view.tabCloseRequested.connect(lambda index: self.remove_tab_with_index(index))
 
@@ -43,9 +48,42 @@ class ExperimentController(BaseController):
 
         self.add_tab(add_experiment, 0, "새 실험")
 
-    def on_tree_add_button(self, indexes: list):
+    def add_snapshot_tab(self, indexes: list):
         view: ExperimentView = self.view
 
+        experiment_index = indexes[0]
+        combination_index = indexes[1]
+        plate_index = indexes[2]
+
+        explorer: ExplorerController = view.explorer
+        experiment = explorer.experiment_tree[experiment_index]
+        combination = experiment["sensor_combinations"][combination_index]
+        plate = combination["plates"][plate_index]
+
+        experiment_id = experiment["id"]
+        experiment_name = experiment["name"]
+        combination_name = combination["name"]
+        plate_name = plate["name"]
+        plate_made_at = plate["made_at"]
+
+        if len(indexes) == 4:
+            snapshot_index = indexes[3]
+            snapshot = plate["plate_snapshots"][snapshot_index]
+            snapshot_id = snapshot["id"]
+        else:
+            snapshot_id = None
+
+        snapshot_path = "\\".join([experiment_name, combination_name, plate_name])
+
+        snapshot_info = {"experiment_id": experiment_id, "plate_id": plate["id"], "snapshot_id": snapshot_id,
+                         "plate_made_at": plate_made_at, "snapshot_path": snapshot_path}
+        plate_snapshot = PlateSnapshotController(snapshot_info=snapshot_info)
+        plate_snapshot.snapshot_added.connect(
+            lambda plate_age: self.on_snapshot_added(plate_snapshot, plate_name, plate_age))
+
+        self.add_tab(plate_snapshot, 1, "새 스냅샷")
+
+    def add_tab_handler(self, indexes: list):
         if len(indexes) == 2:
             experiment_index = indexes[0]
             combination_index = indexes[1]
@@ -63,31 +101,8 @@ class ExperimentController(BaseController):
 
             self.add_tab(add_plate, 0, "새 플레이트")
 
-        elif len(indexes) == 3:
-            experiment_index = indexes[0]
-            combination_index = indexes[1]
-            plate_index = indexes[2]
-
-            explorer: ExplorerController = view.explorer
-            experiment = explorer.experiment_tree[experiment_index]
-            combination = experiment["sensor_combinations"][combination_index]
-            plate = combination["plates"][plate_index]
-
-            experiment_id = experiment["id"]
-            experiment_name = experiment["name"]
-            combination_name = combination["name"]
-            plate_name = plate["name"]
-            plate_made_at = plate["made_at"]
-
-            snapshot_path = "\\".join([experiment_name, combination_name, plate_name])
-
-            snapshot_info = {"experiment_id": experiment_id, "plate_id": plate["id"], "snapshot_id": None,
-                             "plate_made_at": plate_made_at, "snapshot_path": snapshot_path}
-            plate_snapshot = PlateSnapshotController(snapshot_info=snapshot_info)
-            plate_snapshot.snapshot_added.connect(
-                lambda plate_age: self.on_snapshot_added(plate_snapshot, plate_name, plate_age))
-
-            self.add_tab(plate_snapshot, 1, "새 스냅샷")
+        elif len(indexes) == 3 or len(indexes) == 4:
+            self.add_snapshot_tab(indexes)
 
     def on_experiment_added(self, controller: AddExperimentController):
         self.view.explorer.update_tree_view()

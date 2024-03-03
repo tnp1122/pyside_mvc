@@ -90,6 +90,8 @@ class CaptureListView(BaseScrollAreaView):
         self.set_selected_widget(count)
         self.lyt.insertWidget(count, new_unit.view)
 
+        return new_unit
+
     def set_height(self):
         scroll_bar_height = self.horizontalScrollBar().height()
 
@@ -136,6 +138,13 @@ class CaptureListController(BaseController):
                 if unit_view.get_selected_target_id() == target_id:
                     unit.capture_id = plate_capture["id"]
                     break
+
+    def set_capture_units(self, plate_captures, snapshot_path, snapshot_age):
+        view: CaptureListView = self.view
+
+        for plate_capture in plate_captures:
+            unit: PlateCaptureUnitController = view.add_new_unit()
+            unit.set_capture_unit(plate_capture, snapshot_path, snapshot_age)
 
 
 def main():

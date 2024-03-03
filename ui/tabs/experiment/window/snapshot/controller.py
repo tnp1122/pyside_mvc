@@ -1,8 +1,8 @@
 import json
 import logging
-import os
 from datetime import datetime
 
+import numpy as np
 from PySide6.QtCore import Signal
 from PySide6.QtNetwork import QNetworkReply
 
@@ -24,7 +24,7 @@ class PlateSnapshotController(TabWidgetController):
     def __init__(self, parent=None, snapshot_info=None):
         self.experiment_id = snapshot_info.pop("experiment_id")
         self.plate_id = snapshot_info.pop("plate_id")
-        self.snapshot_path = snapshot_info.pop("snapshot_path")
+        self.snapshot_path = snapshot_info["snapshot_path"]
         self.plate_made_at = snapshot_info["plate_made_at"]
         self.snapshot_id = snapshot_info["snapshot_id"]
         plate_info = snapshot_info
@@ -43,6 +43,8 @@ class PlateSnapshotController(TabWidgetController):
         capture_list_view.mask_changed.connect(self.on_mask_changed)
 
         self.update_targets()
+        if self.snapshot_id:
+            self.update_snapshot()
 
     def update_targets(self):
         def api_handler(reply):
@@ -56,6 +58,24 @@ class PlateSnapshotController(TabWidgetController):
                 Toast().toast(msg)
 
         self.api_manager.get_targets(api_handler, self.experiment_id)
+
+    def update_snapshot(self):
+        view: PlateSnapshotView = self.view
+        capture_view: PlateCaptureView = view.plate_capture.view
+
+        capture_view.set_et_editable(False)
+
+        def api_handler(reply):
+            if reply.error() == QNetworkReply.NoError:
+                json_str = reply.readAll().data().decode("utf-8")
+                response = json.loads(json_str)["plate_snapshot"]
+                capture_view.set_snapshot(response)
+            else:
+                msg = f"{WIDGET} update_snapshot-{reply.errorString()}"
+                logging.error(msg)
+                Toast().toast(msg)
+
+        self.api_manager.get_snapshot(api_handler, self.plate_id, self.snapshot_id)
 
     def set_targets(self, targets):
         self.targets = targets
@@ -128,12 +148,12 @@ class PlateSnapshotController(TabWidgetController):
                     json_str = reply.readAll().data().decode("utf-8")
                     plate_snapshot = json.loads(json_str)["plate_snapshot"]
                     plate_captures = plate_snapshot["plate_captures"]
-                    plate_age = plate_snapshot["age"]
+                    shapshot_age = plate_snapshot["age"]
 
                     self.snapshot_id = plate_snapshot["id"]
                     capture_list.set_unit_id(plate_captures)
                     capture_view.set_et_editable(False)
-                    self.snapshot_added.emit(plate_age)
+                    self.snapshot_added.emit(shapshot_age)
 
                     for index, unit in enumerate(capture_list_view.units):
                         unit: PlateCaptureUnitController
@@ -141,15 +161,16 @@ class PlateSnapshotController(TabWidgetController):
 
                         target_name = unit_view.cmb_target.currentText()
 
-                        cropped_image, mean_color_mask_info = unit.get_cropped_image_info()
-                        image_path = ic.save_plate_snapshot_image(cropped_image, self.snapshot_path, plate_age,
-                                                                  target_name)
+                        cropped_image, mean_color_mask_info, masked_array = unit.get_cropped_image_info()
 
-                        file_name, _ = os.path.splitext(image_path)
-                        data_name = file_name + ".mcmi"
+                        _, mcmi_path, npz_path = ic.get_snapshot_path(self.snapshot_path, shapshot_age, target_name)
+                        ic.save_plate_snapshot_image_(cropped_image, self.snapshot_path, shapshot_age, target_name)
 
-                        with open(data_name, "w") as data_file:
-                            json.dump(mean_color_mask_info, data_file)
+                        with open(mcmi_path, "w") as mcmi_file:
+                            json.dump(mean_color_mask_info, mcmi_file)
+
+                        np.savez_compressed(npz_path, masked_array)
+
 
                 else:
                     self.api_manager.on_failure(reply)

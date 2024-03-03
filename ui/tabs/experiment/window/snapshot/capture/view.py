@@ -20,6 +20,7 @@ class PlateCaptureView(BaseWidgetView):
     def __init__(self, parent=None, plate_info=None):
         self.plate_info = plate_info
         self.captured_at = None
+        self.snapshot_age = 0
 
         super().__init__(parent)
 
@@ -154,6 +155,23 @@ class PlateCaptureView(BaseWidgetView):
         self.captured_at = datetime.strptime(captured_at_str, "%y%m%d_%H")
 
         time_diff = self.captured_at - plate_made_at
-        plate_age = int(time_diff.total_seconds() / 3600)
+        self.snapshot_age = int(time_diff.total_seconds() / 3600)
 
-        self.lb_snapshot_age.setText(f"{plate_age}H")
+        self.lb_snapshot_age.setText(f"{self.snapshot_age}H")
+
+    def set_snapshot(self, plate_snapshot):
+        captured_at_str = plate_snapshot["captured_at"]
+        print(captured_at_str)
+        captured_at = datetime.strptime(captured_at_str, "%Y-%m-%dT%H:%M:%S")
+        date_str = captured_at.strftime("%y%m%d")
+        time_str = captured_at.strftime("%H")
+
+        self.lb_date.setText(date_str)
+        self.et_time.setText(time_str)
+
+        self.set_snapshot_age()
+
+        plate_captures = plate_snapshot["plate_captures"]
+        snapshot_path = self.plate_info["snapshot_path"]
+        capture_list: CaptureListController = self.capture_list
+        capture_list.set_capture_units(plate_captures, snapshot_path, self.snapshot_age)
