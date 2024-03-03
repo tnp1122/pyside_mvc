@@ -60,7 +60,11 @@ class MaskManagerController(BaseController):
     def on_change_radius(self, radius):
         if radius == "":
             return
+        graphics_model = self.graphics.model
+        graphics_model.circle_radius = int(radius)
+
         self.graphics.set_circle_radius(int(radius))
+        self.view.set_circle_mask()
 
     def on_change_threshold(self, threshold):
         if threshold == "" or not (0 < int(threshold) < 255):
