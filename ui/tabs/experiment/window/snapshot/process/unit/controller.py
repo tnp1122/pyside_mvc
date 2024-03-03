@@ -81,11 +81,8 @@ class PlateCaptureUnitController(BaseController):
 
         # 데이터 참조
         self.mask_info = graphics.get_circle_mask_info()
-        x, y, r, width, height, cols, rows = self.get_transformed_mask_info()
-
-        # 마스킹 데이터 저장
         self.masked_array = masking.masked_array
-        np.savez_compressed('compressed_data.npz', self.masked_array.mask)
+        x, y, r, width, height, cols, rows = self.get_transformed_mask_info()
 
         # 픽스맵 생성
         self.make_mean_colored_pixmap(x, y, r, width, height, cols, rows)
