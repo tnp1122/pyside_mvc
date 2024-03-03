@@ -32,11 +32,6 @@ class MaskManagerController(BaseController):
 
         self.view.masking.masked_image_updated_signal.connect(self.update_masking_view)
 
-    def init_text(self):
-        self.view.ET_r.setText(str(self.graphics.model.circle_radius))
-
-        self.view.ET_threshold.setText(str(self.view.masking.threshold))
-
     def on_select_changed(self, index):
         view_index = MaskViewIndex(index)
         self.model.current_view = view_index

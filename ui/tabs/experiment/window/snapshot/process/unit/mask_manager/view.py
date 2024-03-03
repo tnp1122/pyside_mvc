@@ -40,6 +40,20 @@ class MaskManagerView(BaseDialogView):
         self.lyt.addLayout(self.lyt_bottom_district)
         self.lyt.addLayout(self.lyt_bottom_masking)
 
+        self.init_text()
+
+    def init_text(self):
+        from ui.tabs.experiment.window.snapshot.process.unit.mask_manager.mask_graphics import MaskGraphicsModel
+        model: MaskGraphicsModel = self.graphics.model
+
+        self.ET_x.setText(str(model.area_x))
+        self.ET_y.setText(str(model.area_y))
+        self.ET_w.setText(str(model.area_width))
+        self.ET_h.setText(str(model.area_height))
+        self.ET_r.setText(str(model.circle_radius))
+
+        self.ET_threshold.setText(str(self.masking.threshold))
+
     def set_bottom_lyt(self, index):
         if index == 0:
             self.set_bottom_lyt_visible(1, False)
