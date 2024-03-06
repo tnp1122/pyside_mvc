@@ -94,10 +94,7 @@ class CameraUnit(QObject):
 
     def connect_to_camera(self):
         try:
-            if toupcam.Toupcam.Replug(self.cam_id) > 0:
-                self.cam = toupcam.Toupcam.Open(self.cam_id)
-            else:
-                raise CanNotFindDeviceError("카메라 연결 상태를 확인하세요.")
+            self.cam = toupcam.Toupcam.Open(self.cam_id)
         except Exception as e:
             raise e
 
