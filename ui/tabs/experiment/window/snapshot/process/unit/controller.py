@@ -96,7 +96,8 @@ class PlateCaptureUnitController(BaseController):
 
     def make_mean_colored_pixmap(self, x, y, r, width, height, cols, rows):
         masked_array: np.ma.masked_array = self.masked_array
-        cropped_array = masked_array[y:y + height, x:x + width]
+        mask_filled_image = masked_array.filled(0).astype(np.uint8)
+        cropped_array = mask_filled_image[y:y + height, x:x + width]
 
         # 색 평균 계산
         self.mean_colors = []
