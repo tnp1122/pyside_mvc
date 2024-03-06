@@ -77,88 +77,88 @@ class PlateSnapshotController(TabWidgetController):
 
         return
 
-        if self.snapshot_id:
-            pass
-
-        else:
-            process_view: PlateProcessView = view.plate_process.view
-            capture_list: CaptureListController = process_view.capture_list
-            capture_list_view: CaptureListView = capture_list.view
-
-            plate_made_at_obj: datetime = datetime.strptime(self.plate_made_at, "%Y-%m-%dT%H:%M:%S")
-            captured_at_obj: datetime = process_view.captured_at
-
-            time_diff = captured_at_obj - plate_made_at_obj
-            plate_age = int(time_diff.total_seconds() / 3600)
-            if plate_age < 0:
-                msg = "플레이트 촬영 시간은 제작시간 이후여야 합니다."
-                Toast().toast(msg)
-                logging.error(msg)
-                return
-
-            captured_at = captured_at_obj.strftime("%Y-%m-%dT%H:%M:%S")
-
-            target_id_check = []
-            plate_capture_datas = []
-            for unit in capture_list_view.units:
-                unit: PlateCaptureUnitController
-                unit_view: PlateCaptureUnitView = unit.view
-
-                if not unit.mean_colors:  # 마스킹 적용된 유닛만 저장됨
-                    continue
-
-                target_id = unit_view.get_selected_target_id()
-                if target_id in target_id_check:
-                    msg = "중복된 타겟 물질을 사용할 수 없습니다."
-                    Toast().toast(msg)
-                    logging.error(msg)
-                    return
-
-                target_id_check.append(target_id)
-                plate_capture_data = {"target": target_id, "image_uri": ""}
-                plate_capture_datas.append(plate_capture_data)
-
-            if not target_id_check:
-                msg = "플레이트를 촬영하세요."
-                Toast().toast(msg)
-                logging.error(msg)
-                return
-
-            plate_snapshot_data = {"captured_at": captured_at, "plate_captures": plate_capture_datas}
-
-            def api_handler(reply):
-                if reply.error() == QNetworkReply.NoError:
-
-                    json_str = reply.readAll().data().decode("utf-8")
-                    plate_snapshot = json.loads(json_str)["plate_snapshot"]
-                    plate_captures = plate_snapshot["plate_captures"]
-                    plate_age = plate_snapshot["age"]
-
-                    self.snapshot_id = plate_snapshot["id"]
-                    capture_list.set_unit_id(plate_captures)
-                    process_view.set_et_editable(False)
-                    self.snapshot_added.emit(plate_age)
-
-                    for index, unit in enumerate(capture_list_view.units):
-                        unit: PlateCaptureUnitController
-                        unit_view: PlateCaptureUnitView = unit.view
-
-                        target_name = unit_view.cmb_target.currentText()
-
-                        cropped_image, mean_color_mask_info = unit.get_cropped_image_info()
-                        image_path = ic.save_plate_snapshot_image(cropped_image, self.snapshot_path, plate_age,
-                                                                  target_name)
-
-                        file_name, _ = os.path.splitext(image_path)
-                        data_name = file_name + ".mcmi"
-
-                        with open(data_name, "w") as data_file:
-                            json.dump(mean_color_mask_info, data_file)
-
-                else:
-                    self.api_manager.on_failure(reply)
-
-            self.api_manager.add_snapshot(api_handler, self.plate_id, {"plate_snapshot": plate_snapshot_data})
+        # if self.snapshot_id:
+        #     pass
+        #
+        # else:
+        #     process_view: PlateProcessView = view.plate_process.view
+        #     capture_list: CaptureListController = process_view.capture_list
+        #     capture_list_view: CaptureListView = capture_list.view
+        #
+        #     plate_made_at_obj: datetime = datetime.strptime(self.plate_made_at, "%Y-%m-%dT%H:%M:%S")
+        #     captured_at_obj: datetime = process_view.captured_at
+        #
+        #     time_diff = captured_at_obj - plate_made_at_obj
+        #     plate_age = int(time_diff.total_seconds() / 3600)
+        #     if plate_age < 0:
+        #         msg = "플레이트 촬영 시간은 제작시간 이후여야 합니다."
+        #         Toast().toast(msg)
+        #         logging.error(msg)
+        #         return
+        #
+        #     captured_at = captured_at_obj.strftime("%Y-%m-%dT%H:%M:%S")
+        #
+        #     target_id_check = []
+        #     plate_capture_datas = []
+        #     for unit in capture_list_view.units:
+        #         unit: PlateCaptureUnitController
+        #         unit_view: PlateCaptureUnitView = unit.view
+        #
+        #         if not unit.mean_colors:  # 마스킹 적용된 유닛만 저장됨
+        #             continue
+        #
+        #         target_id = unit_view.get_selected_target_id()
+        #         if target_id in target_id_check:
+        #             msg = "중복된 타겟 물질을 사용할 수 없습니다."
+        #             Toast().toast(msg)
+        #             logging.error(msg)
+        #             return
+        #
+        #         target_id_check.append(target_id)
+        #         plate_capture_data = {"target": target_id, "image_uri": ""}
+        #         plate_capture_datas.append(plate_capture_data)
+        #
+        #     if not target_id_check:
+        #         msg = "플레이트를 촬영하세요."
+        #         Toast().toast(msg)
+        #         logging.error(msg)
+        #         return
+        #
+        #     plate_snapshot_data = {"captured_at": captured_at, "plate_captures": plate_capture_datas}
+        #
+        #     def api_handler(reply):
+        #         if reply.error() == QNetworkReply.NoError:
+        #
+        #             json_str = reply.readAll().data().decode("utf-8")
+        #             plate_snapshot = json.loads(json_str)["plate_snapshot"]
+        #             plate_captures = plate_snapshot["plate_captures"]
+        #             plate_age = plate_snapshot["age"]
+        #
+        #             self.snapshot_id = plate_snapshot["id"]
+        #             capture_list.set_unit_id(plate_captures)
+        #             process_view.set_et_editable(False)
+        #             self.snapshot_added.emit(plate_age)
+        #
+        #             for index, unit in enumerate(capture_list_view.units):
+        #                 unit: PlateCaptureUnitController
+        #                 unit_view: PlateCaptureUnitView = unit.view
+        #
+        #                 target_name = unit_view.cmb_target.currentText()
+        #
+        #                 cropped_image, mean_color_mask_info = unit.get_cropped_image_info()
+        #                 image_path = ic.save_plate_snapshot_image(cropped_image, self.snapshot_path, plate_age,
+        #                                                           target_name)
+        #
+        #                 file_name, _ = os.path.splitext(image_path)
+        #                 data_name = file_name + ".mcmi"
+        #
+        #                 with open(data_name, "w") as data_file:
+        #                     json.dump(mean_color_mask_info, data_file)
+        #
+        #         else:
+        #             self.api_manager.on_failure(reply)
+        #
+        #     self.api_manager.add_snapshot(api_handler, self.plate_id, {"plate_snapshot": plate_snapshot_data})
 
 
 def main():
