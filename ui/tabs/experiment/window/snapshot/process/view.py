@@ -17,8 +17,8 @@ class PlateProcessView(BaseWidgetView):
     width_time = 30
     height_et = 24
 
-    def __init__(self, parent=None, plate_info=None):
-        self.plate_info = plate_info
+    def __init__(self, parent=None, snapshot_info=None):
+        self.snapshot_info = snapshot_info
         self.captured_at = None
 
         super().__init__(parent)
@@ -75,7 +75,7 @@ class PlateProcessView(BaseWidgetView):
         lyt_datetime.addWidget(lb_datetime)
         lyt_datetime.addWidget(wig_datetime_input)
 
-        if self.plate_info["snapshot_id"]:
+        if self.snapshot_info["snapshot_id"]:
             self.set_et_editable(False)
         else:
             self.set_et_editable(True)
@@ -148,7 +148,7 @@ class PlateProcessView(BaseWidgetView):
         self.set_snapshot_age()
 
     def set_snapshot_age(self):
-        plate_made_at_str = self.plate_info["plate_made_at"]
+        plate_made_at_str = self.snapshot_info["plate_made_at"]
         plate_made_at = datetime.strptime(plate_made_at_str, "%Y-%m-%dT%H:%M:%S")
 
         captured_hour = self.et_time.text()

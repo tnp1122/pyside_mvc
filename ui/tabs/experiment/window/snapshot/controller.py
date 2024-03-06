@@ -27,11 +27,10 @@ class PlateSnapshotController(TabWidgetController):
         self.snapshot_path = snapshot_info.pop("snapshot_path")
         self.plate_made_at = snapshot_info["plate_made_at"]
         self.snapshot_id = snapshot_info["snapshot_id"]
-        plate_info = snapshot_info
 
         self.targets = []
 
-        super().__init__(PlateSnapshotModel, PlateSnapshotView, parent, plate_info)
+        super().__init__(PlateSnapshotModel, PlateSnapshotView, parent, snapshot_info)
 
     def init_controller(self):
         super().init_controller()
