@@ -158,6 +158,9 @@ class PlateCaptureUnitView(BaseWidgetView):
         for target in targets:
             self.cmb_target.addItem(target["name"])
 
-    def get_selected_target_id(self):
+    def get_selected_target(self):
         selected_index = self.cmb_target.currentIndex()
-        return self.targets[selected_index]["id"]
+        return self.targets[selected_index]
+
+    def get_selected_target_id(self):
+        return self.get_selected_target()["id"]

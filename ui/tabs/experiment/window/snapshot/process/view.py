@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 
+from PySide6.QtCore import Signal
 from PySide6.QtGui import QIntValidator, Qt
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QWidget, QLineEdit, QSizePolicy, QFrame
 
@@ -11,6 +12,8 @@ from ui.tabs.experiment.window.snapshot.process.image_viewer import ImageViewerC
 
 
 class PlateProcessView(BaseWidgetView):
+    plate_age_changed = Signal(int)
+
     width_box = 145
     width_calendar = 20
     width_date = 57
@@ -20,6 +23,7 @@ class PlateProcessView(BaseWidgetView):
     def __init__(self, parent=None, snapshot_info=None):
         self.snapshot_info = snapshot_info
         self.captured_at = None
+        self.plate_age = 0
 
         super().__init__(parent)
 
@@ -156,6 +160,8 @@ class PlateProcessView(BaseWidgetView):
         self.captured_at = datetime.strptime(captured_at_str, "%y%m%d_%H")
 
         time_diff = self.captured_at - plate_made_at
-        plate_age = int(time_diff.total_seconds() / 3600)
+        self.plate_age = int(time_diff.total_seconds() / 3600)
 
-        self.lb_snapshot_age.setText(f"{plate_age}H")
+        self.lb_snapshot_age.setText(f"{self.plate_age}H")
+
+        self.plate_age_changed.emit(self.plate_age)

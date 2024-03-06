@@ -24,7 +24,7 @@ class PlateSnapshotController(TabWidgetController):
     def __init__(self, parent=None, snapshot_info=None):
         self.experiment_id = snapshot_info.pop("experiment_id")
         self.plate_id = snapshot_info.pop("plate_id")
-        self.snapshot_path = snapshot_info.pop("snapshot_path")
+        self.snapshot_path = snapshot_info["snapshot_path"]
         self.plate_made_at = snapshot_info["plate_made_at"]
         self.snapshot_id = snapshot_info["snapshot_id"]
 
@@ -35,10 +35,13 @@ class PlateSnapshotController(TabWidgetController):
     def init_controller(self):
         super().init_controller()
 
-        plate_process_view: PlateProcessView = self.view.plate_process.view
+        view: PlateSnapshotView = self.view
+
+        plate_process_view: PlateProcessView = view.plate_process.view
+        plate_process_view.plate_age_changed.connect(view.color_difference.set_plate_age)
         plate_process_view.btn_save.clicked.connect(self.on_save_button_clicked)
 
-        capture_list_view: CaptureListView = self.view.plate_process.view.capture_list.view
+        capture_list_view: CaptureListView = view.plate_process.view.capture_list.view
         capture_list_view.mask_changed.connect(self.on_mask_changed)
 
         self.update_targets()
@@ -66,6 +69,8 @@ class PlateSnapshotController(TabWidgetController):
         capture_list = process_view.capture_list
 
         view.color_extract.set_image_list(capture_list)
+        if len(capture_list.view.units) > 1:
+            view.color_difference.set_color_datas(capture_list)
 
     def on_save_button_clicked(self):
         view: PlateSnapshotView = self.view
