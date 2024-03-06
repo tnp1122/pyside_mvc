@@ -75,6 +75,8 @@ class PlateSnapshotController(TabWidgetController):
     def on_save_button_clicked(self):
         view: PlateSnapshotView = self.view
 
+        return
+
         if self.snapshot_id:
             pass
 
