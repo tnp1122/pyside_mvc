@@ -8,8 +8,8 @@ from ui.tabs.experiment.window.snapshot.process.image_viewer import ImageViewerV
 
 
 class PlateProcessController(BaseController):
-    def __init__(self, parent=None, plate_info=None):
-        super().__init__(PlateProcessModel, PlateProcessView, parent, plate_info)
+    def __init__(self, parent=None, snapshot_info=None):
+        super().__init__(PlateProcessModel, PlateProcessView, parent, snapshot_info)
 
     def init_controller(self):
         pass
