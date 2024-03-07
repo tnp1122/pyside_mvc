@@ -12,7 +12,7 @@ from util.setting_manager import SettingManager
 
 load_dotenv()
 
-BASE_URL = os.getenv("LOCAL_BASE_URL")
+BASE_URL = os.getenv("API_BASE_URL")
 EXCLUDE_END_POINTS = ["user/login/", "user/regist/"]
 REFRESH_TOKEN_END_POINT = "user/refresh/"
 METHOD = "[API manager]"
