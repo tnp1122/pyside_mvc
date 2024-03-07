@@ -102,7 +102,7 @@ class PlateProcessView(BaseWidgetView):
         lyt_top.addWidget(divider)
         lyt_top.addLayout(lyt_age)
         lyt_top.addStretch()
-        lyt_top.addWidget(self.btn_save)
+        # lyt_top.addWidget(self.btn_save)
 
         self.image_viewer = ImageViewerController()
 
