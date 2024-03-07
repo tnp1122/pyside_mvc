@@ -4,4 +4,5 @@ class LoginModel:
         self.password_login = ""
         self.username_rg = ""
         self.password_rg = ""
+        self.confirm_password = ""
         self.name = ""

@@ -104,8 +104,8 @@ class APIManager:
         callback(reply)
 
     def on_failure(self, reply):
+        json_str = reply.readAll().data().decode("utf-8")
         try:
-            json_str = reply.readAll().data().decode("utf-8")
             error_body = json.loads(json_str)["message"]
             code = error_body["code"]
             if code == "required" or code == "null" or code == "empty":
@@ -123,12 +123,12 @@ class APIManager:
             else:
                 msg = f"{error_body}"
 
-            logging.error(msg)
-            Toast().toast(msg)
-
         except:
-            msg = reply.errorString()
-
+            try:
+                msg = json.loads(json_str)["message"]
+            except:
+                msg = reply.errorString()
+        finally:
             logging.error(msg)
             Toast().toast(msg)
 

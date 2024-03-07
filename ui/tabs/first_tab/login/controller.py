@@ -1,3 +1,4 @@
+import hashlib
 import json
 import logging
 
@@ -15,7 +16,8 @@ USERNAME_L = 0
 PASSWORD_L = 1
 USERNAME_R = 2
 PASSWORD_R = 3
-NAME = 4
+CONFIRM_PASSWORD = 4
+NAME = 5
 
 
 class LoginWidget(BaseController):
@@ -30,39 +32,53 @@ class LoginWidget(BaseController):
     def init_controller(self):
         super().init_controller()
 
-        self.view.et_username_login.textChanged.connect(lambda value: self.on_text_changed(value, USERNAME_L))
-        self.view.et_password_login.textChanged.connect(lambda value: self.on_text_changed(value, PASSWORD_L))
-        self.view.et_username_rg.textChanged.connect(lambda value: self.on_text_changed(value, USERNAME_R))
-        self.view.et_password_rg.textChanged.connect(lambda value: self.on_text_changed(value, PASSWORD_R))
-        self.view.et_name.textChanged.connect(lambda value: self.on_text_changed(value, NAME))
+        view: LoginView = self.view
 
-        self.view.enter_pressed_signal.connect(self.on_enter_pressed)
+        view.et_username_login.textChanged.connect(lambda value: self.on_text_changed(value, USERNAME_L))
+        view.et_password_login.textChanged.connect(lambda value: self.on_text_changed(value, PASSWORD_L))
+        view.et_username_rg.textChanged.connect(lambda value: self.on_text_changed(value, USERNAME_R))
+        view.et_password_rg.textChanged.connect(lambda value: self.on_text_changed(value, PASSWORD_R))
+        view.et_confirm_password.textChanged.connect(lambda value: self.on_text_changed(value, CONFIRM_PASSWORD))
+        view.et_name.textChanged.connect(lambda value: self.on_text_changed(value, NAME))
 
-        self.view.btn_login.clicked.connect(self.login)
-        self.view.btn_rg.clicked.connect(self.regist)
+        view.enter_pressed_signal.connect(self.on_enter_pressed)
+
+        view.btn_login.clicked.connect(self.login)
+        view.btn_rg.clicked.connect(self.regist)
 
     def on_text_changed(self, value, index):
+        model: LoginModel = self.model
         if index == USERNAME_L:
-            self.model.username_login = value
+            model.username_login = value
         elif index == PASSWORD_L:
-            self.model.password_login = value
+            model.password_login = value
         elif index == USERNAME_R:
-            self.model.username_rg = value
+            model.username_rg = value
         elif index == PASSWORD_R:
-            self.model.password_rg = value
+            model.password_rg = value
+        elif index == CONFIRM_PASSWORD:
+            model.confirm_password = value
         else:
-            self.model.name = value
+            model.name = value
 
     def login(self):
-        username = self.model.username_login
-        password = self.model.password_login
+        model: LoginModel = self.model
 
-        login_info = {"username": username, "password": password}
+        username = model.username_login
+        password = model.password_login
+        hashed_password = hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+        login_info = {"username": username, "password": hashed_password}
 
         def api_handler(reply):
             if reply.error() == QNetworkReply.NoError:
-                data = reply.readAll().data().decode("utf-8")
-                print(f"응답 성공\ndata:", data)
+                view: LoginView = self.view
+
+                model.username_login = ""
+                model.password_login = ""
+                view.et_username_login.setText("")
+                view.et_password_login.setText("")
+
                 headers = reply.rawHeaderPairs()
                 tokens = ""
                 for header, value in headers:
@@ -70,40 +86,48 @@ class LoginWidget(BaseController):
                         auth = value.data().decode("utf-8")
                         tokens = auth.split(" ")[1].split("/")
 
-                print("refresh:", tokens[0])
-                print("access:", tokens[1])
                 self.setting_manager.set_refresh_token(tokens[0])
                 self.setting_manager.set_access_token(tokens[1])
                 self.set_home_signal.emit()
 
             else:
-                message_str = reply.readAll().data().decode('utf-8')
-                error_body = json.loads(message_str)
-                logging.error(f"{METHOD} login: {error_body}")
-                Toast().toast(error_body["message"])
+                self.api_manager.on_failure(reply)
 
         self.api_manager.login(api_handler, login_info)
 
     def regist(self):
-        name = self.model.name
-        username = self.model.username_rg
-        password = self.model.password_rg
+        model: LoginModel = self.model
 
-        registration_info = {"name": name, "username": username, "password": password}
+        name = model.name
+        username = model.username_rg
+        password = model.password_rg
+        confirm_password = model.confirm_password
+
+        if password != confirm_password:
+            Toast().toast("비밀번호가 일치하지 않습니다.")
+            return
+
+        hashed_password = hashlib.sha256(password.encode("utf-8")).hexdigest()
+
+        registration_info = {"name": name, "username": username, "password": hashed_password}
 
         def api_handler(reply):
             if reply.error() == QNetworkReply.NoError:
-                data = reply.readAll().data().decode("utf-8")
-                print(f"응답 성공\ndata:", data)
-                headers = reply.rawHeaderPairs()
-                for header in headers:
-                    print(f"Header: {header[0]} = {header[1].data().decode('utf-8')}")
+                view: LoginView = self.view
 
+                Toast().toast("실험자 등록이 완료되었습니다.")
+                model.name = ""
+                model.username_rg = ""
+                model.password_rg = ""
+                model.confirm_password = ""
+                view.et_name.setText("")
+                view.et_username_rg.setText("")
+                view.et_password_rg.setText("")
+                view.et_confirm_password.setText("")
+
+                view.set_tab_login()
             else:
-                message_str = reply.readAll().data().decode('utf-8')
-                error_body = json.loads(message_str)
-                logging.error(f"{METHOD} regist: {error_body}")
-                Toast().toast(error_body["message"])
+                self.api_manager.on_failure(reply)
 
         self.api_manager.regist(api_handler, registration_info)
 

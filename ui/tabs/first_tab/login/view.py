@@ -7,7 +7,7 @@ from ui.common import BaseWidgetView, ColoredButton, Logo
 class LoginView(BaseWidgetView):
     enter_pressed_signal = Signal(int)
     size_et = 110
-    size_tabs = (220, 160)
+    size_tabs = (220, 180)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -59,6 +59,7 @@ class LoginView(BaseWidgetView):
         lb_password = QLabel("비밀번호")
         self.et_password_login = QLineEdit()
         self.et_password_login.setFixedWidth(self.size_et)
+        self.et_password_login.setEchoMode(QLineEdit.Password)
         lyt_password.addWidget(lb_password)
         lyt_password.addStretch()
         lyt_password.addWidget(self.et_password_login)
@@ -97,9 +98,19 @@ class LoginView(BaseWidgetView):
         lb_password = QLabel("비밀번호")
         self.et_password_rg = QLineEdit()
         self.et_password_rg.setFixedWidth(self.size_et)
+        self.et_password_rg.setEchoMode(QLineEdit.Password)
         lyt_password.addWidget(lb_password)
         lyt_password.addStretch()
         lyt_password.addWidget(self.et_password_rg)
+
+        lyt_confirm_password = QHBoxLayout()
+        lb_confirm_password = QLabel("비밀번호 확인")
+        self.et_confirm_password = QLineEdit()
+        self.et_confirm_password.setFixedWidth(self.size_et)
+        self.et_confirm_password.setEchoMode(QLineEdit.Password)
+        lyt_confirm_password.addWidget(lb_confirm_password)
+        lyt_confirm_password.addStretch()
+        lyt_confirm_password.addWidget(self.et_confirm_password)
 
         self.btn_rg = ColoredButton("실험자 등록")
 
@@ -107,6 +118,7 @@ class LoginView(BaseWidgetView):
         lyt.addLayout(lyt_name)
         lyt.addLayout(lyt_username)
         lyt.addLayout(lyt_password)
+        lyt.addLayout(lyt_confirm_password)
         lyt.addWidget(self.btn_rg)
         lyt.addStretch()
 
