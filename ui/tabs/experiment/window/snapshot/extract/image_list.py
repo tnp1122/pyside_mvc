@@ -61,10 +61,10 @@ class ImageListView(BaseScrollAreaView):
 
         self.setFixedHeight(self.image_size[1] + self.padding + scroll_bar_height)
 
-    def add_new_image(self, mean_colored_pixmap, cropped_original_pixmap):
+    def add_new_image(self, mean_colored_pixmap, cropped_original_pixmap, target_name):
         count = len(self.image_shells)
 
-        new_image_shell = ImageShell(mean_colored_pixmap, cropped_original_pixmap)
+        new_image_shell = ImageShell(mean_colored_pixmap, cropped_original_pixmap, target_name)
         new_image_shell.set_image_size(*self.image_size)
 
         self.image_shells.append(new_image_shell)
@@ -91,9 +91,9 @@ class ImageListController(BaseController):
         view: ImageListView = self.view
         view.set_image_size(width, height)
 
-    def add_new_image(self, mean_colored_pixmap, cropped_original_pixmap):
+    def add_new_image(self, mean_colored_pixmap, cropped_original_pixmap, target_name):
         view: ImageListView = self.view
-        view.add_new_image(mean_colored_pixmap, cropped_original_pixmap)
+        view.add_new_image(mean_colored_pixmap, cropped_original_pixmap, target_name)
 
     def set_image_index(self, index):
         view: ImageListView = self.view

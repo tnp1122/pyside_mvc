@@ -10,7 +10,7 @@ class ImageShell(QWidget):
     height = 500
     title_font_size = 26
 
-    def __init__(self, mean_colored_pixmap, cropped_original_pixmap, parent=None):
+    def __init__(self, mean_colored_pixmap, cropped_original_pixmap, target_name, parent=None):
         super().__init__(parent)
 
         self.mean_colored_pixmap = mean_colored_pixmap
@@ -35,7 +35,7 @@ class ImageShell(QWidget):
         lyt_left.addWidget(self.wig_solvent_count)
         lyt_left.addWidget(QLabel())
 
-        self.lb_target = QLabel("target")
+        self.lb_target = QLabel(target_name)
         self.lb_target.setStyleSheet(f"font-size: {self.title_font_size}px;")
         self.lb_target.setAlignment(Qt.AlignCenter | Qt.AlignBottom)
         self.lb_image = QLabel()

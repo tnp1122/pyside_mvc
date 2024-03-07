@@ -1,6 +1,6 @@
 from ui.common import BaseController
 from ui.tabs.experiment.window.snapshot.process.capture_list import CaptureListController
-from ui.tabs.experiment.window.snapshot.process.unit import PlateCaptureUnitController
+from ui.tabs.experiment.window.snapshot.process.unit import PlateCaptureUnitController, PlateCaptureUnitView
 from ui.tabs.experiment.window.snapshot.extract import ColorExtractModel, ColorExtractView
 
 
@@ -21,9 +21,14 @@ class ColorExtractController(BaseController):
         capture_units = capture_list.view.units
         for unit in capture_units:
             unit: PlateCaptureUnitController
+            unit_view: PlateCaptureUnitView = unit.view
+
+            mean_colored_pixmap = unit.mean_colored_pixmap
+            cropped_original_pixmap = unit.cropped_original_pixmap
+            target_name = unit_view.cmb_target.currentText()
 
             if unit.mean_colors:
-                view.image_list.add_new_image(unit.mean_colored_pixmap, unit.cropped_original_pixmap)
+                view.image_list.add_new_image(mean_colored_pixmap, cropped_original_pixmap, target_name)
 
     def on_radio_selected(self, index):
         view: ColorExtractView = self.view
