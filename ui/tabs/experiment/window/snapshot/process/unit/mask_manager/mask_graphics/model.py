@@ -53,6 +53,21 @@ class MaskGraphicsModel:
         }
         return circle_mask_info
 
+    def get_transformed_mask_info(self):
+        info = self.get_circle_mask_info()
+        x = int(info["x"])
+        y = int(info["y"])
+        r = int(info["radius"])
+        if info["direction"] == 0:
+            width, height = int(info["width"]), int(info["height"])
+            cols, rows = info["additive_axes"], info["solvent_axes"]
+        else:
+            width, height = int(info["height"]), int(info["width"])
+            cols, rows = info["solvent_axes"], info["additive_axes"]
+
+        transformed_mask_info = {"x": x, "y": y, "r": r, "width": width, "height": height, "cols": cols, "rows": rows}
+        return transformed_mask_info
+
     def save_circle_mask_info(self):
         mask_info = self.get_circle_mask_info()
         SettingManager().set_mask_area_info(mask_info)

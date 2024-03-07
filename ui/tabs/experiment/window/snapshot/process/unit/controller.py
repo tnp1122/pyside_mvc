@@ -57,20 +57,6 @@ class PlateCaptureUnitController(BaseController):
         view: PlateCaptureUnitView = self.view
         view.set_image(image)
 
-    def get_transformed_mask_info(self, mask_info):
-        info = mask_info
-        x = int(info["x"])
-        y = int(info["y"])
-        r = int(info["radius"])
-        if info["direction"] == 0:
-            width, height = int(info["width"]), int(info["height"])
-            cols, rows = info["additive_axes"], info["solvent_axes"]
-        else:
-            width, height = int(info["height"]), int(info["width"])
-            cols, rows = info["solvent_axes"], info["additive_axes"]
-
-        return x, y, r, width, height, cols, rows
-
     def on_mask_apply_clicked(self):
         # mask_info: 이미지 크롭 용
         # masked_array: 색 추출 용
@@ -83,7 +69,9 @@ class PlateCaptureUnitController(BaseController):
         mask_info = graphics.get_circle_mask_info()
         masking.set_circle_mask(mask_info)
         self.masked_array = masking.masked_array
-        x, y, r, width, height, cols, rows = self.get_transformed_mask_info(mask_info)
+        self.transformed_mask_info = graphics.get_transformed_mask_info()
+        info = self.transformed_mask_info
+        x, y, r, width, height, cols, rows = (info[key] for key in ["x", "y", "r", "width", "height", "cols", "rows"])
 
         # 픽스맵 생성
         self.make_mean_colored_pixmap(x, y, r, width, height, cols, rows)
