@@ -81,6 +81,7 @@ class PlateCaptureUnitController(BaseController):
 
         # 데이터 참조
         self.mask_info = graphics.get_circle_mask_info()
+        masking.set_circle_mask(self.mask_info)
         self.masked_array = masking.masked_array
         x, y, r, width, height, cols, rows = self.get_transformed_mask_info()
 
