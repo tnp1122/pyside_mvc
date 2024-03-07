@@ -125,7 +125,7 @@ class LoginWidget(BaseController):
                 view.et_password_rg.setText("")
                 view.et_confirm_password.setText("")
 
-                view.set_tab_login()
+                view.tabs.setCurrentIndex(0)
             else:
                 self.api_manager.on_failure(reply)
 
