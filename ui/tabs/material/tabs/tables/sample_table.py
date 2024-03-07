@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 
 from PySide6.QtCore import Signal, QSignalMapper, Qt
@@ -9,6 +8,8 @@ from ui.common import BaseTableWidgetView, ImageButton, TableWidgetController
 from ui.common.date_picker import DatePicker
 from ui.common.toast import Toast
 from util.setting_manager import SettingManager
+
+from util import image_converter as ic
 
 
 class SampleTableModel:
@@ -107,8 +108,7 @@ class SampleTableView(BaseTableWidgetView):
             self.date_picker.exec()
 
         current_date = datetime.now().strftime("%Y-%m-%d")
-        img_calendar = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                                    "../../../../../static/image/calendar.png")
+        img_calendar = ic.get_image_path("calendar.png")
 
         cmb_subject = QComboBox()
         widget_date = QWidget()

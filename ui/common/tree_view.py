@@ -1,4 +1,3 @@
-import os
 from collections import OrderedDict
 
 from PySide6.QtCore import Qt, QEvent, Signal
@@ -6,6 +5,8 @@ from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSizePolicy
 
 from ui.common import ImageButton, BaseScrollAreaView
+
+from util import image_converter as ic
 
 
 class TreeView(BaseScrollAreaView):
@@ -81,16 +82,12 @@ class TreeRow(QWidget):
 
         if self.level == 0:
             return
-        img_expand = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                                  "../../static/image/expand_arrow.png")
+        img_expand = ic.get_image_path("expand_arrow.png")
         if self.is_directory:
-            img_icon = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                                    "../../static/image/icon_directory.png")
+            img_icon = ic.get_image_path("icon_directory.png")
         else:
-            img_icon = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                                    "../../static/image/icon_document.png")
-        img_add = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                               "../../static/image/icon_add.png")
+            img_icon = ic.get_image_path("icon_document.png")
+        img_add = ic.get_image_path("icon_add.png")
 
         icon_size = (self.icon_size, self.icon_size)
         self.btn_expand = ImageButton(image=img_expand, size=icon_size, degree=self.get_expand_icon_degree())
@@ -135,7 +132,6 @@ class TreeRow(QWidget):
                 widget = lyt_child.takeAt(0).widget()
                 widget.deleteLater()
                 widget.close()
-
 
     def set_signal(self):
         self.icon.installEventFilter(self)

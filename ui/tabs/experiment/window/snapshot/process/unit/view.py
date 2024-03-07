@@ -49,12 +49,9 @@ class PlateCaptureUnitView(BaseWidgetView):
 
         self.cmb_target = QComboBox()
         self.cmb_target.setFixedWidth(150)
-        img_lasso = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                                 "../../../../../../../static/image/lasso.png")
-        img_load_img = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                                    "../../../../../../../static/image/img_load_box.png")
-        img_trash_bin = os.path.join(os.path.abspath(os.path.dirname(__file__)),
-                                     "../../../../../../../static/image/trash_bin.png")
+        img_lasso = ic.get_image_path("lasso.png")
+        img_load_img = ic.get_image_path("img_load_box.png")
+        img_trash_bin = ic.get_image_path("trash_bin.png")
         self.btn_edit_mask = ImageButton(image=img_lasso, size=(20, 20))
         self.btn_load_img = ImageButton(image=img_load_img, size=(20, 20))
         self.btn_trash_bin = ImageButton(image=img_trash_bin, size=(20, 20))

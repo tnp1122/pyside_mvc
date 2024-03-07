@@ -59,6 +59,10 @@ def q_pixmap_to_array(pixmap: QPixmap) -> np.ndarray:
     return ndarray.reshape((image.height(), image.width(), 4))
 
 
+def get_image_path(image_name):
+    return os.path.join(os.getcwd(), f"static/image/{image_name}")
+
+
 def get_absolute_path(main_path="", sub_path="", make_directory=True) -> str:
     absolute_path = os.getcwd()
     if main_path:

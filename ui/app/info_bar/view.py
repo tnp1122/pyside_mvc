@@ -1,9 +1,8 @@
-import os
-
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QHBoxLayout, QLabel
 
 from ui.common import BaseWidgetView, ImageButton
+from util import image_converter as ic
 
 
 class InfoBarView(BaseWidgetView):
@@ -22,7 +21,7 @@ class InfoBarView(BaseWidgetView):
         self.lb_name.setFont(font)
         self.lb_name_after = QLabel("님")
 
-        image_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "../../../static/image/cogwheel.png")
+        image_path = ic.get_image_path("cogwheel.png")
         cogwheel = QPixmap(image_path)
         self.btn_setting = ImageButton(image=cogwheel)
 
@@ -31,4 +30,3 @@ class InfoBarView(BaseWidgetView):
         lyt.addWidget(self.lb_name_after)
         lyt.addWidget(self.btn_setting)
         lyt.addStretch()
-
