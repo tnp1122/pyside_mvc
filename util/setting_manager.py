@@ -3,13 +3,17 @@ import json
 from PySide6.QtCore import QSettings
 
 USE_NETWORK_DB = "use_network_db"
+
 ACCESS_TOKEN = "access_token"
 REFRESH_TOKEN = "refresh_token"
 EXPERIMENTER_NAME = "experimenter_name"
+
 USE_METAL_SAMPLE = "use_metal_sample"
 USE_ADDITIVE_SAMPLE = "use_additive_sample"
 USE_TARGET_MATERIAL = "use_target_material"
+
 PATH_TO_LOAD_IMAGE = "path_to_load_image"
+MASK_AREA_INFO = "mask_area_info"
 
 
 class SettingManager:
@@ -105,6 +109,12 @@ class SettingManager:
 
     def get_path_to_load_image(self):
         return self._get_value(PATH_TO_LOAD_IMAGE)
+
+    def set_mask_area_info(self, area_info):
+        self._set_json_value(MASK_AREA_INFO, area_info)
+
+    def get_mask_area_info(self):
+        return self._get_json_data(MASK_AREA_INFO)
 
 
 def main():

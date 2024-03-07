@@ -19,7 +19,7 @@ class PlateCaptureUnitController(BaseController):
         super().__init__(PlateCaptureUnitModel, PlateCaptureUnitView, parent)
 
         self.masked_array: ndarray
-        self.mask_info = {}
+        self.transformed_mask_info = {}
         self.mean_colors = []
         self.mean_colored_pixmap = QPixmap()
         self.cropped_original_pixmap = QPixmap()
@@ -37,7 +37,7 @@ class PlateCaptureUnitController(BaseController):
 
     def clear_mask_info(self):
         self.masked_array = None
-        self.mask_info = None
+        self.transformed_mask_info = None
         self.mean_colors = None
         self.mean_colored_pixmap = None
         self.cropped_original_pixmap = None
@@ -57,8 +57,8 @@ class PlateCaptureUnitController(BaseController):
         view: PlateCaptureUnitView = self.view
         view.set_image(image)
 
-    def get_transformed_mask_info(self):
-        info = self.mask_info
+    def get_transformed_mask_info(self, mask_info):
+        info = mask_info
         x = int(info["x"])
         y = int(info["y"])
         r = int(info["radius"])
@@ -80,10 +80,10 @@ class PlateCaptureUnitController(BaseController):
         graphics: MaskGraphicsController = mask_manager.view.graphics
 
         # 데이터 참조
-        self.mask_info = graphics.get_circle_mask_info()
-        masking.set_circle_mask(self.mask_info)
+        mask_info = graphics.get_circle_mask_info()
+        masking.set_circle_mask(mask_info)
         self.masked_array = masking.masked_array
-        x, y, r, width, height, cols, rows = self.get_transformed_mask_info()
+        x, y, r, width, height, cols, rows = self.get_transformed_mask_info(mask_info)
 
         # 픽스맵 생성
         self.make_mean_colored_pixmap(x, y, r, width, height, cols, rows)
@@ -92,6 +92,7 @@ class PlateCaptureUnitController(BaseController):
         masked_pixmap = ic.array_to_q_pixmap(masking.mask_filled_image, True)
         self.view.set_masked_pixmap(masked_pixmap, x, y, width, height)
 
+        graphics.save_circle_mask_info()
         self.mask_applied.emit()
         mask_manager.close()
 
@@ -138,7 +139,7 @@ class PlateCaptureUnitController(BaseController):
         view: PlateCaptureUnitView = self.view
         cropped_image = view.origin_image[y:y + height, x:x + width]
 
-        mean_color_mask_info = {"mean_colors": self.mean_colors, "mask_info": self.mask_info}
+        mean_color_mask_info = {"mean_colors": self.mean_colors, "mask_info": self.transformed_mask_info}
 
         return cropped_image, mean_color_mask_info
 

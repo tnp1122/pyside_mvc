@@ -30,6 +30,9 @@ class MaskGraphicsController(BaseController):
     def get_circle_mask_info(self):
         return self.model.get_circle_mask_info()
 
+    def save_circle_mask_info(self):
+        self.model.save_circle_mask_info()
+
     def set_scene(self, origin_image):
         self.view.set_scene(origin_image)
 

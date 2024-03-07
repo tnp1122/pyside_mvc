@@ -1,23 +1,40 @@
+from util.setting_manager import SettingManager
+
+
 class MaskGraphicsModel:
     def __init__(self):
         self._is_circle_visible = False
+        mask_area_info = SettingManager().get_mask_area_info()
 
-        self._area_x = 563
-        self._area_y = 530
-        self._area_width = 1406
-        self._area_height = 945
-        self._scened_x = self.area_x     # 좌표 이동시 scene의 좌표도 이동하므로 원점에서의 좌표가 필요함
+        if mask_area_info:
+            self._area_x = mask_area_info["x"]
+            self._area_y = mask_area_info["y"]
+            self._area_width = mask_area_info["width"]
+            self._area_height = mask_area_info["height"]
+            self._direction = mask_area_info["direction"]
+            self._rotation = mask_area_info["rotation"]
+            self._additive_axes = mask_area_info["additive_axes"]
+            self._solvent_axes = mask_area_info["solvent_axes"]
+            self._circle_radius = mask_area_info["radius"]
+
+        else:
+            self._area_x = 563
+            self._area_y = 530
+            self._area_width = 1406
+            self._area_height = 945
+            self._direction = 1  # 0 = horizontal, 1 = vertical
+            self._rotation = 0
+
+            additive_interval = self._area_width / 12
+            solvent_interval = self._area_height / 8
+            self._additive_axes = [additive_interval / 2 + i * additive_interval for i in range(12)]
+            self._solvent_axes = [solvent_interval / 2 + i * solvent_interval for i in range(8)]
+            self._circle_radius = 35
+
+        self._scened_x = self.area_x  # 좌표 이동시 scene의 좌표도 이동하므로 원점에서의 좌표가 필요함
         self._scened_y = self.area_y
 
-        self._direction = 1  # 0 = horizontal, 1 = vertical
-        self._rotation = 0
         self._border_width = 10
-
-        additive_interval = self._area_width / 12
-        solvent_interval = self._area_height / 8
-        self._additive_axes = [additive_interval / 2 + i * additive_interval for i in range(12)]
-        self._solvent_axes = [solvent_interval / 2 + i * solvent_interval for i in range(8)]
-        self._circle_radius = 35
 
         self._border_threshold = 30
         self.is_border_adjustable = False
@@ -29,12 +46,17 @@ class MaskGraphicsModel:
             "width": self.area_width,
             "height": self.area_height,
             "direction": self.direction,
-            "roation": self.rotation,
+            "rotation": self.rotation,
             "additive_axes": self.additive_axes,
             "solvent_axes": self.solvent_axes,
             "radius": self.circle_radius
         }
         return circle_mask_info
+
+    def save_circle_mask_info(self):
+        mask_info = self.get_circle_mask_info()
+        SettingManager().set_mask_area_info(mask_info)
+
 
     @property
     def is_circle_visible(self):
