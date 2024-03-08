@@ -38,6 +38,7 @@ class PlateSnapshotController(TabWidgetController):
         view: PlateSnapshotView = self.view
 
         plate_process_view: PlateProcessView = view.plate_process.view
+        view.color_difference.set_plate_age(plate_process_view.plate_age)
         plate_process_view.plate_age_changed.connect(view.color_difference.set_plate_age)
         plate_process_view.btn_save.clicked.connect(self.on_save_button_clicked)
 
