@@ -1333,7 +1333,10 @@ class Toupcam:
             try:
                 dir = os.path.dirname(os.path.realpath(__file__))
                 if sys.platform == 'win32':
-                    cls.__lib = ctypes.windll.LoadLibrary(os.path.join(dir, 'toupcam.dll'))
+                    try:
+                        cls.__lib = ctypes.windll.LoadLibrary(os.path.join(dir, 'toupcam.dll'))
+                    except:
+                        cls.__lib = ctypes.windll.LoadLibrary(os.path.join(os.getcwd(), "toupcam.dll"))
                 elif sys.platform.startswith('linux'):
                     cls.__lib = ctypes.cdll.LoadLibrary(os.path.join(dir, 'libtoupcam.so'))
                 else:
@@ -1343,7 +1346,10 @@ class Toupcam:
 
             if cls.__lib is None:
                 if sys.platform == 'win32':
-                    cls.__lib = ctypes.windll.LoadLibrary('toupcam.dll')
+                    try:
+                        cls.__lib = ctypes.windll.LoadLibrary('toupcam.dll')
+                    except:
+                        cls.__lib = ctypes.windll.LoadLibrary(os.path.join(os.getcwd(), "toupcam.dll"))
                 elif sys.platform.startswith('linux'):
                     cls.__lib = ctypes.cdll.LoadLibrary('libtoupcam.so')
                 else:
