@@ -226,6 +226,10 @@ class APIManager:
         endpoint = self.EXPERIMENT
         self._call_api(POST, endpoint, callback, experiment)
 
+    def remove_experiment(self, callback, experiment_id):
+        endpoint = self.EXPERIMENT + f"{experiment_id}/remove/"
+        self._call_api(POST, endpoint, callback)
+
     def get_targets(self, callback, experiment_id):
         endpoint = self.EXPERIMENT + f"{experiment_id}/target/"
         self._call_api(GET, endpoint, callback)
@@ -244,6 +248,10 @@ class APIManager:
         endpoint = self.EXPERIMENT + f"{experiment_id}/sensor-combination/"
         self._call_api(POST, endpoint, callback, sensor_combination)
 
+    def remove_sensor_combination(self, callback, experiment_id, combination_id):
+        endpoint = self.EXPERIMENT + f"{experiment_id}/sensor-combination/{combination_id}/remove/"
+        self._call_api(POST, endpoint, callback)
+
     """ plate """
     PLATE = "plate/"
 
@@ -251,6 +259,14 @@ class APIManager:
         endpoint = self.PLATE
         self._call_api(POST, endpoint, callback, plate)
 
+    def remove_plate(self, callback, plate_id):
+        endpoint = self.PLATE + f"{plate_id}/remove/"
+        self._call_api(POST, endpoint, callback)
+
     def add_snapshot(self, callback, plate_id, snapshot):
         endpoint = self.PLATE + f"{plate_id}/snapshot/"
         self._call_api(POST, endpoint, callback, snapshot)
+
+    def remove_snapshot(self, callback, plate_id, snapshot_id):
+        endpoint = self.PLATE + f"{plate_id}/snapshot/{snapshot_id}/remove/"
+        self._call_api(POST, endpoint, callback)

@@ -1,8 +1,10 @@
 from PySide6.QtCore import Signal
+from PySide6.QtNetwork import QNetworkReply
 
 from ui.common import BaseController
+from ui.common.confirmation_dialog import ConfirmationDialog
 from ui.tabs.experiment import ExperimentModel, ExperimentView
-from ui.tabs.experiment.explorer import ExplorerController
+from ui.tabs.experiment.explorer import ExplorerController, ExplorerView
 from ui.tabs.experiment.window import ExperimentWindowController
 from ui.tabs.experiment.window.add_experiment import AddExperimentController
 from ui.tabs.experiment.window.add_plate import AddPlateController, AddPlateView
@@ -24,8 +26,10 @@ class ExperimentController(BaseController):
         super().init_controller()
 
         view: ExperimentView = self.view
-        view.explorer.view.btn_add.clicked.connect(self.add_experiment)
-        view.explorer.view.tree.root.clicked_signal.connect(self.on_tree_add_button)
+        explorer_view: ExplorerView = view.explorer.view
+        explorer_view.btn_add.clicked.connect(self.add_experiment)
+        explorer_view.tree.root.clicked_signal.connect(self.on_tree_add_button)
+        explorer_view.tree.root.remove_signal.connect(self.on_tree_remove_clicked)
 
         view.window_widget.view.tabCloseRequested.connect(lambda index: self.remove_tab_with_index(index))
 
@@ -95,6 +99,100 @@ class ExperimentController(BaseController):
                 lambda plate_age: self.on_snapshot_added(plate_snapshot, plate_name, plate_age))
 
             self.add_tab(plate_snapshot, 1, "새 스냅샷")
+
+    def on_tree_remove_clicked(self, indexes: list):
+        experiment_tree = self.view.explorer.experiment_tree
+        experiment, combination, plate, snapshot = None, None, None, None
+        experiment_id, combination_id, plate_id, snapshot_id = None, None, None, None
+
+        title, content = "", ""
+        cancel_text = "취소"
+        has_refer = False
+        use_confirm = True
+
+        depth = len(indexes)
+        if depth > 0:
+            experiment = experiment_tree[indexes[0]]
+            experiment_id = experiment["id"]
+
+        if depth > 1:
+            combination = experiment["sensor_combinations"][indexes[1]]
+            combination_id = combination["id"]
+
+        if depth > 2:
+            plate = combination["plates"][indexes[2]]
+            plate_id = plate["id"]
+
+        if depth > 3:
+            snapshot = plate["plate_snapshots"][indexes[3]]
+            snapshot_id = snapshot["id"]
+
+        if depth == 1:
+            experiment_name = experiment["name"]
+            combinations = experiment["sensor_combinations"]
+
+            title = "실험 삭제"
+            content = f"[실험] {experiment_name}을(를) 삭제하시겠습니까?"
+            for combination in combinations:
+                if combination["plates"]:
+                    has_refer = True
+                    content = "하위 플레이트를 삭제한 뒤에 실험을 삭제할 수 있습니다."
+                    break
+
+        elif depth == 2:
+            combination_name = combination["name"]
+            plates = combination["plates"]
+
+            title = "조합 삭제"
+            content = f"[조합] {combination_name}을(를) 삭제하시겠습니까?"
+
+            if plates:
+                has_refer = True
+                content = "하위 플레이트를 삭제한 뒤에 센서 조합을 삭제할 수 있습니다."
+
+        elif depth == 3:
+            plate_name = plate["name"]
+            snapshots = plate["plate_snapshots"]
+
+            title = "플레이트 삭제"
+            content = f"[플레이트] {plate_name}을(를) 삭제하시겠습니까?"
+
+            if snapshots:
+                has_refer = True
+                content = "하위 스냅샷을 삭제한 뒤에 플레이트를 삭제할 수 있습니다."
+
+        elif depth == 4:
+            snapshot_name = snapshot["name"]
+
+            title = "스냅샷 삭제"
+            content = f"[스냅샷] {snapshot_name}을(를) 삭제하시겠습니까?"
+
+        if has_refer:
+            cancel_text = "확인"
+            use_confirm = False
+
+        dlg_confirm = ConfirmationDialog(
+            title, content, cancel_text=cancel_text, use_confirm=use_confirm, parent=self.view)
+
+        dlg_confirm.confirmed.connect(
+            lambda: self.remove_tree_item(depth, experiment_id, combination_id, plate_id, snapshot_id))
+        dlg_confirm.exec()
+
+    def remove_tree_item(self, depth, experiment_id, combination_id, plate_id, snapshot_id):
+        def api_handler(reply):
+            if reply.error() == QNetworkReply.NoError:
+                self.view.explorer.update_tree_view()
+            else:
+                self.api_manager.on_failure(reply)
+
+        if depth == 1:
+            self.api_manager.remove_experiment(api_handler, experiment_id)
+        elif depth == 2:
+            self.api_manager.remove_sensor_combination(api_handler, experiment_id, combination_id)
+        elif depth == 3:
+            self.api_manager.remove_plate(api_handler, plate_id)
+        elif depth == 4:
+            self.api_manager.remove_snapshot(api_handler, plate_id, snapshot_id)
 
     def on_experiment_added(self, controller: AddExperimentController):
         self.view.explorer.update_tree_view()

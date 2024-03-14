@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 from PySide6.QtCore import Qt, QEvent, Signal
 from PySide6.QtGui import QFont
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSizePolicy
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSizePolicy, QMenu
 
 from ui.common import ImageButton, BaseScrollAreaView
 
@@ -48,6 +48,7 @@ class TreeRow(QWidget):
     font_size = 11
 
     clicked_signal = Signal(list)
+    remove_signal = Signal(list)
 
     def __init__(self, is_directory=True, parent=None, title="폴더 이름", level=0, index=-1):
         super().__init__()
@@ -136,8 +137,10 @@ class TreeRow(QWidget):
     def set_signal(self):
         self.icon.installEventFilter(self)
         self.lb_title.installEventFilter(self)
+        self.lb_title.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.lb_title.customContextMenuRequested.connect(self.show_context_menu)
         self.btn_expand.clicked.connect(self.expand)
-        self.btn_add.clicked.connect(self.bubble_clicked_event)
+        self.btn_add.clicked.connect(lambda: self.bubble_event("add"))
 
     def get_expand_icon_degree(self):
         return 0 if self.is_expanded else 270
@@ -205,6 +208,24 @@ class TreeRow(QWidget):
             return
 
         self.clicked_signal.emit(indexes)
+
+    def bubble_event(self, signal, index=None):
+        indexes = index if index else []
+        if self.parent:
+            indexes.insert(0, self.index)
+            self.parent.bubble_event(signal, indexes)
+            return
+        if signal == "add":
+            self.clicked_signal.emit(indexes)
+        else:
+            self.remove_signal.emit(indexes)
+
+    def show_context_menu(self, pos):
+        menu = QMenu(self)
+
+        act_remove = menu.addAction("삭제")
+        act_remove.triggered.connect(lambda: self.bubble_event("remove"))
+        menu.exec(self.lb_title.mapToGlobal(pos))
 
 
 def main():
