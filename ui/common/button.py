@@ -36,13 +36,32 @@ class ImageButton(QPushButton):
 class ColoredButton(QPushButton):
     def __init__(self, text, color=None, background_color=None, padding=None, parent=None):
         super().__init__(text, parent)
+        self.color = color or "white"
+        self.background_color = background_color or "#5E6C80"
+        self.padding = padding or "5px"
+
+        self.set_style()
+
+    def set_style(self):
         style = f"""
-            color: {color or "white"};
-            background-color: {background_color or "#5E6C80"};
+            color: {self.color};
+            background-color: {self.background_color};
             border: 0px;
-            padding: {padding or "5px"};
+            padding: {self.padding};
         """
         self.setStyleSheet(style)
+
+    def set_color(self, color=None):
+        self.color = color or "white"
+        self.set_style()
+
+    def set_background_color(self, background_color=None):
+        self.background_color = background_color or "#5E6C80"
+        self.set_style()
+
+    def set_padding(self, padding=None):
+        self.padding = padding or "5px"
+        self.set_style()
 
 
 class CurvedCornerButton(QPushButton):
