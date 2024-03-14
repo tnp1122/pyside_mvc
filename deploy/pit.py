@@ -115,8 +115,8 @@ def check_pit_version():
 
     logging.info("커밋 내역을 확인합니다.")
 
-    repo = Repo(git_path)
-    fetch(git_path, remote_url)
+    fetch(pit_path)
+    repo = Repo(pit_path)
 
     refs = repo.get_refs()
     sha = refs[b"refs/remotes/origin/main"]
