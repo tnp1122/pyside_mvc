@@ -1,8 +1,11 @@
+from PySide6.QtGui import QIcon
+
 from ui.app.main_tab import MainTabController
 from ui.app.info_bar import InfoBarController
 from ui.common.toast import Toast
 from ui.common import BaseWidgetView
 from util.camera_manager import CameraManager
+from util import image_converter as ic
 
 
 class AppView(BaseWidgetView):
@@ -18,6 +21,10 @@ class AppView(BaseWidgetView):
 
     def init_view(self):
         super().init_view()
+
+        icon_path = ic.get_image_path("pit_icon.ico")
+        self.setWindowTitle("JEN-LiFE Pioneer kIT")
+        self.setWindowIcon(QIcon(icon_path))
 
         self.toast = Toast(self)
         CameraManager(self)
