@@ -2,6 +2,7 @@ import json
 
 from PySide6.QtCore import QSettings
 
+VERSION = "version"
 USE_NETWORK_DB = "use_network_db"
 
 ACCESS_TOKEN = "access_token"
@@ -48,6 +49,9 @@ class SettingManager:
 
     def _remove_value(self, key):
         self.settings.remove(key)
+
+    def get_pit_version(self):
+        return self._get_value(VERSION, "unknown")
 
     def set_use_network_db(self, value):
         self._set_value(USE_NETWORK_DB, value)
