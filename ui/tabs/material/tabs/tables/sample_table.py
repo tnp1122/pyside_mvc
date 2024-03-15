@@ -1,8 +1,7 @@
 from datetime import datetime
 
-from PySide6.QtCore import Signal, QSignalMapper, Qt
-from PySide6.QtWidgets import QHeaderView, QTableWidgetItem, QCheckBox, QWidget, QHBoxLayout, QPushButton, QComboBox, \
-    QLabel
+from PySide6.QtCore import QSignalMapper, Qt
+from PySide6.QtWidgets import QHeaderView, QTableWidgetItem, QCheckBox, QWidget, QHBoxLayout, QComboBox, QLabel
 
 from ui.common import BaseTableWidgetView, ImageButton, TableWidgetController
 from ui.common.date_picker import DatePicker
@@ -19,12 +18,6 @@ class SampleTableModel:
 
 class SampleTableView(BaseTableWidgetView):
     setting_manager = SettingManager()
-    # change_use_signal = Signal(int)
-
-    samples = []
-    subjects = []
-    use_samples = set()
-    use_sample_ids = set()
 
     def __init__(self, parent=None, args=None):
         super().__init__(parent)
@@ -32,6 +25,11 @@ class SampleTableView(BaseTableWidgetView):
         self.subject = args["tables"]
         self.headers = args["headers"]
         self.is_metal = self.subject == "metal"
+
+        self.samples = []
+        self.subjects = []
+        self.use_samples = set()
+        self.use_sample_ids = set()
 
     def init_view(self):
         super().init_view()
@@ -41,7 +39,6 @@ class SampleTableView(BaseTableWidgetView):
         self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeToContents)
 
-        # self.use_samples = set()  # (sample_id, subject_id)
         self.use_sample_ids = self.get_use_sample_ids()
 
     def get_use_sample_ids(self):
@@ -74,9 +71,8 @@ class SampleTableView(BaseTableWidgetView):
             cb_use = QCheckBox()
             if sample_id in self.use_sample_ids:
                 cb_use.setChecked(True)
-                if not self.is_metal:
-                    sample_set = (sample_id, item["additive"]["id"])
-                    self.use_samples.add(sample_set)
+                sample_set = (sample_id, item[self.subject]["id"])
+                self.use_samples.add(sample_set)
 
             cb_use.stateChanged.connect(self.mapper_change_use.map)
             self.mapper_change_use.setMapping(cb_use, row)
