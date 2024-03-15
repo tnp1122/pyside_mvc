@@ -19,7 +19,7 @@ class ExcelManager:
         self.control_rgb_colors = model.get_rgb_colors(self.control_index)
 
     def get_path_to_save(self, target_index):
-        file_name = f"{self.plate_age}H_{self.targets[target_index]['name']}.xlsx"
+        file_name = f"{self.plate_age}H_{self.targets[target_index]['name']}_{self.control_name}.xlsx"
         return os.path.join(self.snapshot_path, file_name)
 
     def save_target_colors(self, target_index):
