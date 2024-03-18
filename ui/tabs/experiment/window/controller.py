@@ -21,7 +21,8 @@ class ExperimentWindowController(BaseController):
     def add_tab(self, controller: BaseController, mode, tab_name):
         view: ExperimentWindowView = self.view
 
-        view.addTab(view.with_container(controller.view, mode=mode), tab_name)
+        new_tab_index = view.addTab(view.with_container(controller.view, mode=mode), tab_name)
+        view.setCurrentIndex(new_tab_index)
 
     def remove_tab(self, controller: BaseController):
         index = self.get_index(controller.view)
