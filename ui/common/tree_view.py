@@ -48,6 +48,7 @@ class TreeRow(QWidget):
     font_size = 11
 
     clicked_signal = Signal(list)
+    double_clicked_signal = Signal(list)
     remove_signal = Signal(list)
 
     def __init__(self, is_directory=True, parent=None, title="폴더 이름", level=0, index=-1):
@@ -188,7 +189,10 @@ class TreeRow(QWidget):
 
         if event.type() == QEvent.MouseButtonDblClick:
             if event.button() == Qt.LeftButton:
-                self.expand()
+                if self.level == 4:
+                    self.bubble_event("double_clicked")
+                else:
+                    self.expand()
 
         return super().eventFilter(obj, event)
 
@@ -200,15 +204,6 @@ class TreeRow(QWidget):
         style = ""
         self.lb_title.setStyleSheet(style)
 
-    def bubble_clicked_event(self, index=None):
-        indexes = index if index else []
-        if self.parent:
-            indexes.insert(0, self.index)
-            self.parent.bubble_clicked_event(indexes)
-            return
-
-        self.clicked_signal.emit(indexes)
-
     def bubble_event(self, signal, index=None):
         indexes = index if index else []
         if self.parent:
@@ -217,7 +212,9 @@ class TreeRow(QWidget):
             return
         if signal == "add":
             self.clicked_signal.emit(indexes)
-        else:
+        elif signal == "double_clicked":
+            self.double_clicked_signal.emit(indexes)
+        elif signal == "remove":
             self.remove_signal.emit(indexes)
 
     def show_context_menu(self, pos):
