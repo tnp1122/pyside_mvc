@@ -10,7 +10,7 @@ from ui.tabs.experiment.window.snapshot.difference.excel_manager import ExcelMan
 class ColorDifferenceController(BaseController):
     def __init__(self, parent=None, snapshot_info=None):
         self.snapshot_path = snapshot_info["snapshot_path"]
-        self.plate_age = 0
+        self.snapshot_age = 0
 
         super().__init__(ColorDifferenceModel, ColorDifferenceView, parent)
 
@@ -24,8 +24,8 @@ class ColorDifferenceController(BaseController):
         view.radio.selected.connect(lambda index: self.on_radio_select_changed(index))
         view.btn_to_excel.clicked.connect(self.to_excel)
 
-    def set_plate_age(self, age):
-        self.plate_age = age
+    def set_snapshot_age(self, age):
+        self.snapshot_age = age
 
     def on_cmb_control_changed(self, index):
         self.model.control_index = index
@@ -92,7 +92,7 @@ class ColorDifferenceController(BaseController):
         model: ColorDifferenceModel = self.model
         view: ColorDifferenceView = self.view
 
-        em = ExcelManager(self.snapshot_path, self.plate_age, model)
+        em = ExcelManager(self.snapshot_path, self.snapshot_age, model)
 
         for index in range(len(model.targets)):
             em.save_target_colors(index)

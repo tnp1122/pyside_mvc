@@ -10,13 +10,13 @@ UNMASK_COLOR = (255, 255, 255)
 class Masking(QObject):
     masked_image_updated_signal = Signal()
 
-    def __init__(self, origin_image):
+    def __init__(self, origin_image: np.ndarray):
         super().__init__()
         self.origin_image = origin_image
 
-        self.circle_mask = np.zeros_like(self.origin_image[:, :, :], dtype=np.uint8)
-        self.flare_mask = np.ones_like(self.origin_image[:, :, :], dtype=np.uint8)
-        self.custom_mask = np.full_like(self.origin_image[:, :, :], 255, dtype=np.uint8)
+        self.circle_mask = np.zeros_like(self.origin_image[:, :, :3], dtype=np.uint8)
+        self.flare_mask = np.ones_like(self.origin_image[:, :, :3], dtype=np.uint8)
+        self.custom_mask = np.full_like(self.origin_image[:, :, :3], 255, dtype=np.uint8)
 
         self.masked_array = np.ma.masked_array(self.origin_image, cv2.bitwise_not(self.circle_mask))
         self.mask_filled_image = self.masked_array.filled(0).astype(np.uint8)
@@ -126,7 +126,7 @@ class Masking(QObject):
         self.masked_image_updated_signal.emit()
 
     def set_circle_mask(self, mask_info):
-        self.circle_mask = np.zeros_like(self.origin_image[:, :, :], dtype=np.uint8)
+        self.circle_mask = np.zeros_like(self.origin_image[:, :, :3], dtype=np.uint8)
         x = mask_info["x"]
         y = mask_info["y"]
         radius = mask_info["radius"]
