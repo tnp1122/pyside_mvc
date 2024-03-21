@@ -1,10 +1,10 @@
 import os
 
-import numpy as np
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QPixmap, Qt, QFont
 from PySide6.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout, QComboBox, QWidget, QSizePolicy, QFileDialog
 
+from model import Image, Targets
 from ui.common import BaseWidgetView, ImageButton
 from ui.tabs.experiment.window.snapshot.process.unit.mask_manager import MaskManagerController
 
@@ -22,8 +22,8 @@ class PlateCaptureUnitView(BaseWidgetView):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.origin_image: np.ndarray
-        self.targets = []
+        self.origin_image = Image()
+        self.targets = Targets()
 
     def closeEvent(self, event):
         if hasattr(self, "mask_manager") and self.mask_manager:
@@ -105,10 +105,10 @@ class PlateCaptureUnitView(BaseWidgetView):
         self._pixmap = pixmap
         self.update_label(self._pixmap)
 
-    def set_image(self, image: np.ndarray):
+    def set_image(self, image: Image):
         self.clear_mask_info.emit()
         self.origin_image = image
-        pixmap = ic.array_to_q_pixmap(image, True)
+        pixmap = image.q_pixmap
 
         self.set_pixmap(pixmap)
 
@@ -147,18 +147,21 @@ class PlateCaptureUnitView(BaseWidgetView):
             base_image_path = "/".join(path_list)
             self.setting_manager.set_path_to_load_image(base_image_path)
 
-            image = ic.path_to_nd_array(image_path)
+            image = Image().from_path(image_path)
             self.set_image(image)
 
     def set_targets(self, targets):
         self.targets = targets
         self.cmb_target.clear()
         for target in targets:
-            self.cmb_target.addItem(target["name"])
+            self.cmb_target.addItem(target.name)
 
     def get_selected_target(self):
         selected_index = self.cmb_target.currentIndex()
         return self.targets[selected_index]
 
     def get_selected_target_id(self):
-        return self.get_selected_target()["id"]
+        return self.get_selected_target().id
+
+    def set_selected_target(self, target_index):
+        self.cmb_target.setCurrentIndex(target_index)

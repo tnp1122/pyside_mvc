@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QWidget, QTabWidget
 
 from ui.common import BaseTabWidgetView
 from ui.tabs.experiment.window.snapshot.difference import ColorDifferenceController
-from ui.tabs.experiment.window.snapshot.process import PlateProcessController
+from ui.tabs.experiment.window.snapshot.process import SnapshotProcessController
 from ui.tabs.experiment.window.snapshot.process.capture_list import CaptureListView
 from ui.tabs.experiment.window.snapshot.extract import ColorExtractController
 
@@ -25,7 +25,7 @@ class PlateSnapshotView(BaseTabWidgetView):
 
         self.setTabPosition(QTabWidget.South)
 
-        self.plate_process = PlateProcessController(snapshot_info=self.snapshot_info)
+        self.plate_process = SnapshotProcessController(snapshot_info=self.snapshot_info)
         self.color_extract = ColorExtractController()
         self.color_graph = QWidget()
         self.color_difference = ColorDifferenceController(snapshot_info=self.snapshot_info)

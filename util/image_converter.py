@@ -35,17 +35,17 @@ def path_to_q_pixmap(image_path: str) -> QPixmap:
     return QPixmap(image_path)
 
 
-def array_to_q_image(image: np.ndarray, is_toupcam=False) -> QImage:
+def array_to_q_image(image: np.ndarray, has_alpha=False) -> QImage:
     height, width, channel = image.shape
-    if is_toupcam:
+    if has_alpha:
         bytes_per_line = (width * 24 + 31) // 32 * 4
     else:
         bytes_per_line = width * channel
     return QImage(image.data, width, height, bytes_per_line, QImage.Format_RGB888)
 
 
-def array_to_q_pixmap(image: np.ndarray, is_toupcam=False) -> QPixmap:
-    qimage = array_to_q_image(image, is_toupcam)
+def array_to_q_pixmap(image: np.ndarray, has_alpha=False) -> QPixmap:
+    qimage = array_to_q_image(image, has_alpha)
     return QPixmap.fromImage(qimage)
 
 

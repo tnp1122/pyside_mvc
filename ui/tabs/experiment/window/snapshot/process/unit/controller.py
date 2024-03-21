@@ -4,6 +4,7 @@ from PySide6.QtCore import Signal
 from PySide6.QtGui import QPixmap
 from numpy import ndarray
 
+from model import Image
 from ui.common import BaseController
 from ui.tabs.experiment.window.snapshot.process.unit import PlateCaptureUnitModel, PlateCaptureUnitView
 from ui.tabs.experiment.window.snapshot.process.unit.mask_manager import Masking, MaskGraphicsController, \
@@ -18,7 +19,7 @@ class PlateCaptureUnitController(BaseController):
     def __init__(self, parent=None):
         super().__init__(PlateCaptureUnitModel, PlateCaptureUnitView, parent)
 
-        self.masked_array: ndarray
+        self.masked_array = None
         self.transformed_mask_info = {}
         self.mean_colors = []
         self.mean_colored_pixmap = QPixmap()
@@ -52,7 +53,7 @@ class PlateCaptureUnitController(BaseController):
     def set_selected(self, is_selected):
         self.view.set_selected(is_selected)
 
-    def set_image(self, image):
+    def set_image(self, image: Image):
         self.clear_mask_info()
         view: PlateCaptureUnitView = self.view
         view.set_image(image)
@@ -70,6 +71,13 @@ class PlateCaptureUnitController(BaseController):
         masking.set_circle_mask(mask_info)
         self.masked_array = masking.masked_array
         self.transformed_mask_info = graphics.get_transformed_mask_info()
+
+        graphics.save_circle_mask_info()
+        mask_manager.close()
+
+        self.apply_mask_info()
+
+    def apply_mask_info(self):
         info = self.transformed_mask_info
         x, y, r, width, height, cols, rows = (info[key] for key in ["x", "y", "r", "width", "height", "cols", "rows"])
 
@@ -77,12 +85,10 @@ class PlateCaptureUnitController(BaseController):
         self.make_mean_colored_pixmap(x, y, r, width, height, cols, rows)
         self.make_cropped_original_pixmap(x, y, width, height)
 
-        masked_pixmap = ic.array_to_q_pixmap(masking.mask_filled_image, True)
+        masked_pixmap = ic.array_to_q_pixmap(self.masked_array.filled(0).astype(np.uint8))
         self.view.set_masked_pixmap(masked_pixmap, x, y, width, height)
 
-        graphics.save_circle_mask_info()
         self.mask_applied.emit()
-        mask_manager.close()
 
     def make_mean_colored_pixmap(self, x, y, r, width, height, cols, rows):
         masked_array: np.ma.masked_array = self.masked_array
@@ -121,15 +127,27 @@ class PlateCaptureUnitController(BaseController):
         view: PlateCaptureUnitView = self.view
         self.cropped_original_pixmap = view.pixmap.copy(x, y, width, height)
 
-    def get_cropped_image_info(self):
-        x, y, _, width, height, _, _ = self.get_transformed_mask_info()
+    def set_snapshot_datas(self, cropped_image: Image, mean_color_mask_info: dict, mask: np.ndarray):
+        self.set_image(cropped_image)
+        self.mean_colors = mean_color_mask_info["mean_colors"]
+        self.transformed_mask_info = mean_color_mask_info["mask_info"]
+        self.masked_array = np.ma.masked_array(self.view.origin_image.array, mask)
+
+        self.apply_mask_info()
+
+    def get_snapshot_datas(self):
+        info = self.transformed_mask_info
+        x, y, width, height = (info[key] for key in ["x", "y", "width", "height"])
 
         view: PlateCaptureUnitView = self.view
-        cropped_image = view.origin_image[y:y + height, x:x + width]
+        cropped_image = view.origin_image.cropped(x, y, width, height)
+        cropped_mask_info = self.transformed_mask_info.copy()
+        cropped_mask_info["x"], cropped_mask_info["y"] = 0, 0
 
-        mean_color_mask_info = {"mean_colors": self.mean_colors, "mask_info": self.transformed_mask_info}
+        mean_color_mask_info = {"mean_colors": self.mean_colors, "mask_info": cropped_mask_info}
+        mask = self.masked_array[y:y + height, x:x + width].mask
 
-        return cropped_image, mean_color_mask_info
+        return cropped_image, mean_color_mask_info, mask
 
 
 def main():

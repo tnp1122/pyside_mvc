@@ -46,6 +46,11 @@ class ImageListView(BaseScrollAreaView):
 
         self.setWidget(self.widget)
 
+    def set_height(self):
+        scroll_bar_height = self.horizontalScrollBar().height()
+
+        self.setFixedHeight(self.image_size[1] + self.padding + scroll_bar_height)
+
     def set_image_size(self, width=None, height=None):
         w = width if width else self.image_size[0]
         h = height if height else self.image_size[1]
@@ -56,24 +61,21 @@ class ImageListView(BaseScrollAreaView):
 
         self.set_height()
 
-    def set_height(self):
-        scroll_bar_height = self.horizontalScrollBar().height()
+    def set_image_shell(self, index, mean_colored_pixmap, cropped_original_pixmap, target_name):
+        shell: ImageShell = self.image_shells[index]
+        shell.set_image_shell(mean_colored_pixmap, cropped_original_pixmap, target_name)
 
-        self.setFixedHeight(self.image_size[1] + self.padding + scroll_bar_height)
-
-    def add_new_image(self, mean_colored_pixmap, cropped_original_pixmap, target_name):
+    def add_image_shell(self):
         count = len(self.image_shells)
-
-        new_image_shell = ImageShell(mean_colored_pixmap, cropped_original_pixmap, target_name)
+        new_image_shell = ImageShell()
         new_image_shell.set_image_size(*self.image_size)
-
         self.image_shells.append(new_image_shell)
         self.lyt.insertWidget(count, new_image_shell)
 
-    def set_image_index(self, index):
+    def set_image_type(self, index):
         for image_shell in self.image_shells:
             image_shell: ImageShell
-            image_shell.set_current_image_index(index)
+            image_shell.set_current_image_type(index)
 
 
 class ImageListController(BaseController):
@@ -91,13 +93,9 @@ class ImageListController(BaseController):
         view: ImageListView = self.view
         view.set_image_size(width, height)
 
-    def add_new_image(self, mean_colored_pixmap, cropped_original_pixmap, target_name):
+    def set_image_type(self, index):
         view: ImageListView = self.view
-        view.add_new_image(mean_colored_pixmap, cropped_original_pixmap, target_name)
-
-    def set_image_index(self, index):
-        view: ImageListView = self.view
-        view.set_image_index(index)
+        view.set_image_type(index)
 
 
 def main():

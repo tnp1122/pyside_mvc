@@ -2,10 +2,12 @@ import numpy as np
 from colormath.color_conversions import convert_color
 from colormath.color_objects import sRGBColor, xyYColor, LabColor
 
+from model import Targets
+
 
 class ColorDifferenceModel:
     def __init__(self):
-        self.targets = []
+        self.targets = Targets()
         self.target_rgb_colors = [[]]
 
         self.target_index = 0
@@ -23,7 +25,7 @@ class ColorDifferenceModel:
         for index, target in enumerate(self.targets):
             if index == self.control_index:
                 continue
-            target_names.append(target["name"])
+            target_names.append(target.name)
 
         return target_names
 
@@ -51,19 +53,6 @@ class ColorDifferenceModel:
         control_colors = get_colors(control_index)
 
         return target_colors, control_colors, self.get_color_differences(target_colors, control_colors)
-
-    def get_target_index(self, target_name=None, target_id=None):
-        if target_name:
-            for index, target in enumerate(self.targets):
-                if target["name"] == target_name:
-                    return index
-
-        if target_id:
-            for index, target in enumerate(self.targets):
-                if target["id"] == target_id:
-                    return index
-
-        return -1
 
     def get_selected_color_type(self):
         return self.color_types[self.color_index]

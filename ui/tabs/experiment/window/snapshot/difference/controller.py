@@ -1,3 +1,4 @@
+from model import Targets
 from ui.common import BaseController
 from ui.common.toast import Toast
 from ui.tabs.experiment.window.snapshot.difference import ColorDifferenceModel, ColorDifferenceView
@@ -62,7 +63,7 @@ class ColorDifferenceController(BaseController):
     def set_color_datas(self, capture_list: CaptureListController):
         model: ColorDifferenceModel = self.model
 
-        targets = []
+        targets = Targets()
         target_rgb_colors = []
         capture_units = capture_list.view.units
         for unit in capture_units:
@@ -85,8 +86,8 @@ class ColorDifferenceController(BaseController):
         view.cmb_target.clear()
         view.cmb_control.clear()
         for target in model.targets:
-            view.cmb_target.addItem(target["name"])
-            view.cmb_control.addItem(target["name"])
+            view.cmb_target.addItem(target.name)
+            view.cmb_control.addItem(target.name)
 
     def to_excel(self):
         model: ColorDifferenceModel = self.model

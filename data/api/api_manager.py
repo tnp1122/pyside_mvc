@@ -267,6 +267,10 @@ class APIManager:
         endpoint = self.PLATE + f"{plate_id}/snapshot/"
         self._call_api(POST, endpoint, callback, snapshot)
 
+    def get_snapshot(self, callback, plate_id, snapshot_id):
+        endpoint = self.PLATE + f"{plate_id}/snapshot/{snapshot_id}/"
+        self._call_api(GET, endpoint, callback)
+
     def remove_snapshot(self, callback, plate_id, snapshot_id):
         endpoint = self.PLATE + f"{plate_id}/snapshot/{snapshot_id}/remove/"
         self._call_api(POST, endpoint, callback)

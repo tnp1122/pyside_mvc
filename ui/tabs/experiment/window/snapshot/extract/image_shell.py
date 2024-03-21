@@ -10,12 +10,13 @@ class ImageShell(QWidget):
     height = 500
     title_font_size = 26
 
-    def __init__(self, mean_colored_pixmap, cropped_original_pixmap, target_name, parent=None):
+    def __init__(self, mean_colored_pixmap=None, cropped_original_pixmap=None, target_name=None, parent=None):
         super().__init__(parent)
 
         self.mean_colored_pixmap = mean_colored_pixmap
         self.cropped_original_pixmap = cropped_original_pixmap
         self.current_image = self.mean_colored_pixmap
+        self.image_type = 0  # 0: 색 평균, 1: 실제 색
 
         lb_empty = QLabel("")
         lb_empty.setStyleSheet(f"font-size: {self.title_font_size}px;")
@@ -60,10 +61,14 @@ class ImageShell(QWidget):
 
         self.set_image_size(self.width, self.height)
 
-    def set_target_name(self, name):
-        self.lb_target.setText(name)
+    def set_image_shell(self, mean_colored_pixmap, cropped_original_pixmap, target_name):
+        self.mean_colored_pixmap = mean_colored_pixmap
+        self.cropped_original_pixmap = cropped_original_pixmap
+        self.lb_target.setText(target_name)
+        self.set_current_image_type(self.image_type)
 
-    def set_current_image_index(self, index=0):
+    def set_current_image_type(self, index=0):
+        self.image_type = index
         if index == 0:
             self.current_image = self.mean_colored_pixmap
         else:
@@ -82,6 +87,8 @@ class ImageShell(QWidget):
             self.set_image(self.current_image)
 
     def set_image(self, pixmap):
+        if not pixmap:
+            return
         scaled_pixmap = pixmap.scaled(self.lb_image.size(), Qt.KeepAspectRatio)
         if scaled_pixmap.width() < self.width:
             self.set_image_size(width=scaled_pixmap.width(), set_image=False)

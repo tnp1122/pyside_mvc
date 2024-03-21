@@ -137,7 +137,7 @@ class BaseTableWidgetView(BaseViewMixin, QTableWidget):
 
         for row, item in enumerate(items):
             self.insertRow(row)
-            cell = QTableWidgetItem(item["name"])
+            cell = QTableWidgetItem(item.name)
 
             self.setItem(row, 0, cell)
             self.set_editable(cell, False)

@@ -35,7 +35,7 @@ class TargetMaterialView(BaseWidgetView):
     def set_experiment_cmb_items(self, experiments):
         self.cmb.clear()
         for experiment in experiments:
-            self.cmb.addItem(experiment["name"])
+            self.cmb.addItem(experiment.name)
 
     def set_target_table_items(self, targets):
         self.tb_target.set_table_items(targets)

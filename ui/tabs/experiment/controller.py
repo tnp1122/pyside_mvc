@@ -1,8 +1,11 @@
+from datetime import datetime
+
 from PySide6.QtCore import Signal
 from PySide6.QtNetwork import QNetworkReply
 
 from ui.common import BaseController
 from ui.common.confirmation_dialog import ConfirmationDialog
+from ui.common.tree_view import TreeRow
 from ui.tabs.experiment import ExperimentModel, ExperimentView
 from ui.tabs.experiment.explorer import ExplorerController, ExplorerView
 from ui.tabs.experiment.window import ExperimentWindowController
@@ -27,9 +30,12 @@ class ExperimentController(BaseController):
 
         view: ExperimentView = self.view
         explorer_view: ExplorerView = view.explorer.view
+        tree_root: TreeRow = explorer_view.tree.root
+
         explorer_view.btn_add.clicked.connect(self.add_experiment)
-        explorer_view.tree.root.clicked_signal.connect(self.on_tree_add_button)
-        explorer_view.tree.root.remove_signal.connect(self.on_tree_remove_clicked)
+        tree_root.clicked_signal.connect(self.on_tree_add_button)
+        tree_root.double_clicked_signal.connect(self.open_snapshot_tab)
+        tree_root.remove_signal.connect(self.on_tree_remove_clicked)
 
         view.window_widget.view.tabCloseRequested.connect(lambda index: self.remove_tab_with_index(index))
 
@@ -52,12 +58,12 @@ class ExperimentController(BaseController):
         self.add_tab(add_experiment, 0, "새 실험")
 
     def on_tree_add_button(self, indexes: list):
-        view: ExperimentView = self.view
+        depth = len(indexes)
 
-        if len(indexes) == 1:
+        if depth == 1:
             self.request_add_combination.emit()
 
-        elif len(indexes) == 2:
+        elif depth == 2:
             experiment_index = indexes[0]
             combination_index = indexes[1]
 
@@ -74,31 +80,52 @@ class ExperimentController(BaseController):
 
             self.add_tab(add_plate, 0, "새 플레이트")
 
-        elif len(indexes) == 3:
-            experiment_index = indexes[0]
-            combination_index = indexes[1]
-            plate_index = indexes[2]
+        elif depth == 3:
+            self.open_snapshot_tab(indexes)
 
-            explorer: ExplorerController = view.explorer
-            experiment = explorer.experiment_tree[experiment_index]
-            combination = experiment["sensor_combinations"][combination_index]
-            plate = combination["plates"][plate_index]
+    def open_snapshot_tab(self, indexes: list):
+        view: ExperimentView = self.view
+        depth = len(indexes)
 
-            experiment_id = experiment["id"]
-            experiment_name = experiment["name"]
-            combination_name = combination["name"]
-            plate_name = plate["name"]
-            plate_made_at = plate["made_at"]
+        experiment_index = indexes[0]
+        combination_index = indexes[1]
+        plate_index = indexes[2]
 
-            snapshot_path = "\\".join([experiment_name, combination_name, plate_name])
+        explorer: ExplorerController = view.explorer
+        experiment = explorer.experiment_tree[experiment_index]
+        combination = experiment["sensor_combinations"][combination_index]
+        plate = combination["plates"][plate_index]
 
-            snapshot_info = {"experiment_id": experiment_id, "plate_id": plate["id"], "snapshot_id": None,
-                             "plate_made_at": plate_made_at, "snapshot_path": snapshot_path}
-            plate_snapshot = PlateSnapshotController(snapshot_info=snapshot_info)
+        experiment_id = experiment["id"]
+        experiment_name = experiment["name"]
+        combination_name = combination["name"]
+        plate_name = plate["name"]
+        plate_made_at = plate["made_at"]
+
+        snapshot_path = "\\".join([experiment_name, combination_name, plate_name])
+
+        if depth == 3:
+            snapshot_id = None
+            snapshot_age = None
+            snapshot_captured_at = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+            tab_name = "새 스냅샷"
+        else:
+            snapshot_index = indexes[3]
+            snapshot = plate["plate_snapshots"][snapshot_index]
+            snapshot_id = snapshot["id"]
+            snapshot_age = snapshot["age"]
+            snapshot_captured_at = snapshot["captured_at"]
+            tab_name = self.get_tab_name(plate_name, snapshot_age)
+
+        snapshot_info = {"experiment_id": experiment_id, "plate_id": plate["id"], "plate_made_at": plate_made_at,
+                         "snapshot_path": snapshot_path, "snapshot_id": snapshot_id, "snapshot_age": snapshot_age,
+                         "snapshot_captured_at": snapshot_captured_at}
+        plate_snapshot = PlateSnapshotController(snapshot_info=snapshot_info)
+        if depth == 3:
             plate_snapshot.snapshot_added.connect(
-                lambda plate_age: self.on_snapshot_added(plate_snapshot, plate_name, plate_age))
+                lambda snapshot_age: self.on_snapshot_added(plate_snapshot, plate_name, snapshot_age))
 
-            self.add_tab(plate_snapshot, 1, "새 스냅샷")
+        self.add_tab(plate_snapshot, 1, tab_name)
 
     def on_tree_remove_clicked(self, indexes: list):
         experiment_tree = self.view.explorer.experiment_tree
@@ -162,7 +189,8 @@ class ExperimentController(BaseController):
                 content = "하위 스냅샷을 삭제한 뒤에 플레이트를 삭제할 수 있습니다."
 
         elif depth == 4:
-            snapshot_name = snapshot["name"]
+            snapshot_age = snapshot["age"]
+            snapshot_name = f"{plate['name']}_{snapshot_age}H"
 
             title = "스냅샷 삭제"
             content = f"[스냅샷] {snapshot_name}을(를) 삭제하시겠습니까?"
@@ -202,17 +230,19 @@ class ExperimentController(BaseController):
         self.view.explorer.update_tree_view()
         self.remove_tab(controller)
 
-    def on_snapshot_added(self, plate_snapshot: PlateSnapshotController, plate_name, plate_age):
-        explorer: ExplorerController = self.view.explorer
+    def on_snapshot_added(self, plate_snapshot: PlateSnapshotController, plate_name, snapshot_age):
+        self.view.explorer.update_tree_view()
 
-        explorer.update_tree_view()
+        tab_name = self.get_tab_name(plate_name, snapshot_age)
+        self.view.window_widget.set_tab_name(plate_snapshot, tab_name)
 
-        tab_name = f"{plate_name}_{plate_age}H"
+    def get_tab_name(self, plate_name, snapshot_age):
+        tab_name = f"{plate_name}_{snapshot_age}H"
 
         if len(tab_name) > 16:
             tab_name = tab_name[:12] + "..." + tab_name[-3:]
 
-        self.view.window_widget.set_tab_name(plate_snapshot, tab_name)
+        return tab_name
 
 
 def main():

@@ -2,6 +2,7 @@ from PySide6.QtCore import Signal
 from PySide6.QtGui import QImage
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton
 
+from model import Image
 from ui.common import BaseController
 from ui.tabs.experiment.window.snapshot.process.unit.mask_manager.mask_graphics import MaskGraphicsModel, \
     MaskGraphicsView
@@ -36,7 +37,7 @@ class MaskGraphicsController(BaseController):
     def save_circle_mask_info(self):
         self.model.save_circle_mask_info()
 
-    def set_scene(self, origin_image):
+    def set_scene(self, origin_image: Image):
         self.view.set_scene(origin_image)
 
         x = self.model.area_x

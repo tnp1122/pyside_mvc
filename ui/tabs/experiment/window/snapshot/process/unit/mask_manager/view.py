@@ -1,6 +1,7 @@
 from PySide6.QtGui import QIntValidator, QDoubleValidator
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QFrame, QLabel
 
+from model import Image
 from ui.common import MileStoneRadio, BaseDialogView, ColoredButton
 from ui.tabs.experiment.window.snapshot.process.unit.mask_manager import Masking
 from ui.tabs.experiment.window.snapshot.process.unit.mask_manager.mask_graphics.controller import MaskGraphicsController
@@ -10,7 +11,7 @@ class MaskManagerView(BaseDialogView):
     width_pos_text = 50
     width_radius_text = 35
 
-    def __init__(self, parent=None, origin_image=None):
+    def __init__(self, parent=None, origin_image: Image = None):
         self.origin_image = origin_image
         super().__init__(parent)
 
@@ -146,7 +147,7 @@ class MaskManagerView(BaseDialogView):
         return lyt
 
     def init_bottom_masking(self):
-        self.masking = Masking(self.origin_image)
+        self.masking = Masking(self.origin_image.array)
         self.set_circle_mask()  # 마스크 set을 해둬야 캡쳐 유닛에서 픽스맵 가져올 수 있음
 
         lyt = QHBoxLayout()

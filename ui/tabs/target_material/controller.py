@@ -1,9 +1,8 @@
-import json
 import logging
 
 from PySide6.QtNetwork import QNetworkReply
 
-from data.api.api_manager import APIManager
+from model import Experiments, Targets
 from ui.common import BaseController
 from ui.common.toast import Toast
 from ui.tabs.target_material import TargetMaterialModel, TargetMaterialView
@@ -12,9 +11,6 @@ WIDGET = "[Target Material Controller]"
 
 
 class TargetMaterialController(BaseController):
-    api_manager = APIManager()
-    experiments = []
-    targets = []
 
     def __init__(self, parent=None):
         super().__init__(TargetMaterialModel, TargetMaterialView, parent)
@@ -24,6 +20,8 @@ class TargetMaterialController(BaseController):
 
     def late_init(self):
         super().init_controller()
+        self.experiments = Experiments()
+        self.targets = Targets()
 
         view: TargetMaterialView = self.view
 
@@ -39,7 +37,7 @@ class TargetMaterialController(BaseController):
         def api_handler(reply):
             if reply.error() == QNetworkReply.NoError:
                 json_str = reply.readAll().data().decode("utf-8")
-                self.experiments = json.loads(json_str)["experiments"]
+                self.experiments.set_items_with_json(json_str, "experiments")
                 self.view.set_experiment_cmb_items(self.experiments)
             else:
                 msg = f"{WIDGET} update_experiments-{reply.errorString()}"
@@ -49,13 +47,13 @@ class TargetMaterialController(BaseController):
         self.api_manager.get_experiments(api_handler)
 
     def update_targets(self, index):
-        experiment_id = self.experiments[index]["id"]
+        experiment_id = self.experiments.item_id(index)
         self.view.tb_target.view.update_experiment_id(experiment_id)
 
         def api_handler(reply):
             if reply.error() == QNetworkReply.NoError:
                 json_str = reply.readAll().data().decode("utf-8")
-                self.targets = json.loads(json_str)["targets"]
+                self.targets.set_items_with_json(json_str, "targets")
                 self.view.set_target_table_items(self.targets)
             else:
                 msg = f"{WIDGET} update_targets-{reply.errorString()}"
@@ -72,7 +70,7 @@ class TargetMaterialController(BaseController):
             return
 
         index = self.view.cmb.currentIndex()
-        experiment_id = self.experiments[index]["id"]
+        experiment_id = self.experiments.item_id(index)
 
         def api_handler(reply):
             if reply.error() == QNetworkReply.NoError:

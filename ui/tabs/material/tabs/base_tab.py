@@ -1,10 +1,11 @@
-import json
+import logging
 
 from PySide6.QtNetwork import QNetworkReply
 from PySide6.QtWidgets import QWidget, QHBoxLayout
 
-from data.api.api_manager import APIManager
+from model import Materials, MaterialSamples
 from ui.common import BaseTabWidgetView, BaseController, ColoredButton, BaseWidgetView, TabWidgetController
+from ui.common.toast import Toast
 
 
 class SensorBaseTabModel:
@@ -62,23 +63,21 @@ class SensorBaseTabView(BaseTabWidgetView):
 
         self.btns.move(btns_x, btnx_y)
 
-    def set_sample_table_items(self, sample_items):
+    def set_sample_table_items(self, sample_items: MaterialSamples):
         self.sample.set_table_items(sample_items)
 
-    def set_subject_table_items(self, subject_items):
+    def set_subject_table_items(self, subject_items: Materials):
         if self.sample_tab_name != "":
             self.sample.update_subject(subject_items)
         self.subject.set_table_items(subject_items)
 
 
 class SensorBaseTabController(TabWidgetController):
-    api_manager = APIManager()
-    samples = []
-    subjects = []
-
     def __init__(self, parent=None, subject_name=None):
 
         self.subject_name = subject_name
+        self.samples = MaterialSamples()
+        self.subjects = Materials()
         super().__init__(SensorBaseTabModel, SensorBaseTabView, parent, subject_name)
 
     def init_controller(self):
@@ -94,17 +93,12 @@ class SensorBaseTabController(TabWidgetController):
         self.view.btn_cancel.clicked.connect(self.on_cancel_clicked)
         self.view.btn_save.clicked.connect(self.on_save_clicked)
 
-    def get_id_from_name(self, items, name):
-        for item in items:
-            if item["name"] == name:
-                return item["id"]
-        return -1
-
     def update_sample_items(self):
         def api_handler(reply):
             if reply.error() == QNetworkReply.NoError:
                 json_str = reply.readAll().data().decode("utf-8")
-                self.samples = json.loads(json_str)[self.subject_name + "_samples"]
+                json_key = self.subject_name + "_samples"
+                self.samples.set_sample_items_with_json(self.subject_name, json_str, json_key)
                 self.view.set_sample_table_items(self.samples)
             else:
                 self.api_manager.on_failure(reply)
@@ -118,7 +112,8 @@ class SensorBaseTabController(TabWidgetController):
         def api_handler(reply):
             if reply.error() == QNetworkReply.NoError:
                 json_str = reply.readAll().data().decode("utf-8")
-                self.subjects = json.loads(json_str)[self.subject_name + "s"]
+                json_key = self.subject_name + "s"
+                self.subjects.set_items_with_json(json_str, json_key)
                 self.view.set_subject_table_items(self.subjects)
             else:
                 self.api_manager.on_failure(reply)
@@ -145,14 +140,14 @@ class SensorBaseTabController(TabWidgetController):
             self.save_new_subject()
 
     def save_new_sample(self):
-        new_samples = self.view.sample.get_new_items()
-        for sample in new_samples:
-            sample[self.subject_name] = self.get_id_from_name(self.subjects, sample[self.subject_name])
-
+        new_samples: MaterialSamples = self.view.sample.get_new_items()
         key = self.subject_name + "_samples"
-        body = {key: new_samples}
+        body = {key: new_samples.serialize()}
 
         if not body[key]:
+            msg = "샘플을 추가할 수 없습니다."
+            logging.error(msg)
+            Toast().toast(msg)
             return
 
         def api_handler(reply):

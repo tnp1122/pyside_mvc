@@ -2,6 +2,7 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QSizePolicy, QWidget, QHBoxLayout, QPushButton, QVBoxLayout
 
+from model import Image, Targets
 from ui.common import BaseScrollAreaView, BaseController
 from ui.tabs.experiment.window.snapshot.process.unit import PlateCaptureUnitController, PlateCaptureUnitView
 
@@ -15,7 +16,7 @@ class CaptureListView(BaseScrollAreaView):
     unit_size = (300, 500)
     padding = 32
 
-    mask_changed = Signal()
+    mask_changed = Signal(int)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -28,12 +29,21 @@ class CaptureListView(BaseScrollAreaView):
         self.units = []
         self.selected_index = -1
 
-        self.targets = []
+        self.targets = Targets()
 
-    def closeEvent(self, event):
+    def clear(self):
+        lyt = self.lyt
+        for i in range(lyt.count() - 1):
+            widget = lyt.itemAt(i).widget()
+            lyt.removeWidget(widget)
+
         for unit in self.units:
             unit.close()
-        self.units = None
+
+        self.units = []
+
+    def closeEvent(self, event):
+        self.clear()
 
         self.btn_plus.close()
         self.widget.close()
@@ -79,8 +89,8 @@ class CaptureListView(BaseScrollAreaView):
 
         new_unit = PlateCaptureUnitController()
         new_unit.set_image_size(*self.unit_size)
-        new_unit.mask_applied.connect(self.mask_changed.emit)
-        new_unit.mask_info_cleared.connect(self.mask_changed.emit)
+        new_unit.mask_applied.connect(lambda: self.mask_changed.emit(count))
+        new_unit.mask_info_cleared.connect(lambda: self.mask_changed.emit(count))
 
         unit_view: PlateCaptureUnitView = new_unit.view
         unit_view.set_targets(self.targets)
@@ -89,6 +99,8 @@ class CaptureListView(BaseScrollAreaView):
         self.units.append(new_unit)
         self.set_selected_widget(count)
         self.lyt.insertWidget(count, new_unit.view)
+
+        return new_unit
 
     def set_height(self):
         scroll_bar_height = self.horizontalScrollBar().height()
@@ -121,7 +133,7 @@ class CaptureListController(BaseController):
         view: CaptureListView = self.view
         view.set_unit_size(w, h)
 
-    def set_unit_image(self, image):
+    def set_unit_image(self, image: Image):
         view: CaptureListView = self.view
         index = view.selected_index
 

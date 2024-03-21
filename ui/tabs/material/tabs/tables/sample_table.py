@@ -3,6 +3,7 @@ from datetime import datetime
 from PySide6.QtCore import QSignalMapper, Qt
 from PySide6.QtWidgets import QHeaderView, QTableWidgetItem, QCheckBox, QWidget, QHBoxLayout, QComboBox, QLabel
 
+from model import Materials, MaterialSample, MaterialSamples
 from ui.common import BaseTableWidgetView, ImageButton, TableWidgetController
 from ui.common.date_picker import DatePicker
 from ui.common.toast import Toast
@@ -26,8 +27,8 @@ class SampleTableView(BaseTableWidgetView):
         self.headers = args["headers"]
         self.is_metal = self.subject == "metal"
 
-        self.samples = []
-        self.subjects = []
+        self.samples = MaterialSamples()
+        self.subjects = Materials()
         self.use_samples = set()
         self.use_sample_ids = set()
 
@@ -52,7 +53,7 @@ class SampleTableView(BaseTableWidgetView):
         else:
             self.setting_manager.set_use_additive_samples(self.use_sample_ids)
 
-    def set_table_items(self, items):
+    def set_table_items(self, items: MaterialSamples):
         self.clear_table()
         self.samples = items
 
@@ -60,18 +61,19 @@ class SampleTableView(BaseTableWidgetView):
         self.mapper_change_use.mappedInt.connect(self.on_change_use)
 
         for row, item in enumerate(items):
-            sample_id = item["id"]
-            dt_obj = datetime.strptime(item["made_at"], "%Y-%m-%dT%H:%M:%S")
+            item: MaterialSample
+            sample_id = item.id
+            dt_obj = datetime.strptime(item.made_at, "%Y-%m-%dT%H:%M:%S")
 
             self.insertRow(row)
-            name = QTableWidgetItem(item["name"])
-            subject = QTableWidgetItem(item[self.subject]["name"])
+            name = QTableWidgetItem(item.name)
+            subject = QTableWidgetItem(item.subject.name)
             made_at = QTableWidgetItem(dt_obj.strftime("%Y-%m-%d"))
 
             cb_use = QCheckBox()
             if sample_id in self.use_sample_ids:
                 cb_use.setChecked(True)
-                sample_set = (sample_id, item[self.subject]["id"])
+                sample_set = (sample_id, item.subject.id)
                 self.use_samples.add(sample_set)
 
             cb_use.stateChanged.connect(self.mapper_change_use.map)
@@ -125,7 +127,7 @@ class SampleTableView(BaseTableWidgetView):
         self.setItem(count, 3, empty_widget)
         self.set_subjects(count)
 
-    def update_subjects(self, subjects):
+    def update_subjects(self, subjects: Materials):
         self.subjects = subjects
         self.set_subjects()
 
@@ -138,7 +140,7 @@ class SampleTableView(BaseTableWidgetView):
             if cmb_subject is not None and isinstance(cmb_subject, QComboBox):
                 cmb_subject.clear()
                 for subject in self.subjects:
-                    cmb_subject.addItem(subject["name"])
+                    cmb_subject.addItem(subject.name)
 
         if row:
             set_combo_box(row)
@@ -190,19 +192,26 @@ class SampleTableController(TableWidgetController):
         super().init_controller()
 
     def get_new_items(self):
+        view: SampleTableView = self.view
+
         origin_count = len(self.table_items)
-        new_table_items = []
+        new_table_items = MaterialSamples()
 
-        for row in range(origin_count + 1, self.view.rowCount()):
-            sample = {}
-            made_at_str = self.view.cellWidget(row, 2).layout().itemAt(0).widget().text()
+        for row in range(origin_count + 1, view.rowCount()):
+
+            name = view.item(row, 0).text()
+            if not name.strip():  # name이 공백일 경우 무시함
+                continue
+
+            made_at_str = view.cellWidget(row, 2).layout().itemAt(0).widget().text()
             made_at = made_at_str + "T00:00:00"
+            subject_type = view.subject
+            subject = view.cellWidget(row, 1).currentText()
+            _, subject_object = view.subjects.item_from_name(subject)
 
-            sample["name"] = self.view.item(row, 0).text()
-            sample[self.view.subject] = self.view.cellWidget(row, 1).currentText()
-            sample["made_at"] = made_at
-            if sample["name"].strip():
-                new_table_items.append(sample)
+            sample = MaterialSample(name, made_at, subject_type, subject_object)
+
+            new_table_items.append(sample)
 
         return new_table_items
 

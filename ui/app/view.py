@@ -4,8 +4,9 @@ from ui.app.main_tab import MainTabController
 from ui.app.info_bar import InfoBarController
 from ui.common.toast import Toast
 from ui.common import BaseWidgetView
+
 from util.camera_manager import CameraManager
-from util import image_converter as ic
+from util import local_storage_manager as lsm
 
 
 class AppView(BaseWidgetView):
@@ -22,7 +23,7 @@ class AppView(BaseWidgetView):
     def init_view(self):
         super().init_view()
 
-        icon_path = ic.get_image_path("pit_icon.ico")
+        icon_path = lsm.get_static_image_path("pit_icon.ico")
         self.setWindowTitle("JEN-LiFE Pioneer kIT")
         self.setWindowIcon(QIcon(icon_path))
 

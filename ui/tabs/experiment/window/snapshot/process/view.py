@@ -12,8 +12,8 @@ from ui.tabs.experiment.window.snapshot.process.image_viewer import ImageViewerC
 from util import local_storage_manager as lsm
 
 
-class PlateProcessView(BaseWidgetView):
-    plate_age_changed = Signal(int)
+class SnapshotProcessView(BaseWidgetView):
+    snapshot_age_changed = Signal(int)
 
     width_box = 145
     width_calendar = 20
@@ -23,8 +23,8 @@ class PlateProcessView(BaseWidgetView):
 
     def __init__(self, parent=None, snapshot_info=None):
         self.snapshot_info = snapshot_info
-        self.captured_at = None
-        self.plate_age = 0
+        self.captured_at = datetime.strptime(snapshot_info["snapshot_captured_at"], "%Y-%m-%dT%H:%M:%S")
+        self.snapshot_age = 0
 
         super().__init__(parent)
 
@@ -41,8 +41,7 @@ class PlateProcessView(BaseWidgetView):
         lb_datetime.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
         """ 촬영 일 라벨 및 캘린더 버튼 """
-        now = datetime.now()
-        date = now.strftime("%y%m%d")
+        date = self.captured_at.strftime("%y%m%d")
         self.lb_date = ClickableLabel(date)
         self.lb_date.setFixedSize(self.width_date, self.height_et)
         self.lb_date.clicked.connect(self.open_date_picker)
@@ -59,7 +58,7 @@ class PlateProcessView(BaseWidgetView):
 
         """ 촬영 시간 입력 및 라벨 """
         validator = QIntValidator(0, 23)
-        hour = "{:02d}".format(now.hour)
+        hour = "{:02d}".format(self.captured_at.hour)
         self.et_time = QLineEdit(hour)
         self.et_time.setValidator(validator)
         self.et_time.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
@@ -79,11 +78,6 @@ class PlateProcessView(BaseWidgetView):
         lyt_datetime.addWidget(lb_datetime)
         lyt_datetime.addWidget(wig_datetime_input)
 
-        if self.snapshot_info["snapshot_id"]:
-            self.set_et_editable(False)
-        else:
-            self.set_et_editable(True)
-
         divider = QFrame()
         divider.setFrameShape(QFrame.VLine)
         divider.setFrameShadow(QFrame.Sunken)
@@ -102,7 +96,7 @@ class PlateProcessView(BaseWidgetView):
         lyt_top.addWidget(divider)
         lyt_top.addLayout(lyt_age)
         lyt_top.addStretch()
-        # lyt_top.addWidget(self.btn_save)
+        lyt_top.addWidget(self.btn_save)
 
         self.image_viewer = ImageViewerController()
 
@@ -121,17 +115,24 @@ class PlateProcessView(BaseWidgetView):
 
         self.set_snapshot_age()
 
-    def set_et_editable(self, editable=False):
+        if self.snapshot_info["snapshot_id"]:
+            self.set_editable(False)
+        else:
+            self.set_editable(True)
+
+    def set_editable(self, editable=False):
         if editable:
             self.btn_date.setVisible(True)
             self.wig_date.setStyleSheet("#wig_date {border: 1px solid black;}")
             self.et_time.setStyleSheet("border: 1px solid black; padding: 4px;")
             self.et_time.setReadOnly(False)
+            self.btn_save.setVisible(True)
         else:
             self.btn_date.setVisible(False)
             self.wig_date.setStyleSheet("#wig_date {border: 0px;}")
             self.et_time.setStyleSheet("border: 0px;")
             self.et_time.setReadOnly(True)
+            self.btn_save.setVisible(False)
 
     def set_date(self, date):
         date_string = date.toString("yyMMdd")
@@ -160,8 +161,8 @@ class PlateProcessView(BaseWidgetView):
         self.captured_at = datetime.strptime(captured_at_str, "%y%m%d_%H")
 
         time_diff = self.captured_at - plate_made_at
-        self.plate_age = int(time_diff.total_seconds() / 3600)
+        self.snapshot_age = int(time_diff.total_seconds() / 3600)
 
-        self.lb_snapshot_age.setText(f"{self.plate_age}H")
+        self.lb_snapshot_age.setText(f"{self.snapshot_age}H")
 
-        self.plate_age_changed.emit(self.plate_age)
+        self.snapshot_age_changed.emit(self.snapshot_age)

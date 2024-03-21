@@ -1,3 +1,4 @@
+from model import Image
 from ui.common import BaseController
 from ui.tabs.experiment.window.snapshot.process.unit.mask_manager import MaskManagerView, MaskManagerModel, Masking
 from util.enums import MaskViewIndex
@@ -5,13 +6,11 @@ from util import image_converter as ic
 
 
 class MaskManagerController(BaseController):
-    def __init__(self, parent=None, origin_image=None):
-        self.origin_image = origin_image
+    def __init__(self, parent=None, origin_image: Image = None):
 
         super().__init__(MaskManagerModel, MaskManagerView, parent, origin_image)
 
     def close(self):
-        self.origin_image = None
         self.graphics = None
 
         super().close()
