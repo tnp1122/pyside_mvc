@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QSizePolicy
 from ui.common import BaseWidgetView, ImageButton, Logo, ColoredButton, RefreshButton
 from ui.common.tree_view import TreeView
 
-from util import image_converter as ic
+from util import local_storage_manager as lsm
 
 
 class ExplorerView(BaseWidgetView):
@@ -24,7 +24,7 @@ class ExplorerView(BaseWidgetView):
         lyt_top = QHBoxLayout()
         self.btn_add = ColoredButton("실험 추가")
         self.btn_refresh = RefreshButton()
-        expand_img = ic.get_image_path("expand_arrow.png")
+        expand_img = lsm.get_static_image_path("expand_arrow.png")
         self.btn_toggle = ImageButton(image=expand_img, size=(30, 30), degree=90)
         lyt_top.addWidget(self.btn_add)
         lyt_top.addWidget(self.btn_refresh)

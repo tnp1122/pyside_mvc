@@ -7,7 +7,7 @@ from ui.common import BaseWidgetView, ImageButton, ColoredButton, ClickableLabel
 from ui.common.date_picker import DatePicker
 from util.setting_manager import SettingManager
 
-from util import image_converter as ic
+from util import local_storage_manager as lsm
 
 
 class AddPlateView(BaseWidgetView):
@@ -72,7 +72,7 @@ class AddPlateView(BaseWidgetView):
         self.lb_date = ClickableLabel(date)
         self.lb_date.setFixedSize(self.width_date, self.height_et)
         self.lb_date.clicked.connect(self.open_date_picker)
-        img_calendar = ic.get_image_path("calendar.png")
+        img_calendar = lsm.get_static_image_path("calendar.png")
         btn_date = ImageButton(image=img_calendar, size=(self.width_calendar, self.width_calendar))
         btn_date.clicked.connect(self.open_date_picker)
         wig_date = QWidget()

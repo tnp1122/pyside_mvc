@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout, QWidget
 from ui.common import BaseWidgetView, BaseController, ColoredButton, ImageButton
 from util.camera_manager import CameraManager
 
-from util import image_converter as ic
+from util import local_storage_manager as lsm
 
 
 class ImageViewerModel:
@@ -26,7 +26,7 @@ class ImageViewerView(BaseWidgetView):
         self.lb.setAlignment(Qt.Alignment.AlignCenter)
         self.lb.setFixedSize(360, 540)
 
-        img_rotate = ic.get_image_path("rotate-right-90.png")
+        img_rotate = lsm.get_static_image_path("rotate-right-90.png")
         self.btn_refresh = ColoredButton("카메라 재연결", background_color="gray", padding="10px")
         self.btn_rotate = ImageButton(image=img_rotate, size=(35, 35))
         self.btn_capture = ColoredButton("캡처", padding="10px")

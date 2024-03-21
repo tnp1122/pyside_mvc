@@ -7,7 +7,8 @@ from PySide6.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout, QComboBox, QWidg
 
 from ui.common import BaseWidgetView, ImageButton
 from ui.tabs.experiment.window.snapshot.process.unit.mask_manager import MaskManagerController
-from util import image_converter as ic
+
+from util import local_storage_manager as lsm
 from util.setting_manager import SettingManager
 
 
@@ -49,9 +50,9 @@ class PlateCaptureUnitView(BaseWidgetView):
 
         self.cmb_target = QComboBox()
         self.cmb_target.setFixedWidth(150)
-        img_lasso = ic.get_image_path("lasso.png")
-        img_load_img = ic.get_image_path("img_load_box.png")
-        img_trash_bin = ic.get_image_path("trash_bin.png")
+        img_lasso = lsm.get_static_image_path("lasso.png")
+        img_load_img = lsm.get_static_image_path("img_load_box.png")
+        img_trash_bin = lsm.get_static_image_path("trash_bin.png")
         self.btn_edit_mask = ImageButton(image=img_lasso, size=(20, 20))
         self.btn_load_img = ImageButton(image=img_load_img, size=(20, 20))
         self.btn_trash_bin = ImageButton(image=img_trash_bin, size=(20, 20))

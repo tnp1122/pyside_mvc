@@ -2,7 +2,7 @@ from PySide6.QtCore import QSize, Signal
 from PySide6.QtGui import QPixmap, QIcon, QTransform
 from PySide6.QtWidgets import QPushButton, QApplication, QWidget, QVBoxLayout, QLabel
 
-from util import image_converter as ic
+from util import local_storage_manager as lsm
 
 
 class ImageButton(QPushButton):
@@ -85,7 +85,7 @@ class CurvedCornerButton(QPushButton):
 
 class RefreshButton(ImageButton):
     def __init__(self):
-        img = ic.get_image_path("refresh.png")
+        img = lsm.get_static_image_path("refresh.png")
         super().__init__(image=img)
 
 
