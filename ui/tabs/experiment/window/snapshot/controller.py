@@ -10,7 +10,7 @@ from ui.common import TabWidgetController
 from ui.common.confirmation_dialog import ConfirmationDialog
 from ui.common.toast import Toast
 from ui.tabs.experiment.window.snapshot import PlateSnapshotModel, PlateSnapshotView
-from ui.tabs.experiment.window.snapshot.extract import ColorExtractController
+from ui.tabs.experiment.window.snapshot.mean_color import MeanColorController
 from ui.tabs.experiment.window.snapshot.process import SnapshotProcessView
 from ui.tabs.experiment.window.snapshot.process.capture_list import CaptureListView, CaptureListController
 from ui.tabs.experiment.window.snapshot.process.unit import ProcessUnitView, ProcessUnitController
@@ -47,8 +47,8 @@ class PlateSnapshotController(TabWidgetController):
         plate_process_view.btn_save.clicked.connect(self.on_save_button_clicked)
 
         capture_list_view: CaptureListView = view.plate_process.view.capture_list.view
-        extract_widget: ColorExtractController = view.color_extract
-        capture_list_view.btn_plus.clicked.connect(extract_widget.add_image_shell)
+        mean_color: MeanColorController = view.mean_color
+        capture_list_view.btn_plus.clicked.connect(mean_color.add_image_shell)
         capture_list_view.mask_changed.connect(lambda index: self.on_mask_changed(index))
 
         self.update_targets()
@@ -93,8 +93,8 @@ class PlateSnapshotController(TabWidgetController):
                     new_unit.view.set_selected_target(target_index)
                     new_unit.set_snapshot_datas(cropped_image, mean_color_mask_info, mask)
 
-                    extract_widget: ColorExtractController = view.color_extract
-                    extract_widget.add_image_shell()
+                    mean_color: MeanColorController = view.mean_color
+                    mean_color.add_image_shell()
 
                 self.snapshot_loaded = True
 
@@ -110,7 +110,7 @@ class PlateSnapshotController(TabWidgetController):
             return
 
         view: PlateSnapshotView = self.view
-        extract_widget: ColorExtractController = view.color_extract
+        mean_color: MeanColorController = view.mean_color
         capture_list: CaptureListController = view.plate_process.view.capture_list
         capture_list_view: CaptureListView = capture_list.view
         unit: ProcessUnitController = capture_list_view.units[index]
@@ -120,7 +120,7 @@ class PlateSnapshotController(TabWidgetController):
         cropped_original_pixmap = unit.cropped_original_pixmap
         target_name = unit_view.cmb_target.currentText()
 
-        extract_widget.set_image_shell(index, mean_colored_pixmap, cropped_original_pixmap, target_name)
+        mean_color.set_image_shell(index, mean_colored_pixmap, cropped_original_pixmap, target_name)
 
         view.color_difference.set_color_datas(capture_list)
 

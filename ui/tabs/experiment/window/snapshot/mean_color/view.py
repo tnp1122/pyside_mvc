@@ -1,19 +1,17 @@
 from PySide6.QtWidgets import QVBoxLayout
 
 from ui.common import BaseWidgetView, MileStoneRadio
-from ui.tabs.experiment.window.snapshot.process.capture_list import CaptureListController
-from ui.tabs.experiment.window.snapshot.process.unit import ProcessUnitController, ProcessUnitView
-from ui.tabs.experiment.window.snapshot.extract.image_list import ImageListController
+from ui.tabs.experiment.window.snapshot.mean_color.image_list import ImageListController
 
 
-class ColorExtractView(BaseWidgetView):
+class MeanColorView(BaseWidgetView):
     def __init__(self, parent=None):
         super().__init__(parent)
 
     def init_view(self):
         super().init_view()
 
-        self.radio = MileStoneRadio(["색 추출", "실제 색"])
+        self.radio = MileStoneRadio(["평균 색", "실제 색"])
         self.image_list = ImageListController()
         self.image_list.set_image_size(300, 500)
 

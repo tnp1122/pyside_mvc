@@ -1,18 +1,16 @@
 from ui.common import BaseController
-from ui.tabs.experiment.window.snapshot.extract.image_list import ImageListView
-from ui.tabs.experiment.window.snapshot.process.capture_list import CaptureListController
-from ui.tabs.experiment.window.snapshot.process.unit import ProcessUnitController, ProcessUnitView
-from ui.tabs.experiment.window.snapshot.extract import ColorExtractModel, ColorExtractView
+from ui.tabs.experiment.window.snapshot.mean_color import MeanColorModel, MeanColorView
+from ui.tabs.experiment.window.snapshot.mean_color.image_list import ImageListView
 
 
-class ColorExtractController(BaseController):
+class MeanColorController(BaseController):
     def __init__(self, parent=None):
-        super().__init__(ColorExtractModel, ColorExtractView, parent)
+        super().__init__(MeanColorModel, MeanColorView, parent)
 
     def init_controller(self):
         super().init_controller()
 
-        view: ColorExtractView = self.view
+        view: MeanColorView = self.view
         view.radio.selected.connect(self.on_radio_selected)
 
     def add_image_shell(self):
@@ -24,7 +22,7 @@ class ColorExtractController(BaseController):
         image_list_view.set_image_shell(index, mean_colored_pixmap, cropped_original_pixmap, target_name)
 
     def on_radio_selected(self, index):
-        view: ColorExtractView = self.view
+        view: MeanColorView = self.view
         view.image_list.set_image_type(index)
 
 
@@ -32,7 +30,7 @@ def main():
     from PySide6.QtWidgets import QApplication
 
     app = QApplication([])
-    widget = ColorExtractController()
+    widget = MeanColorController()
     widget.view.show()
     app.exec()
 

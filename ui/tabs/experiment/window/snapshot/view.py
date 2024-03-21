@@ -4,7 +4,7 @@ from ui.common import BaseTabWidgetView
 from ui.tabs.experiment.window.snapshot.difference import ColorDifferenceController
 from ui.tabs.experiment.window.snapshot.process import SnapshotProcessController
 from ui.tabs.experiment.window.snapshot.process.capture_list import CaptureListView
-from ui.tabs.experiment.window.snapshot.extract import ColorExtractController
+from ui.tabs.experiment.window.snapshot.mean_color import MeanColorController
 
 
 class PlateSnapshotView(BaseTabWidgetView):
@@ -26,12 +26,12 @@ class PlateSnapshotView(BaseTabWidgetView):
         self.setTabPosition(QTabWidget.South)
 
         self.plate_process = SnapshotProcessController(snapshot_info=self.snapshot_info)
-        self.color_extract = ColorExtractController()
+        self.mean_color = MeanColorController()
         self.color_graph = QWidget()
         self.color_difference = ColorDifferenceController(snapshot_info=self.snapshot_info)
 
         self.addTab(self.plate_process.view, "이미지 처리")
-        self.addTab(self.color_extract.view, "색 추출")
+        self.addTab(self.mean_color.view, "평균 색")
         self.addTab(self.color_graph, "그래프")
         self.addTab(self.color_difference.view, "색 차이")
 
