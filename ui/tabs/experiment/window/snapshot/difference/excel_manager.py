@@ -3,13 +3,13 @@ import os
 from openpyxl.workbook import Workbook
 
 from ui.tabs.experiment.window.snapshot.difference import ColorDifferenceModel
-from util import image_converter as ic
+from util import local_storage_manager as lsm
 
 
 class ExcelManager:
     def __init__(self, snapshot_path, plate_age, model):
         output_path = os.getenv("LOCAL_OUTPUT_PATH")
-        self.snapshot_path = ic.get_absolute_path(output_path, snapshot_path)
+        self.snapshot_path = lsm.get_absolute_path(output_path, snapshot_path)
         self.plate_age = plate_age
 
         self.model = model
