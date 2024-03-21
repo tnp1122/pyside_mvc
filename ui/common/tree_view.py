@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSizePo
 
 from ui.common import ImageButton, BaseScrollAreaView
 
-from util import image_converter as ic
+from util import local_storage_manager as lsm
 
 
 class TreeView(BaseScrollAreaView):
@@ -84,12 +84,12 @@ class TreeRow(QWidget):
 
         if self.level == 0:
             return
-        img_expand = ic.get_image_path("expand_arrow.png")
+        img_expand = lsm.get_static_image_path("expand_arrow.png")
         if self.is_directory:
-            img_icon = ic.get_image_path("icon_directory.png")
+            img_icon = lsm.get_static_image_path("icon_directory.png")
         else:
-            img_icon = ic.get_image_path("icon_document.png")
-        img_add = ic.get_image_path("icon_add.png")
+            img_icon = lsm.get_static_image_path("icon_document.png")
+        img_add = lsm.get_static_image_path("icon_add.png")
 
         icon_size = (self.icon_size, self.icon_size)
         self.btn_expand = ImageButton(image=img_expand, size=icon_size, degree=self.get_expand_icon_degree())
