@@ -2,7 +2,7 @@ from PySide6.QtWidgets import QVBoxLayout
 
 from ui.common import BaseWidgetView, MileStoneRadio
 from ui.tabs.experiment.window.snapshot.process.capture_list import CaptureListController
-from ui.tabs.experiment.window.snapshot.process.unit import PlateCaptureUnitController, PlateCaptureUnitView
+from ui.tabs.experiment.window.snapshot.process.unit import ProcessUnitController, ProcessUnitView
 from ui.tabs.experiment.window.snapshot.extract.image_list import ImageListController
 
 

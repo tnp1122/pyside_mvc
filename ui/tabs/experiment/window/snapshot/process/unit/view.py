@@ -12,7 +12,7 @@ from util import local_storage_manager as lsm
 from util.setting_manager import SettingManager
 
 
-class PlateCaptureUnitView(BaseWidgetView):
+class ProcessUnitView(BaseWidgetView):
     setting_manager = SettingManager()
 
     clicked = Signal()

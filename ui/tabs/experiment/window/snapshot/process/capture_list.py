@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QSizePolicy, QWidget, QHBoxLayout, QPushButton, QV
 
 from model import Image, Targets
 from ui.common import BaseScrollAreaView, BaseController
-from ui.tabs.experiment.window.snapshot.process.unit import PlateCaptureUnitController, PlateCaptureUnitView
+from ui.tabs.experiment.window.snapshot.process.unit import ProcessUnitController, ProcessUnitView
 
 
 class CaptureListModel:
@@ -87,12 +87,12 @@ class CaptureListView(BaseScrollAreaView):
     def add_new_unit(self):
         count = len(self.units)
 
-        new_unit = PlateCaptureUnitController()
+        new_unit = ProcessUnitController()
         new_unit.set_image_size(*self.unit_size)
         new_unit.mask_applied.connect(lambda: self.mask_changed.emit(count))
         new_unit.mask_info_cleared.connect(lambda: self.mask_changed.emit(count))
 
-        unit_view: PlateCaptureUnitView = new_unit.view
+        unit_view: ProcessUnitView = new_unit.view
         unit_view.set_targets(self.targets)
         unit_view.clicked.connect(lambda: self.set_selected_widget(count))
 
@@ -116,7 +116,7 @@ class CaptureListView(BaseScrollAreaView):
     def set_targets(self, targets):
         self.targets = targets
         for unit in self.units:
-            unit_view: PlateCaptureUnitView = unit.view
+            unit_view: ProcessUnitView = unit.view
             unit_view.set_targets(targets)
 
 
@@ -137,14 +137,14 @@ class CaptureListController(BaseController):
         view: CaptureListView = self.view
         index = view.selected_index
 
-        unit: PlateCaptureUnitController = view.units[index]
+        unit: ProcessUnitController = view.units[index]
         unit.set_image(image)
 
     def set_unit_id(self, plate_captures):
         for plate_capture in plate_captures:
             target_id = plate_capture["target"]
             for unit in self.view.units:
-                unit_view: PlateCaptureUnitView = unit.view
+                unit_view: ProcessUnitView = unit.view
                 if unit_view.get_selected_target_id() == target_id:
                     unit.capture_id = plate_capture["id"]
                     break

@@ -13,7 +13,7 @@ from ui.tabs.experiment.window.snapshot import PlateSnapshotModel, PlateSnapshot
 from ui.tabs.experiment.window.snapshot.extract import ColorExtractController
 from ui.tabs.experiment.window.snapshot.process import SnapshotProcessView
 from ui.tabs.experiment.window.snapshot.process.capture_list import CaptureListView, CaptureListController
-from ui.tabs.experiment.window.snapshot.process.unit import PlateCaptureUnitView, PlateCaptureUnitController
+from ui.tabs.experiment.window.snapshot.process.unit import ProcessUnitView, ProcessUnitController
 
 from util import SnapshotDataManager
 
@@ -113,8 +113,8 @@ class PlateSnapshotController(TabWidgetController):
         extract_widget: ColorExtractController = view.color_extract
         capture_list: CaptureListController = view.plate_process.view.capture_list
         capture_list_view: CaptureListView = capture_list.view
-        unit: PlateCaptureUnitController = capture_list_view.units[index]
-        unit_view: PlateCaptureUnitView = unit.view
+        unit: ProcessUnitController = capture_list_view.units[index]
+        unit_view: ProcessUnitView = unit.view
 
         mean_colored_pixmap = unit.mean_colored_pixmap
         cropped_original_pixmap = unit.cropped_original_pixmap
@@ -143,8 +143,8 @@ class PlateSnapshotController(TabWidgetController):
         target_id_check = []
         plate_capture_datas = []
         for unit in capture_list_view.units:
-            unit: PlateCaptureUnitController
-            unit_view: PlateCaptureUnitView = unit.view
+            unit: ProcessUnitController
+            unit_view: ProcessUnitView = unit.view
 
             if not unit.mean_colors:  # 마스킹 적용된 유닛만 저장됨
                 continue
@@ -199,8 +199,8 @@ class PlateSnapshotController(TabWidgetController):
                     self.snapshot_added.emit(snapshot_age)
 
                     for unit in capture_list_view.units:
-                        unit: PlateCaptureUnitController
-                        unit_view: PlateCaptureUnitView = unit.view
+                        unit: ProcessUnitController
+                        unit_view: ProcessUnitView = unit.view
 
                         target_name = unit_view.cmb_target.currentText()
 

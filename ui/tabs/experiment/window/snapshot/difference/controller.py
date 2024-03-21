@@ -4,7 +4,7 @@ from ui.common.toast import Toast
 from ui.tabs.experiment.window.snapshot.difference import ColorDifferenceModel, ColorDifferenceView
 from ui.tabs.experiment.window.snapshot.difference.difference_table import ColorDifferenceTableView
 from ui.tabs.experiment.window.snapshot.process.capture_list import CaptureListController
-from ui.tabs.experiment.window.snapshot.process.unit import PlateCaptureUnitController, PlateCaptureUnitView
+from ui.tabs.experiment.window.snapshot.process.unit import ProcessUnitController, ProcessUnitView
 from ui.tabs.experiment.window.snapshot.difference.excel_manager import ExcelManager
 
 
@@ -67,8 +67,8 @@ class ColorDifferenceController(BaseController):
         target_rgb_colors = []
         capture_units = capture_list.view.units
         for unit in capture_units:
-            unit: PlateCaptureUnitController
-            unit_view: PlateCaptureUnitView = unit.view
+            unit: ProcessUnitController
+            unit_view: ProcessUnitView = unit.view
 
             if unit.mean_colors:
                 targets.append(unit_view.get_selected_target())

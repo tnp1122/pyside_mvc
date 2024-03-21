@@ -2,22 +2,21 @@ import cv2
 import numpy as np
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QPixmap
-from numpy import ndarray
 
 from model import Image
 from ui.common import BaseController
-from ui.tabs.experiment.window.snapshot.process.unit import PlateCaptureUnitModel, PlateCaptureUnitView
+from ui.tabs.experiment.window.snapshot.process.unit import ProcessUnitModel, ProcessUnitView
 from ui.tabs.experiment.window.snapshot.process.unit.mask_manager import Masking, MaskGraphicsController, \
     MaskManagerController
 from util import image_converter as ic
 
 
-class PlateCaptureUnitController(BaseController):
+class ProcessUnitController(BaseController):
     mask_applied = Signal()
     mask_info_cleared = Signal()
 
     def __init__(self, parent=None):
-        super().__init__(PlateCaptureUnitModel, PlateCaptureUnitView, parent)
+        super().__init__(ProcessUnitModel, ProcessUnitView, parent)
 
         self.masked_array = None
         self.transformed_mask_info = {}
@@ -27,7 +26,7 @@ class PlateCaptureUnitController(BaseController):
 
         self.capture_id = None
 
-        view: PlateCaptureUnitView = self.view
+        view: ProcessUnitView = self.view
         view.mask_manager_apply_clicked.connect(self.on_mask_apply_clicked)
         view.clear_mask_info.connect(self.clear_mask_info)
 
@@ -55,7 +54,7 @@ class PlateCaptureUnitController(BaseController):
 
     def set_image(self, image: Image):
         self.clear_mask_info()
-        view: PlateCaptureUnitView = self.view
+        view: ProcessUnitView = self.view
         view.set_image(image)
 
     def on_mask_apply_clicked(self):
@@ -124,7 +123,7 @@ class PlateCaptureUnitController(BaseController):
         return self.mean_colored_pixmap
 
     def make_cropped_original_pixmap(self, x, y, width, height):
-        view: PlateCaptureUnitView = self.view
+        view: ProcessUnitView = self.view
         self.cropped_original_pixmap = view.pixmap.copy(x, y, width, height)
 
     def set_snapshot_datas(self, cropped_image: Image, mean_color_mask_info: dict, mask: np.ndarray):
@@ -139,7 +138,7 @@ class PlateCaptureUnitController(BaseController):
         info = self.transformed_mask_info
         x, y, width, height = (info[key] for key in ["x", "y", "width", "height"])
 
-        view: PlateCaptureUnitView = self.view
+        view: ProcessUnitView = self.view
         cropped_image = view.origin_image.cropped(x, y, width, height)
         cropped_mask_info = self.transformed_mask_info.copy()
         cropped_mask_info["x"], cropped_mask_info["y"] = 0, 0
@@ -154,7 +153,7 @@ def main():
     from PySide6.QtWidgets import QApplication
 
     app = QApplication([])
-    widget = PlateCaptureUnitController()
+    widget = ProcessUnitController()
     widget.view.set_image_size(300, 500)
     widget.view.set_no_image()
     widget.view.show()
