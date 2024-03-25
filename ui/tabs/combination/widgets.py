@@ -113,10 +113,12 @@ class LabelTitle(QWidget):
 
 class SelectSensorWidget(QDialog):
     x, y = -1, -1
+    max_width_cmb = 125
 
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self.setWindowTitle("센서 시료 선택")
         self.setFixedSize(280, 180)
 
         font = QFont()
@@ -133,12 +135,14 @@ class SelectSensorWidget(QDialog):
 
         self.lb_solvent = QLabel("용매")
         self.cmb_solvent = QComboBox()
+        self.cmb_solvent.setFixedWidth(self.max_width_cmb)
         lyt_solvent = QHBoxLayout()
         lyt_solvent.addWidget(self.lb_solvent)
         lyt_solvent.addWidget(self.cmb_solvent)
 
         self.lb_additive = QLabel("첨가제")
         self.cmb_additive = QComboBox()
+        self.cmb_additive.setFixedWidth(self.max_width_cmb)
         lyt_additive = QHBoxLayout()
         lyt_additive.addWidget(self.lb_additive)
         lyt_additive.addWidget(self.cmb_additive)
