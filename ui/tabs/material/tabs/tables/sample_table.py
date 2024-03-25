@@ -157,8 +157,8 @@ class SampleTableView(BaseTableWidgetView):
         lb_date.setText(date_str)
 
     def on_change_use(self, row):
-        sample_id = self.samples[row]["id"]
-        subject_id = self.samples[row][self.subject]["id"]
+        sample_id = self.samples[row].id
+        subject_id = self.samples[row].subject.id
         sample = (sample_id, subject_id)
 
         cell_check = self.cellWidget(row, 3)

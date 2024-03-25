@@ -15,7 +15,7 @@ class PlateSnapshotView(BaseTabWidgetView):
 
     def closeEvent(self, event):
         self.plate_process.close()
-        self.color_extract.close()
+        self.mean_color.close()
         self.color_graph.close()
         self.color_difference.close()
         super().closeEvent(event)
