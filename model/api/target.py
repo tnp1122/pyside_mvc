@@ -1,4 +1,4 @@
-from model import Item, Items
+from model.api import Item, Items
 
 
 class Target(Item):

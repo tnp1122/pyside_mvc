@@ -1,6 +1,6 @@
 import json
 
-from model import Item, Items
+from model.api import Item, Items
 
 
 class MaterialSample(Item):
