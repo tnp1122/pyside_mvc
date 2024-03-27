@@ -91,8 +91,7 @@ class ProcessUnitController(BaseController):
 
     def make_mean_colored_pixmap(self, x, y, r, width, height, cols, rows):
         masked_array: np.ma.masked_array = self.masked_array
-        mask_filled_image = masked_array.filled(0).astype(np.uint8)
-        cropped_array = mask_filled_image[y:y + height, x:x + width]
+        cropped_array = masked_array[y:y + height, x:x + width]
 
         # 색 평균 계산
         self.mean_colors = []
@@ -102,10 +101,7 @@ class ProcessUnitController(BaseController):
                 x1, x2 = int(cx - r), int(cx + r)
                 y1, y2 = int(cy - r), int(cy + r)
                 cell = cropped_array[y1:y2, x1:x2]
-                mean_R = np.mean(cell[:, :, 0])
-                mean_G = np.mean(cell[:, :, 1])
-                mean_B = np.mean(cell[:, :, 2])
-                mean_color = [mean_R, mean_G, mean_B]
+                mean_color = np.mean(cell, axis=(0, 1))
                 self.mean_colors[j].append(mean_color)
 
         # 색 평균 원 그리기
