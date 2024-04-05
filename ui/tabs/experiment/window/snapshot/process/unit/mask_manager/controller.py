@@ -1,6 +1,8 @@
 from model import Image
 from ui.common import BaseController
-from ui.tabs.experiment.window.snapshot.process.unit.mask_manager import MaskManagerView, MaskManagerModel, Masking
+from ui.tabs.experiment.window.snapshot.process.unit.mask_manager import MaskManagerView, MaskManagerModel, Masking, \
+    MaskGraphicsController
+from ui.tabs.experiment.window.snapshot.process.unit.mask_manager.mask_graphics import MaskGraphicsModel
 from util.enums import MaskViewIndex
 from util import image_converter as ic
 
@@ -18,18 +20,23 @@ class MaskManagerController(BaseController):
     def init_controller(self):
         super().init_controller()
 
-        self.graphics = self.view.graphics
-        self.view.view_radio.selected.connect(self.on_select_changed)
-        self.view.btn_set_horizontal.clicked.connect(lambda: self.graphics.set_direction(0))
-        self.view.btn_set_vertical.clicked.connect(lambda: self.graphics.set_direction(1))
-        self.view.btn_circle.clicked.connect(self.set_circle_visible)
+        view: MaskManagerView = self.view
+        self.graphics: MaskGraphicsController = view.graphics
+        graphics_model: MaskGraphicsModel = self.graphics.model
 
-        self.view.btn_show_masking.clicked.connect(self.show_masking_view)
-        self.view.ET_r.textChanged.connect(self.on_change_radius)
+        view.view_radio.selected.connect(self.on_select_changed)
+        view.btn_apply.clicked.connect(graphics_model.save_circle_mask_info)
 
-        self.view.ET_threshold.textChanged.connect(self.on_change_threshold)
+        view.btn_set_horizontal.clicked.connect(lambda: self.graphics.set_direction(0))
+        view.btn_set_vertical.clicked.connect(lambda: self.graphics.set_direction(1))
+        view.btn_circle.clicked.connect(self.set_circle_visible)
 
-        self.view.masking.masked_image_updated_signal.connect(self.update_masking_view)
+        view.btn_show_masking.clicked.connect(self.show_masking_view)
+        view.ET_r.textChanged.connect(self.on_change_radius)
+
+        view.ET_threshold.textChanged.connect(self.on_change_threshold)
+
+        view.masking.masked_image_updated_signal.connect(self.update_masking_view)
 
     def on_select_changed(self, index):
         view_index = MaskViewIndex(index)

@@ -71,7 +71,6 @@ class ProcessUnitController(BaseController):
         self.masked_array = masking.masked_array
         self.transformed_mask_info = graphics.get_transformed_mask_info()
 
-        graphics.save_circle_mask_info()
         mask_manager.close()
 
         self.apply_mask_info()
