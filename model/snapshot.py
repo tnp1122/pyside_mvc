@@ -154,15 +154,15 @@ class Mask(QObject):
 
         self.set_mask()
 
-        self.set_circle_mask()
-        self.set_flare_mask(update_mask=True, emit=True)
-
     def set_mask(self):
         shape = self.plate_image.shape if self.plate_image is not None else (10, 10, 3)
         self.circle_mask = np.full(shape, 255, np.uint8)
         self.flare_mask = np.full(shape, 0, np.uint8)
         self.custom_mask = np.full(shape, 0, np.uint8)
         self.masked_array: np.ndarray
+
+        self.set_circle_mask()
+        self.set_flare_mask(update_mask=True, emit=True)
 
     def get_mask_info(self):
         return self.radius, self.flare_threshold

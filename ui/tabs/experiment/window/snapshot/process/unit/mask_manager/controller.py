@@ -9,6 +9,8 @@ class MaskManagerController(BaseController):
         self.snapshot = snapshot
 
         super().__init__(MaskManagerModel, MaskManagerView, parent, snapshot)
+        view: MaskManagerView = self.view
+        view.btn_confirm.clicked.connect(self.close)
 
     def close(self):
         self.snapshot.on_processed()

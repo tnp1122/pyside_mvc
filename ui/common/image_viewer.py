@@ -104,7 +104,7 @@ class ImageViewerView(BaseWidgetView):
     def open_mask_manager(self):
         if self.image is not None:
             self.mask_manager = MaskManagerController(origin_image=Image(self.image))
-            self.mask_manager.view.btn_apply.clicked.connect(self.on_mask_apply_clicked)
+            self.mask_manager.view.btn_confirm.clicked.connect(self.on_confirm_clicked)
             self.mask_manager.view.exec()
 
     def get_mask_area_info(self):
@@ -118,7 +118,7 @@ class ImageViewerView(BaseWidgetView):
         self.mask_area = QRect(x, y, width, height)
         # return self.mask_area
 
-    def on_mask_apply_clicked(self):
+    def on_confirm_clicked(self):
         self.get_mask_area_info()
         self.mask_manager.close()
 

@@ -21,14 +21,15 @@ class MaskManagerView(BaseDialogView):
         self.setWindowTitle("마스크 영역 지정")
 
         self.view_radio = MileStoneRadio(["원본", "마스킹 구역 지정", "마스킹 영역 보기"])
-        self.btn_init = ColoredButton("초기화", background_color="#FF4B4B")
-        self.btn_init.setVisible(False)
-        self.btn_apply = ColoredButton("확인")
+        self.btn_init_mask = ColoredButton("초기화", background_color="#FF4B4B")
+        self.btn_init_mask.clicked.connect(self.on_init_mask_clicked)
+        self.btn_init_mask.setVisible(False)
+        self.btn_confirm = ColoredButton("확인")
 
         lyt_btn = QHBoxLayout()
         lyt_btn.addWidget(self.view_radio)
-        lyt_btn.addWidget(self.btn_init)
-        lyt_btn.addWidget(self.btn_apply)
+        lyt_btn.addWidget(self.btn_init_mask)
+        lyt_btn.addWidget(self.btn_confirm)
 
         self.graphics = MaskGraphicsController(snapshot=self.snapshot)
 
@@ -45,6 +46,10 @@ class MaskManagerView(BaseDialogView):
         self.init_text()
 
         self.connect_signal()
+
+    def on_init_mask_clicked(self):
+        self.snapshot.mask.set_mask()
+        self.update_scene()
 
     def init_bottom_district(self):
         lyt = QHBoxLayout()
@@ -188,7 +193,7 @@ class MaskManagerView(BaseDialogView):
 
         graphics: MaskGraphicsController = self.graphics
         graphics.view_handler.set_current_view(view_index)
-        self.btn_init.setVisible(False)
+        self.btn_init_mask.setVisible(False)
 
         if view_index == MaskViewIndex.DISTRICT:
             graphics.model.is_border_adjustable = True
@@ -196,9 +201,8 @@ class MaskManagerView(BaseDialogView):
             graphics.model.is_border_adjustable = False
 
         if view_index == MaskViewIndex.MASK:
-            graphics_scene: MaskGraphicsScene = graphics.view.scene
-            graphics_scene.update_masking_view()
-            self.btn_init.setVisible(True)
+            self.update_scene()
+            self.btn_init_mask.setVisible(True)
 
     def set_direction(self, index):
         plate: PlatePosition = self.snapshot.plate_position
@@ -212,13 +216,15 @@ class MaskManagerView(BaseDialogView):
     def open_masking_view(self):
         def handle_custom_mask(masking_view: DrawMask):
             if masking_view is not None:
-                print(f"[manager_view] disconnect")
                 masking_view.closed.disconnect()
 
             self.snapshot.mask.update_mask()
-            scene: MaskGraphicsScene = self.graphics.view.scene
-            scene.update_masking_view()
+            self.update_scene()
 
         masking_view = DrawMask(self.snapshot)
         masking_view.closed.connect(lambda: handle_custom_mask(masking_view))
         masking_view.open_window()
+
+    def update_scene(self):
+        scene: MaskGraphicsScene = self.graphics.view.scene
+        scene.update_masking_view()
