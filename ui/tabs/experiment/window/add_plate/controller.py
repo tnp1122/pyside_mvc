@@ -114,8 +114,8 @@ class AddPlateController(BaseController):
         metal_made_at = metal["made_at"]
         metal_made_at_object = datetime.strptime(metal_made_at, "%Y-%m-%dT%H:%M:%S")
 
-        date_str = view.lb_date.text()
-        hour_str = view.et_time.text()
+        date_str = view.wig_date.lb.text()
+        hour_str = view.wig_hour.et.text()
         datetime_str = f"{date_str}_{hour_str}0000"
         datetime_object = datetime.strptime(datetime_str, "%y%m%d_%H%M%S")
 

@@ -1,10 +1,10 @@
 import os
-
 from PySide6.QtCore import Signal
-from PySide6.QtGui import QPixmap, Qt, QFont
-from PySide6.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout, QComboBox, QWidget, QSizePolicy, QFileDialog
+from PySide6.QtGui import Qt, QFont
+from PySide6.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout, QComboBox, QSizePolicy, QFileDialog
 
 from model import Image, Targets
+from model.snapshot import Snapshot
 from ui.common import BaseWidgetView, ImageButton
 from ui.tabs.experiment.window.snapshot.process.unit.mask_manager import MaskManagerController
 
@@ -16,17 +16,18 @@ class ProcessUnitView(BaseWidgetView):
     setting_manager = SettingManager()
 
     clicked = Signal()
-    mask_manager_apply_clicked = Signal()
     clear_mask_info = Signal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, snapshot: Snapshot = None):
         super().__init__(parent)
 
-        self.origin_image = Image()
         self.targets = Targets()
 
+        self.snapshot = snapshot
+        self.snapshot.origin_image_changed.connect(self.update_pixmap)
+
     def closeEvent(self, event):
-        if hasattr(self, "mask_manager") and self.mask_manager:
+        if hasattr(self, "mask_manager") and self.mask_manager is not None:
             self.mask_manager.close()
 
         super().closeEvent(event)
@@ -42,14 +43,17 @@ class ProcessUnitView(BaseWidgetView):
 
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.is_selected = False
-        self.has_image = False
 
-        self._pixmap = QPixmap()  # 원본 이미지 유지하고 복사하여 사용
-        self.masked_pixmap = QPixmap()
-        self.lb_image = QLabel()
+        font = QFont()
+        font.setPointSize(16)
+        font.setBold(True)
+        self.lb_image = QLabel("No Image")
+        self.lb_image.setFont(font)
+        self.lb_image.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.cmb_target = QComboBox()
         self.cmb_target.setFixedWidth(150)
+        self.cmb_target.currentTextChanged.connect(self.on_target_changed)
         img_lasso = lsm.get_static_image_path("lasso.png")
         img_load_img = lsm.get_static_image_path("img_load_box.png")
         img_trash_bin = lsm.get_static_image_path("trash_bin.png")
@@ -71,21 +75,7 @@ class ProcessUnitView(BaseWidgetView):
         lyt.addLayout(lyt_bottom)
         lyt.setContentsMargins(0, 0, 0, 0)
 
-        font = QFont()
-        font.setPointSize(16)
-        font.setBold(True)
-        lb_no_image = QLabel("NO IMAGE")
-        lb_no_image.setFont(font)
-        self.wig_no_image = QWidget()
-        lyt_no_image = QHBoxLayout(self.wig_no_image)
-        lyt_no_image.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        lyt_no_image.addWidget(lb_no_image)
-
         self.set_selected()
-
-    @property
-    def pixmap(self):
-        return self._pixmap
 
     def set_selected(self, is_selected=True):
         if is_selected:
@@ -93,48 +83,42 @@ class ProcessUnitView(BaseWidgetView):
         else:
             self.lb_image.setStyleSheet("border: 2px solid black;")
 
-    def update_label(self, pixmap):
-        self.lb_image.setPixmap(pixmap.scaled(self.lb_image.size(), Qt.KeepAspectRatio))
-
-    def set_pixmap(self, pixmap, no_image=False):
-        if not isinstance(pixmap, QPixmap):
-            self.set_no_image()
-            return
-
-        self.has_image = not no_image
-        self._pixmap = pixmap
-        self.update_label(self._pixmap)
-
-    def set_image(self, image: Image):
-        self.clear_mask_info.emit()
-        self.origin_image = image
-        pixmap = image.q_pixmap
-
-        self.set_pixmap(pixmap)
-
-    def set_no_image(self):
-        pixmap = QPixmap(self.wig_no_image.size())
-        self.wig_no_image.render(pixmap)
-        self.set_pixmap(pixmap, no_image=True)
-
-    def set_masked_pixmap(self, pixmap, x, y, width, height):
-        self.masked_pixmap = pixmap.copy(x, y, width, height)
-        self.update_label(self.masked_pixmap)
+    def update_pixmap(self):
+        if self.snapshot.mask_editable:
+            pixmap = self.snapshot.cropped_pixmap
+            self.lb_image.setPixmap(pixmap.scaled(self.lb_image.size(), Qt.KeepAspectRatio))
+        else:
+            self.lb_image.setText("No Image")
 
     def set_image_size(self, width=None, height=None):
         w = width if width else self.lb_image.width()
         h = height if height else self.lb_image.height()
         self.lb_image.setFixedSize(w, h)
-        self.wig_no_image.setFixedSize(w, h)
 
-        if not self.has_image:
-            self.set_no_image()
+    def set_targets(self, targets):
+        self.targets = targets
+        self.cmb_target.clear()
+
+        self.cmb_target.currentTextChanged.disconnect()
+        for target in targets:
+            self.cmb_target.addItem(target.name)
+        self.cmb_target.currentTextChanged.connect(self.on_target_changed)
+
+        if self.snapshot.target is not None:
+            index, _ = self.targets.item_from_id(self.snapshot.target.id)
+            self.cmb_target.setCurrentIndex(index)
+
+    def on_target_changed(self, target_name):
+        self.snapshot.set_target(self.targets.item_from_name(target_name)[1])
 
     def open_mask_manager(self):
-        if self.has_image:
-            self.mask_manager = MaskManagerController(origin_image=self.origin_image)
-            self.mask_manager.view.btn_apply.clicked.connect(lambda: self.mask_manager_apply_clicked.emit())
-            self.mask_manager.view.exec()
+        self.mask_manager = MaskManagerController(snapshot=self.snapshot)
+        self.mask_manager.closed.connect(self.on_manager_closed)
+        self.mask_manager.view.exec()
+
+    def on_manager_closed(self):
+        self.mask_manager = None
+        self.update_pixmap()
 
     def open_file_dialog(self):
         base_path = self.setting_manager.get_path_to_load_image()
@@ -148,20 +132,4 @@ class ProcessUnitView(BaseWidgetView):
             self.setting_manager.set_path_to_load_image(base_image_path)
 
             image = Image().from_path(image_path)
-            self.set_image(image)
-
-    def set_targets(self, targets):
-        self.targets = targets
-        self.cmb_target.clear()
-        for target in targets:
-            self.cmb_target.addItem(target.name)
-
-    def get_selected_target(self):
-        selected_index = self.cmb_target.currentIndex()
-        return self.targets[selected_index]
-
-    def get_selected_target_id(self):
-        return self.get_selected_target().id
-
-    def set_selected_target(self, target_index):
-        self.cmb_target.setCurrentIndex(target_index)
+            self.snapshot.init_origin_image(image)

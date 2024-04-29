@@ -36,6 +36,7 @@ def path_to_q_pixmap(image_path: str) -> QPixmap:
 
 
 def array_to_q_image(image: np.ndarray, has_alpha=False) -> QImage:
+    image = np.ascontiguousarray(image)
     height, width, channel = image.shape
     if has_alpha:
         bytes_per_line = (width * 24 + 31) // 32 * 4

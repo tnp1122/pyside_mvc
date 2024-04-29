@@ -5,7 +5,7 @@ from ui.common import BaseController
 from ui.common.toast import Toast
 from ui.tabs.experiment.window.snapshot.process import SnapshotProcessModel, SnapshotProcessView
 from ui.tabs.experiment.window.snapshot.process.capture_list import CaptureListView, CaptureListController
-from ui.tabs.experiment.window.snapshot.process.image_viewer import ImageViewerView
+from ui.common.image_viewer import ImageViewerView
 
 
 class SnapshotProcessController(BaseController):

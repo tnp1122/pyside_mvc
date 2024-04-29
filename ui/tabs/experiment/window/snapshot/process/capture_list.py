@@ -3,6 +3,7 @@ from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QSizePolicy, QWidget, QHBoxLayout, QPushButton, QVBoxLayout
 
 from model import Image, Targets
+from model.snapshot import Snapshot
 from ui.common import BaseScrollAreaView, BaseController
 from ui.tabs.experiment.window.snapshot.process.unit import ProcessUnitController, ProcessUnitView
 
@@ -38,6 +39,7 @@ class CaptureListView(BaseScrollAreaView):
             lyt.removeWidget(widget)
 
         for unit in self.units:
+            unit: ProcessUnitController
             unit.close()
 
         self.units = []
@@ -59,7 +61,6 @@ class CaptureListView(BaseScrollAreaView):
 
         self.btn_plus = QPushButton("+")
         self.btn_plus.setFont(font)
-        self.btn_plus.clicked.connect(self.add_new_unit)
         lyt_plus = QVBoxLayout()
         lyt_plus.addWidget(self.btn_plus)
         lyt_plus.setAlignment(Qt.AlignTop)
@@ -80,17 +81,16 @@ class CaptureListView(BaseScrollAreaView):
         self.unit_size = (w, h)
         self.btn_plus.setFixedSize(w, h)
         for unit in self.units:
+            unit: ProcessUnitController
             unit.set_image_size(w, h)
 
         self.set_height()
 
-    def add_new_unit(self):
+    def add_new_unit(self, snapshot: Snapshot):
         count = len(self.units)
 
-        new_unit = ProcessUnitController()
+        new_unit = ProcessUnitController(snapshot=snapshot)
         new_unit.set_image_size(*self.unit_size)
-        new_unit.mask_applied.connect(lambda: self.mask_changed.emit(count))
-        new_unit.mask_info_cleared.connect(lambda: self.mask_changed.emit(count))
 
         unit_view: ProcessUnitView = new_unit.view
         unit_view.set_targets(self.targets)
@@ -110,6 +110,7 @@ class CaptureListView(BaseScrollAreaView):
     def set_selected_widget(self, selected_index):
         self.selected_index = selected_index
         for index, unit in enumerate(self.units):
+            unit: ProcessUnitController
             is_selected = index == selected_index
             unit.set_selected(is_selected)
 
@@ -133,21 +134,26 @@ class CaptureListController(BaseController):
         view: CaptureListView = self.view
         view.set_unit_size(w, h)
 
+    def add_new_unit(self, snapshot: Snapshot):
+        view: CaptureListView = self.view
+        view.add_new_unit(snapshot)
+
     def set_unit_image(self, image: Image):
         view: CaptureListView = self.view
         index = view.selected_index
 
         unit: ProcessUnitController = view.units[index]
-        unit.set_image(image)
+        unit.set_snapshot_image(image)
 
     def set_unit_id(self, plate_captures):
-        for plate_capture in plate_captures:
-            target_id = plate_capture["target"]
-            for unit in self.view.units:
-                unit_view: ProcessUnitView = unit.view
-                if unit_view.get_selected_target_id() == target_id:
-                    unit.capture_id = plate_capture["id"]
-                    break
+        # for plate_capture in plate_captures:
+        #     target_id = plate_capture["target"]
+        #     for unit in self.view.units:
+        #         unit_view: ProcessUnitView = unit.view
+        #         if unit_view.get_selected_target_id() == target_id:
+        #             unit.capture_id = plate_capture["id"]
+        #             break
+        pass
 
 
 def main():

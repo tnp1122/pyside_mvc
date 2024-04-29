@@ -13,11 +13,9 @@ class MeanColorView(BaseWidgetView):
 
         self.radio = MileStoneRadio(["평균 색", "실제 색"])
         self.image_list = ImageListController()
-        self.image_list.set_image_size(300, 500)
 
         lyt = QVBoxLayout(self)
         lyt.addWidget(self.radio)
         lyt.addStretch()
         lyt.addWidget(self.image_list.view)
         lyt.addStretch()
-

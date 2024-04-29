@@ -3,12 +3,12 @@ from colormath.color_conversions import convert_color
 from colormath.color_objects import sRGBColor, xyYColor, LabColor
 
 from model import Targets
+from model.snapshot import Snapshot
 
 
 class ColorDifferenceModel:
     def __init__(self):
-        self.targets = Targets()
-        self.target_rgb_colors = [[]]
+        self.snapshots = []
 
         self.target_index = 0
         self.control_index = 0
@@ -20,14 +20,17 @@ class ColorDifferenceModel:
         self.xyy_headers = ["x", "y", "Y", "x", "y", "Y", "Distance"]
         self.lab_headers = ["L", "a", "b", "L", "a", "b", "Distance"]
 
-    def get_target_cmb_names(self):
-        target_names = []
-        for index, target in enumerate(self.targets):
-            if index == self.control_index:
-                continue
-            target_names.append(target.name)
+    @property
+    def targets(self):
+        targets = Targets()
+        for snapshot in self.snapshots:
+            targets.append(snapshot.target)
 
-        return target_names
+        return targets
+
+    def get_origin_rgb_colors(self, index):
+        snapshot: Snapshot = self.snapshots[index]
+        return snapshot.mean_colors
 
     def get_headers(self, color_type="rgb"):
         if color_type == "xyy":
@@ -58,7 +61,7 @@ class ColorDifferenceModel:
         return self.color_types[self.color_index]
 
     def get_rgb_colors(self, target_index):
-        pixmap_rgb_colors = self.target_rgb_colors[target_index]
+        pixmap_rgb_colors = self.get_origin_rgb_colors(target_index)
         cell_rgb_colors = []
 
         row_count = len(pixmap_rgb_colors)

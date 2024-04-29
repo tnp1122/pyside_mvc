@@ -5,7 +5,7 @@ from PySide6.QtNetwork import QNetworkReply
 
 from ui.common import BaseController
 from ui.common.confirmation_dialog import ConfirmationDialog
-from ui.common.tree_view import TreeRow
+from ui.common.tree_view import TreeRow, TreeSignalData
 from ui.tabs.experiment import ExperimentModel, ExperimentView
 from ui.tabs.experiment.explorer import ExplorerController, ExplorerView
 from ui.tabs.experiment.window import ExperimentWindowController
@@ -33,7 +33,7 @@ class ExperimentController(BaseController):
         tree_root: TreeRow = explorer_view.tree.root
 
         explorer_view.btn_add.clicked.connect(self.add_experiment)
-        tree_root.clicked_signal.connect(self.on_tree_add_button)
+        tree_root.add_signal.connect(self.on_tree_add_button)
         tree_root.double_clicked_signal.connect(self.open_snapshot_tab)
         tree_root.remove_signal.connect(self.on_tree_remove_clicked)
 
@@ -57,7 +57,9 @@ class ExperimentController(BaseController):
 
         self.add_tab(add_experiment, 0, "새 실험")
 
-    def on_tree_add_button(self, indexes: list):
+    def on_tree_add_button(self, tree_signal_data: TreeSignalData):
+        indexes = tree_signal_data.indexes
+
         depth = len(indexes)
 
         if depth == 1:
@@ -127,7 +129,9 @@ class ExperimentController(BaseController):
 
         self.add_tab(plate_snapshot, 1, tab_name)
 
-    def on_tree_remove_clicked(self, indexes: list):
+    def on_tree_remove_clicked(self, tree_signal_data: TreeSignalData):
+        indexes = tree_signal_data.indexes
+
         experiment_tree = self.view.explorer.experiment_tree
         experiment, combination, plate, snapshot = None, None, None, None
         experiment_id, combination_id, plate_id, snapshot_id = None, None, None, None

@@ -1,10 +1,12 @@
-from PySide6.QtCore import QObject
+from PySide6.QtCore import QObject, Signal
 
 from data.api.api_manager import APIManager
 from util.setting_manager import SettingManager
 
 
 class BaseController(QObject):
+    closed = Signal()
+
     def __init__(self, Model, View, parent=None, args=None):
         super().__init__()
         self._model = Model()
@@ -35,6 +37,7 @@ class BaseController(QObject):
         self._model = None
         self.api_manager = None
         self.setting_manager = None
+        self.closed.emit()
 
     def init_controller(self):
         self.init_view()

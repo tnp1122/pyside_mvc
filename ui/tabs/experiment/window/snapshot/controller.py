@@ -6,16 +6,15 @@ from PySide6.QtCore import Signal
 from PySide6.QtNetwork import QNetworkReply
 
 from model import Targets
+from model.snapshot import Snapshot
 from ui.common import TabWidgetController
 from ui.common.confirmation_dialog import ConfirmationDialog
 from ui.common.toast import Toast
 from ui.tabs.experiment.window.snapshot import PlateSnapshotModel, PlateSnapshotView
-from ui.tabs.experiment.window.snapshot.mean_color import MeanColorController
+from ui.tabs.experiment.window.snapshot.difference import ColorDifferenceController
+from ui.tabs.experiment.window.snapshot.mean_color.image_list import ImageListController
 from ui.tabs.experiment.window.snapshot.process import SnapshotProcessView
 from ui.tabs.experiment.window.snapshot.process.capture_list import CaptureListView, CaptureListController
-from ui.tabs.experiment.window.snapshot.process.unit import ProcessUnitView, ProcessUnitController
-
-from util import SnapshotDataManager
 
 WIDGET = "[Plate Snapshot Controller]"
 
@@ -32,7 +31,7 @@ class PlateSnapshotController(TabWidgetController):
         self.snapshot_age = snapshot_info.pop("snapshot_age")
 
         self.targets = Targets()
-        self.snapshot_loaded = False
+        self.snapshots: list[Snapshot] = []
 
         super().__init__(PlateSnapshotModel, PlateSnapshotView, parent, snapshot_info)
 
@@ -47,9 +46,7 @@ class PlateSnapshotController(TabWidgetController):
         plate_process_view.btn_save.clicked.connect(self.on_save_button_clicked)
 
         capture_list_view: CaptureListView = view.plate_process.view.capture_list.view
-        mean_color: MeanColorController = view.mean_color
-        capture_list_view.btn_plus.clicked.connect(mean_color.add_image_shell)
-        capture_list_view.mask_changed.connect(lambda index: self.on_mask_changed(index))
+        capture_list_view.btn_plus.clicked.connect(self.add_new_snapshot)
 
         self.update_targets()
 
@@ -63,15 +60,14 @@ class PlateSnapshotController(TabWidgetController):
                 view.set_targets(self.targets)
 
                 if self.snapshot_id:
-                    self.load_snapshot_info()
+                    self.update_snapshot_info()
                     return
-                self.snapshot_loaded = True
             else:
                 self.api_manager.on_failure(reply)
 
         self.api_manager.get_targets(api_handler, self.experiment_id)
 
-    def load_snapshot_info(self):
+    def update_snapshot_info(self):
         view: PlateSnapshotView = self.view
         process_view: SnapshotProcessView = view.plate_process.view
         capture_list_view: CaptureListView = process_view.capture_list.view
@@ -86,48 +82,17 @@ class PlateSnapshotController(TabWidgetController):
                 for index, capture in enumerate(captures):
                     target_id = capture["target"]
                     target_index, target_name = self.targets.item_name_from_id(target_id)
-                    sdm = SnapshotDataManager(self.snapshot_path, self.snapshot_age, target_name)
-                    cropped_image, mean_color_mask_info, mask = sdm.load_datas()
 
-                    new_unit = capture_list_view.add_new_unit()
-                    new_unit.view.set_selected_target(target_index)
-                    new_unit.set_snapshot_datas(cropped_image, mean_color_mask_info, mask)
-
-                    mean_color: MeanColorController = view.mean_color
-                    mean_color.add_image_shell()
-
-                self.snapshot_loaded = True
-
-                for index in range(len(captures)):
-                    self.on_mask_changed(index)
+                    new_snapshot: Snapshot = self.add_new_snapshot(target_index)
+                    new_snapshot.load_snapshot(self.snapshot_path, self.snapshot_age, target_name)
             else:
                 self.api_manager.on_failure(reply)
 
         self.api_manager.get_snapshot(api_handler, self.plate_id, self.snapshot_id)
 
-    def on_mask_changed(self, index):
-        if not self.snapshot_loaded:
-            return
-
-        view: PlateSnapshotView = self.view
-        mean_color: MeanColorController = view.mean_color
-        capture_list: CaptureListController = view.plate_process.view.capture_list
-        capture_list_view: CaptureListView = capture_list.view
-        unit: ProcessUnitController = capture_list_view.units[index]
-        unit_view: ProcessUnitView = unit.view
-
-        mean_colored_pixmap = unit.mean_colored_pixmap
-        cropped_original_pixmap = unit.cropped_original_pixmap
-        target_name = unit_view.cmb_target.currentText()
-
-        mean_color.set_image_shell(index, mean_colored_pixmap, cropped_original_pixmap, target_name)
-
-        view.color_difference.set_color_datas(capture_list)
-
     def on_save_button_clicked(self):
         view: PlateSnapshotView = self.view
         process_view: SnapshotProcessView = view.plate_process.view
-        capture_list_view: CaptureListView = process_view.capture_list.view
 
         plate_made_at_obj: datetime = datetime.strptime(self.plate_made_at, "%Y-%m-%dT%H:%M:%S")
         captured_at_obj: datetime = process_view.captured_at
@@ -142,23 +107,19 @@ class PlateSnapshotController(TabWidgetController):
 
         target_id_check = []
         plate_capture_datas = []
-        for unit in capture_list_view.units:
-            unit: ProcessUnitController
-            unit_view: ProcessUnitView = unit.view
 
-            if not unit.mean_colors:  # 마스킹 적용된 유닛만 저장됨
-                continue
-
-            target_id = unit_view.get_selected_target_id()
-            if target_id in target_id_check:
-                msg = "중복된 타겟 물질을 사용할 수 없습니다."
-                Toast().toast(msg)
-                logging.error(msg)
-                return
-
-            target_id_check.append(target_id)
-            plate_capture_data = {"target": target_id, "image_uri": ""}
-            plate_capture_datas.append(plate_capture_data)
+        for snapshot in self.snapshots:
+            snapshot: Snapshot
+            if snapshot.target is not None:
+                target_id = snapshot.target.id
+                if target_id in target_id_check:
+                    msg = "중복된 타겟 물질을 사용할 수 없습니다."
+                    Toast().toast(msg)
+                    logging.error(msg)
+                    return
+                target_id_check.append(target_id)
+                plate_capture_data = {"target": target_id, "image_uri": ""}
+                plate_capture_datas.append(plate_capture_data)
 
         if not target_id_check:
             msg = "플레이트를 촬영하세요."
@@ -175,7 +136,6 @@ class PlateSnapshotController(TabWidgetController):
         view: PlateSnapshotView = self.view
         process_view: SnapshotProcessView = view.plate_process.view
         capture_list: CaptureListController = process_view.capture_list
-        capture_list_view: CaptureListView = capture_list.view
 
         if self.snapshot_id:
             pass
@@ -193,25 +153,36 @@ class PlateSnapshotController(TabWidgetController):
                     plate_captures = plate_snapshot["plate_captures"]
                     snapshot_age = plate_snapshot["age"]
 
+                    for snapshot in self.snapshots:
+                        snapshot: Snapshot
+                        snapshot.save_snapshot(self.snapshot_path, snapshot_age)
+
                     self.snapshot_id = plate_snapshot["id"]
                     capture_list.set_unit_id(plate_captures)
                     process_view.set_editable(False)
                     self.snapshot_added.emit(snapshot_age)
 
-                    for unit in capture_list_view.units:
-                        unit: ProcessUnitController
-                        unit_view: ProcessUnitView = unit.view
-
-                        target_name = unit_view.cmb_target.currentText()
-
-                        cropped_image, mean_color_mask_info, mask = unit.get_snapshot_datas()
-                        sdm = SnapshotDataManager(self.snapshot_path, snapshot_age, target_name)
-                        sdm.save_datas(cropped_image, mean_color_mask_info, mask)
-
                 else:
                     self.api_manager.on_failure(reply)
 
             self.api_manager.add_snapshot(api_handler, self.plate_id, {"plate_snapshot": plate_snapshot_data})
+
+    def add_new_snapshot(self, target_index=None) -> Snapshot:
+        new_snapshot = Snapshot()
+        if target_index is not None:
+            new_snapshot.set_target(self.targets[target_index])
+        self.snapshots.append(new_snapshot)
+
+        view: PlateSnapshotView = self.view
+        capture_list: CaptureListController = view.plate_process.view.capture_list
+        image_list: ImageListController = view.mean_color.view.image_list
+        color_difference: ColorDifferenceController = view.color_difference
+
+        capture_list.add_new_unit(new_snapshot)
+        image_list.add_new_shell(new_snapshot)
+        color_difference.add_new_snapshot(new_snapshot)
+
+        return new_snapshot
 
 
 def main():

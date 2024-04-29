@@ -1,13 +1,11 @@
 from datetime import datetime
 
-from PySide6.QtGui import QFont, Qt, QIntValidator
+from PySide6.QtGui import QFont, Qt
 from PySide6.QtWidgets import QLabel, QComboBox, QHBoxLayout, QWidget, QVBoxLayout, QLineEdit
 
-from ui.common import BaseWidgetView, ImageButton, ColoredButton, ClickableLabel
-from ui.common.date_picker import DatePicker
+from ui.common import BaseWidgetView, ColoredButton
+from ui.common.date_picker import DateWidget, HourWidget
 from util.setting_manager import SettingManager
-
-from util import local_storage_manager as lsm
 
 
 class AddPlateView(BaseWidgetView):
@@ -68,41 +66,21 @@ class AddPlateView(BaseWidgetView):
 
         """ 제작 일 라벨 및 캘린더 버튼 """
         now = datetime.now()
-        date = now.strftime("%y%m%d")
-        self.lb_date = ClickableLabel(date)
-        self.lb_date.setFixedSize(self.width_date, self.height_et)
-        self.lb_date.clicked.connect(self.open_date_picker)
-        img_calendar = lsm.get_static_image_path("calendar.png")
-        btn_date = ImageButton(image=img_calendar, size=(self.width_calendar, self.width_calendar))
-        btn_date.clicked.connect(self.open_date_picker)
-        wig_date = QWidget()
-        wig_date.setObjectName("wig_date")
-        wig_date.setFixedHeight(self.height_et)
-        wig_date.setStyleSheet("#wig_date {border: 1px solid black;}")
-        lyt_date = QHBoxLayout(wig_date)
-        lyt_date.setContentsMargins(4, 0, 4, 0)
-        lyt_date.addWidget(self.lb_date)
-        lyt_date.addStretch()
-        lyt_date.addWidget(btn_date)
+        lb_size = (self.width_date, self.height_et)
+        calendar_size = (self.width_calendar, self.width_calendar)
+        self.wig_date = DateWidget(now, lb_size, calendar_size)
+        self.wig_date.set_callback(self.set_plate_name)
 
         """ 제작 시간 입력 및 라벨 """
-        validator = QIntValidator(0, 23)
-        hour = "{:02d}".format(now.hour)
-        self.et_time = QLineEdit(hour)
-        self.et_time.setValidator(validator)
-        self.et_time.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        self.et_time.setStyleSheet("border: 1px solid black; padding: 4px;")
-        self.et_time.setFixedSize(self.width_time, self.height_et)
-        lb_hour = QLabel("시")
-
+        et_size = (self.width_time, self.height_et)
+        self.wig_hour = HourWidget(now, et_size)
         """ 제작 시간 입력 박스 """
         wig_datetime_input = QWidget()
         wig_datetime_input.setFixedWidth(self.width_box)
         lyt_datetime_input = QHBoxLayout(wig_datetime_input)
         lyt_datetime_input.setContentsMargins(0, 0, 0, 0)
-        lyt_datetime_input.addWidget(wig_date)
-        lyt_datetime_input.addWidget(self.et_time)
-        lyt_datetime_input.addWidget(lb_hour)
+        lyt_datetime_input.addWidget(self.wig_date)
+        lyt_datetime_input.addWidget(self.wig_hour)
         lyt_datetime = QHBoxLayout()
         lyt_datetime.addWidget(lb_datetime)
         lyt_datetime.addWidget(wig_datetime_input)
@@ -169,22 +147,13 @@ class AddPlateView(BaseWidgetView):
         else:
             self.cmb_metal.addItem("금속을 추가하세요.")
 
-    def set_date(self, date):
-        date_string = date.toString("yyMMdd")
-        self.lb_date.setText(date_string)
-        self.set_plate_name()
-
-    def open_date_picker(self):
-        self.date_picker = DatePicker(self.set_date, self)
-        self.date_picker.exec()
-
     def set_plate_name(self):
         metal_index = self.cmb_metal.currentIndex()
         if self.metal_samples:
             metal = self.metal_samples[metal_index]["metal"]["name"]
         else:
             metal = "metal"
-        date = self.lb_date.text()
+        date = self.wig_date.lb.text()
         note = self.et_note.text()
 
         note_str = f"_{note}" if note else ""

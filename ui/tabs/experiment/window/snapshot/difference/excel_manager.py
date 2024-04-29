@@ -15,11 +15,11 @@ class ExcelManager:
         self.model = model
         self.targets = model.targets
         self.control_index = model.control_index
-        self.control_name = model.targets[self.control_index]["name"]
+        self.control_name = model.targets.item_name(self.control_index)
         self.control_rgb_colors = model.get_rgb_colors(self.control_index)
 
     def get_path_to_save(self, target_index):
-        file_name = f"{self.plate_age}H_{self.targets[target_index]['name']}_{self.control_name}.xlsx"
+        file_name = f"{self.plate_age}H_{self.targets.item_name(target_index)}_{self.control_name}.xlsx"
         return os.path.join(self.snapshot_path, file_name)
 
     def save_target_colors(self, target_index):
@@ -35,7 +35,7 @@ class ExcelManager:
 
     def save_rgb_colors(self, wb, target_index):
         target_rgb_colors, control_rgb_colors, rgb_differences = self.model.get_color_datas("rgb", target_index)
-        target_name = self.targets[target_index]["name"]
+        target_name = self.targets.item_name(target_index)
         control_name = self.control_name
 
         rgb_sheet = wb.create_sheet("RGB Color")

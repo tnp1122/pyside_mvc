@@ -1,5 +1,5 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QHeaderView, QTableWidgetItem
+from PySide6.QtWidgets import QTableWidgetItem
 
 from ui.common import BaseTableWidgetView
 
@@ -10,11 +10,6 @@ class ColorDifferenceTableView(BaseTableWidgetView):
 
     def init_view(self):
         super().init_view()
-
-    def set_headers(self, headers):
-        self.setColumnCount(len(headers))
-        self.setHorizontalHeaderLabels(headers)
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
     def set_table_items(self, items):
         self.clear_table()

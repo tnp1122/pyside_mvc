@@ -1,10 +1,8 @@
-from model import Targets
+from model.snapshot import Snapshot
 from ui.common import BaseController
 from ui.common.toast import Toast
 from ui.tabs.experiment.window.snapshot.difference import ColorDifferenceModel, ColorDifferenceView
 from ui.tabs.experiment.window.snapshot.difference.difference_table import ColorDifferenceTableView
-from ui.tabs.experiment.window.snapshot.process.capture_list import CaptureListController
-from ui.tabs.experiment.window.snapshot.process.unit import ProcessUnitController, ProcessUnitView
 from ui.tabs.experiment.window.snapshot.difference.excel_manager import ExcelManager
 
 
@@ -45,7 +43,12 @@ class ColorDifferenceController(BaseController):
         view: ColorDifferenceView = self.view
         table_view: ColorDifferenceTableView = view.table.view
 
-        if len(model.targets) < 2:
+        enable_check = 0
+        for snapshot in model.snapshots:
+            snapshot: Snapshot
+            if snapshot.mask_editable:
+                enable_check += 1
+        if enable_check < 2:
             return
 
         color_type = model.get_selected_color_type()
@@ -60,24 +63,13 @@ class ColorDifferenceController(BaseController):
         table_view.set_headers(model.get_headers(color_type))
         table_view.set_table_items(colors_with_differences)
 
-    def set_color_datas(self, capture_list: CaptureListController):
+    def add_new_snapshot(self, snapshot: Snapshot):
         model: ColorDifferenceModel = self.model
-
-        targets = Targets()
-        target_rgb_colors = []
-        capture_units = capture_list.view.units
-        for unit in capture_units:
-            unit: ProcessUnitController
-            unit_view: ProcessUnitView = unit.view
-
-            if unit.mean_colors:
-                targets.append(unit_view.get_selected_target())
-                target_rgb_colors.append(unit.mean_colors)
-
-        model.targets = targets
-        model.target_rgb_colors = target_rgb_colors
+        model.snapshots.append(snapshot)
 
         self.set_cmb_items()
+        snapshot.target_changed.connect(self.set_cmb_items)
+        snapshot.processed.connect(self.update_table_color_datas)
 
     def set_cmb_items(self):
         model: ColorDifferenceModel = self.model
@@ -91,7 +83,6 @@ class ColorDifferenceController(BaseController):
 
     def to_excel(self):
         model: ColorDifferenceModel = self.model
-        view: ColorDifferenceView = self.view
 
         em = ExcelManager(self.snapshot_path, self.snapshot_age, model)
 

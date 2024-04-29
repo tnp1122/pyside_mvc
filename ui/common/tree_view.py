@@ -1,12 +1,60 @@
 from collections import OrderedDict
 
 from PySide6.QtCore import Qt, QEvent, Signal
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QFont, QMouseEvent, QTransform
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSizePolicy, QMenu
 
 from ui.common import ImageButton, BaseScrollAreaView
 
 from util import local_storage_manager as lsm
+from util import image_converter as ic
+
+
+class TreeSignalData:
+    def __init__(self, indexes: list, type: str = ""):
+        self.indexes = indexes
+        self.type = type
+
+
+class ButtonAdd(ImageButton):
+    clicked = Signal(QMouseEvent)
+    timeline_clicked = Signal()
+    snapshot_clicked = Signal()
+
+    def __init__(self, image, size):
+        super().__init__(image=image, size=size, padding=(2, 2, 0, 4))
+
+    def mouseReleaseEvent(self, event: QMouseEvent) -> None:
+        if self.rect().contains(event.pos()):
+            if event.button() == Qt.LeftButton:
+                if event.modifiers() == Qt.NoModifier:
+                    if event.type() == QEvent.MouseButtonRelease:
+                        self.clicked.emit(event)
+
+        super().mouseReleaseEvent(event)
+
+    def show_context_menu(self, pos):
+        menu = QMenu(self)
+        act_add_timeline = menu.addAction("타임라인 생성")
+        act_add_snapshot = menu.addAction("스냅샷 추가")
+        act_add_timeline.triggered.connect(self.timeline_clicked.emit)
+        act_add_snapshot.triggered.connect(self.snapshot_clicked.emit)
+        menu.exec(self.mapToGlobal(pos))
+
+
+class ButtonExpand(ImageButton):
+    def __init__(self, image, size, padding, parent=None):
+        super().__init__(image=image, size=size, padding=padding, parent=parent)
+        self.pixmap = ic.path_to_q_pixmap(image)
+        self.direction = 0
+        self.clicked.connect(self.rotate_icon)
+
+    def rotate_icon(self):
+        rotated_pixmap = self.pixmap
+        if self.direction == 0:
+            rotated_pixmap = self.pixmap.transformed(QTransform().rotate(270))
+        self.setIcon(rotated_pixmap)
+        self.direction = abs(self.direction - 1)
 
 
 class TreeView(BaseScrollAreaView):
@@ -47,9 +95,9 @@ class TreeRow(QWidget):
     icon_size = 15
     font_size = 11
 
-    clicked_signal = Signal(list)
-    double_clicked_signal = Signal(list)
-    remove_signal = Signal(list)
+    add_signal = Signal(TreeSignalData)
+    double_clicked_signal = Signal(TreeSignalData)
+    remove_signal = Signal(TreeSignalData)
 
     def __init__(self, is_directory=True, parent=None, title="폴더 이름", level=0, index=-1):
         super().__init__()
@@ -92,10 +140,10 @@ class TreeRow(QWidget):
         img_add = lsm.get_static_image_path("icon_add.png")
 
         icon_size = (self.icon_size, self.icon_size)
-        self.btn_expand = ImageButton(image=img_expand, size=icon_size, degree=self.get_expand_icon_degree())
-        self.icon = ImageButton(image=img_icon, size=icon_size)
+        self.btn_expand = ButtonExpand(image=img_expand, size=icon_size, padding=(2, 2, 2, 2))
+        self.icon = ImageButton(image=img_icon, size=icon_size, padding=(2, 2, 2, 2))
         self.lb_title = QLabel(self.title)
-        self.btn_add = ImageButton(image=img_add, size=icon_size)
+        self.btn_add = ButtonAdd(image=img_add, size=(13, 13))
         if self.level != 1 and self.level != 2 and self.level != 3:
             self.btn_add.setVisible(False)
 
@@ -110,11 +158,6 @@ class TreeRow(QWidget):
             padding.setFixedWidth(self.icon_size)
             lyt_title.addWidget(padding)
 
-        # style_padding = "padding: 2px; border: 0px;"
-        # self.btn_expand.setStyleSheet(style_padding)
-        # self.icon.setStyleSheet(style_padding)
-        # self.lb_title.setStyleSheet(style_padding)
-        # self.btn_add.setStyleSheet(style_padding)
         lyt_title.addWidget(self.icon)
         lyt_title.addWidget(self.lb_title)
         lyt_title.addWidget(self.btn_add)
@@ -139,9 +182,12 @@ class TreeRow(QWidget):
         self.icon.installEventFilter(self)
         self.lb_title.installEventFilter(self)
         self.lb_title.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.lb_title.customContextMenuRequested.connect(self.show_context_menu)
+        self.lb_title.customContextMenuRequested.connect(self.show_snapshot_context_menu)
         self.btn_expand.clicked.connect(self.expand)
-        self.btn_add.clicked.connect(lambda: self.bubble_event("add"))
+        # self.btn_add.clicked.connect(lambda: self.bubble_event("add"))
+        self.btn_add.clicked.connect(lambda event: self.on_add_button_clicked(event))
+        self.btn_add.timeline_clicked.connect(lambda: self.bubble_event("add_timeline"))
+        self.btn_add.snapshot_clicked.connect(lambda: self.bubble_event("add_snapshot"))
 
     def get_expand_icon_degree(self):
         return 0 if self.is_expanded else 270
@@ -149,7 +195,7 @@ class TreeRow(QWidget):
     def expand(self):
         self.is_expanded = not self.is_expanded
 
-        self.btn_expand.set_transformed_icon(self.get_expand_icon_degree())
+        # self.btn_expand.set_transformed_icon(self.get_expand_icon_degree())
 
         for child in self.children:
             child.setVisible(self.is_expanded)
@@ -211,18 +257,37 @@ class TreeRow(QWidget):
             self.parent.bubble_event(signal, indexes)
             return
         if signal == "add":
-            self.clicked_signal.emit(indexes)
+            self.add_signal.emit(TreeSignalData(indexes))
+        elif signal == "add_timeline":
+            self.add_signal.emit(TreeSignalData(indexes, "timeline"))
+        elif signal == "add_snapshot":
+            self.add_signal.emit(TreeSignalData(indexes, "snapshot"))
         elif signal == "double_clicked":
-            self.double_clicked_signal.emit(indexes)
+            self.double_clicked_signal.emit(TreeSignalData(indexes))
         elif signal == "remove":
-            self.remove_signal.emit(indexes)
+            self.remove_signal.emit(TreeSignalData(indexes))
 
-    def show_context_menu(self, pos):
+    # def show_combination_context_menu(self, pos):
+    #     menu = QMenu(self)
+    #     act_add_timeline = menu.addAction("타임라인")
+    #     act_add_snapshot = menu.addAction("스냅샷")
+    #     act_add_timeline.triggered.connect(lambda: self.bubble_event("add_timeline"))
+    #     act_add_snapshot.triggered.connect(lambda: self.bubble_event("add_snapshot"))
+    #     menu.exec(self.mapToGlobal(pos))
+
+    def show_snapshot_context_menu(self, pos):
         menu = QMenu(self)
 
         act_remove = menu.addAction("삭제")
         act_remove.triggered.connect(lambda: self.bubble_event("remove"))
         menu.exec(self.lb_title.mapToGlobal(pos))
+
+    def on_add_button_clicked(self, event):
+        if self.level < 3:
+            self.bubble_event("add")
+            return
+
+        self.btn_add.show_context_menu(event.pos())
 
 
 def main():

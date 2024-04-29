@@ -1,15 +1,12 @@
 from datetime import datetime
 
 from PySide6.QtCore import Signal
-from PySide6.QtGui import QIntValidator, Qt
-from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QWidget, QLineEdit, QSizePolicy, QFrame
+from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QWidget, QSizePolicy, QFrame
 
-from ui.common import BaseWidgetView, ColoredButton, ImageButton, ClickableLabel
-from ui.common.date_picker import DatePicker
+from ui.common import BaseWidgetView, ColoredButton
+from ui.common.date_picker import DateWidget, HourWidget
 from ui.tabs.experiment.window.snapshot.process.capture_list import CaptureListController
-from ui.tabs.experiment.window.snapshot.process.image_viewer import ImageViewerController
-
-from util import local_storage_manager as lsm
+from ui.common.image_viewer import ImageViewerController
 
 
 class SnapshotProcessView(BaseWidgetView):
@@ -41,30 +38,15 @@ class SnapshotProcessView(BaseWidgetView):
         lb_datetime.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
         """ 촬영 일 라벨 및 캘린더 버튼 """
-        date = self.captured_at.strftime("%y%m%d")
-        self.lb_date = ClickableLabel(date)
-        self.lb_date.setFixedSize(self.width_date, self.height_et)
-        self.lb_date.clicked.connect(self.open_date_picker)
-        img_calendar = lsm.get_static_image_path("calendar.png")
-        self.btn_date = ImageButton(image=img_calendar, size=(self.width_calendar, self.width_calendar))
-        self.btn_date.clicked.connect(self.open_date_picker)
-        self.wig_date = QWidget()
-        self.wig_date.setObjectName("wig_date")
-        self.wig_date.setFixedHeight(self.height_et)
-        lyt_date = QHBoxLayout(self.wig_date)
-        lyt_date.setContentsMargins(4, 0, 4, 0)
-        lyt_date.addWidget(self.lb_date)
-        lyt_date.addWidget(self.btn_date)
+        lb_size = (self.width_date, self.height_et)
+        calendar_size = (self.width_calendar, self.width_calendar)
+        self.wig_date = DateWidget(self.captured_at, lb_size, calendar_size)
+        self.wig_date.set_callback(self.set_snapshot_age)
 
         """ 촬영 시간 입력 및 라벨 """
-        validator = QIntValidator(0, 23)
-        hour = "{:02d}".format(self.captured_at.hour)
-        self.et_time = QLineEdit(hour)
-        self.et_time.setValidator(validator)
-        self.et_time.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        self.et_time.setFixedSize(self.width_time, self.height_et)
-        self.et_time.textChanged.connect(self.on_time_text_changed)
-        lb_hour = QLabel("시")
+        et_size = (self.width_time, self.height_et)
+        self.wig_hour = HourWidget(self.captured_at, et_size)
+        self.wig_hour.et.textChanged.connect(self.set_snapshot_age)
 
         """ 촬영 시간 입력 박스 """
         wig_datetime_input = QWidget()
@@ -72,8 +54,7 @@ class SnapshotProcessView(BaseWidgetView):
         lyt_datetime_input = QHBoxLayout(wig_datetime_input)
         lyt_datetime_input.setContentsMargins(0, 0, 0, 0)
         lyt_datetime_input.addWidget(self.wig_date)
-        lyt_datetime_input.addWidget(self.et_time)
-        lyt_datetime_input.addWidget(lb_hour)
+        lyt_datetime_input.addWidget(self.wig_hour)
         lyt_datetime = QHBoxLayout()
         lyt_datetime.addWidget(lb_datetime)
         lyt_datetime.addWidget(wig_datetime_input)
@@ -121,43 +102,16 @@ class SnapshotProcessView(BaseWidgetView):
             self.set_editable(True)
 
     def set_editable(self, editable=False):
-        if editable:
-            self.btn_date.setVisible(True)
-            self.wig_date.setStyleSheet("#wig_date {border: 1px solid black;}")
-            self.et_time.setStyleSheet("border: 1px solid black; padding: 4px;")
-            self.et_time.setReadOnly(False)
-            self.btn_save.setVisible(True)
-        else:
-            self.btn_date.setVisible(False)
-            self.wig_date.setStyleSheet("#wig_date {border: 0px;}")
-            self.et_time.setStyleSheet("border: 0px;")
-            self.et_time.setReadOnly(True)
-            self.btn_save.setVisible(False)
-
-    def set_date(self, date):
-        date_string = date.toString("yyMMdd")
-        self.lb_date.setText(date_string)
-        self.set_snapshot_age()
-
-    def open_date_picker(self):
-        self.date_picker = DatePicker(self.set_date, self)
-        self.date_picker.exec()
-
-    def on_time_text_changed(self, event):
-        if int(event) <= 0:
-            self.et_time.setText("0")
-
-        elif int(event) > 23:
-            self.et_time.setText("23")
-
-        self.set_snapshot_age()
+        self.wig_date.set_editable(editable)
+        self.wig_hour.set_editable(editable)
+        self.btn_save.setVisible(editable)
 
     def set_snapshot_age(self):
         plate_made_at_str = self.snapshot_info["plate_made_at"]
         plate_made_at = datetime.strptime(plate_made_at_str, "%Y-%m-%dT%H:%M:%S")
 
-        captured_hour = self.et_time.text()
-        captured_at_str = f"{self.lb_date.text()}_{captured_hour}"
+        captured_hour = self.wig_hour.et.text()
+        captured_at_str = f"{self.wig_date.lb.text()}_{captured_hour}"
         self.captured_at = datetime.strptime(captured_at_str, "%y%m%d_%H")
 
         time_diff = self.captured_at - plate_made_at

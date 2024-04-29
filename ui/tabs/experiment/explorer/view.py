@@ -2,7 +2,7 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QResizeEvent
 from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QSizePolicy
 
-from ui.common import BaseWidgetView, ImageButton, Logo, ColoredButton, RefreshButton
+from ui.common import BaseWidgetView, ImageButton, Logo, ColoredButton, RefreshButton, Toggle
 from ui.common.tree_view import TreeView
 
 from util import local_storage_manager as lsm
@@ -22,20 +22,23 @@ class ExplorerView(BaseWidgetView):
         lyt = QVBoxLayout(self)
 
         lyt_top = QHBoxLayout()
-        self.btn_add = ColoredButton("실험 추가")
+        self.btn_add = ColoredButton("실험 추가", size=(65, 30))
         self.btn_refresh = RefreshButton()
         expand_img = lsm.get_static_image_path("expand_arrow.png")
-        self.btn_toggle = ImageButton(image=expand_img, size=(30, 30), degree=90)
+        self.btn_expand = ImageButton(image=expand_img, size=(30, 30))
         lyt_top.addWidget(self.btn_add)
         lyt_top.addWidget(self.btn_refresh)
         lyt_top.addStretch()
-        lyt_top.addWidget(self.btn_toggle)
+        lyt_top.addWidget(self.btn_expand)
+
+        self.btn_toggle = Toggle("스냅샷", "타임 라인", (90, 26))
 
         self.tree = TreeView()
 
         logo = Logo(size=(200, 200))
 
         lyt.addLayout(lyt_top)
+        lyt.addWidget(self.btn_toggle)
         lyt.addWidget(self.tree)
         lyt.addWidget(logo, alignment=Qt.AlignHCenter)
 

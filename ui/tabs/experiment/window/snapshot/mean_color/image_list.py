@@ -1,6 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QSizePolicy, QWidget, QHBoxLayout
 
+from model.snapshot import Snapshot
 from ui.common import BaseScrollAreaView, BaseController
 from ui.tabs.experiment.window.snapshot.mean_color.image_shell import ImageShell
 
@@ -11,8 +12,8 @@ class ImageListModel:
 
 
 class ImageListView(BaseScrollAreaView):
-    image_size = (300, 500)
-    padding = 32
+    image_size = (300, 520)
+    padding = 64
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -23,6 +24,7 @@ class ImageListView(BaseScrollAreaView):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self.image_shells = []
+        self.set_height()
 
     def closeEvent(self, event):
         self.clear()
@@ -31,6 +33,7 @@ class ImageListView(BaseScrollAreaView):
 
     def clear(self):
         for image_shell in self.image_shells:
+            image_shell: ImageShell
             self.lyt.removeWidget(image_shell)
             image_shell.close()
 
@@ -46,31 +49,18 @@ class ImageListView(BaseScrollAreaView):
 
         self.setWidget(self.widget)
 
+    def add_new_shell(self, snapshot: Snapshot):
+        count = len(self.image_shells)
+        new_image_shell = ImageShell(snapshot)
+        self.image_shells.append(new_image_shell)
+        self.lyt.insertWidget(count, new_image_shell)
+
+        self.set_height()
+
     def set_height(self):
         scroll_bar_height = self.horizontalScrollBar().height()
 
         self.setFixedHeight(self.image_size[1] + self.padding + scroll_bar_height)
-
-    def set_image_size(self, width=None, height=None):
-        w = width if width else self.image_size[0]
-        h = height if height else self.image_size[1]
-        self.image_size = (w, h)
-
-        for image_shell in self.image_shells:
-            image_shell.set_image_size(w, h)
-
-        self.set_height()
-
-    def set_image_shell(self, index, mean_colored_pixmap, cropped_original_pixmap, target_name):
-        shell: ImageShell = self.image_shells[index]
-        shell.set_image_shell(mean_colored_pixmap, cropped_original_pixmap, target_name)
-
-    def add_image_shell(self):
-        count = len(self.image_shells)
-        new_image_shell = ImageShell()
-        new_image_shell.set_image_size(*self.image_size)
-        self.image_shells.append(new_image_shell)
-        self.lyt.insertWidget(count, new_image_shell)
 
     def set_image_type(self, index):
         for image_shell in self.image_shells:
@@ -89,9 +79,9 @@ class ImageListController(BaseController):
         view: ImageListView = self.view
         view.clear()
 
-    def set_image_size(self, width=None, height=None):
+    def add_new_shell(self, snapshot: Snapshot):
         view: ImageListView = self.view
-        view.set_image_size(width, height)
+        view.add_new_shell(snapshot)
 
     def set_image_type(self, index):
         view: ImageListView = self.view

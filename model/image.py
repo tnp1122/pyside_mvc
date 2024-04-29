@@ -28,3 +28,7 @@ class Image:
 
     def cropped(self, x, y, width, height):
         return self.array[y:y + height, x:x + width]
+
+    @property
+    def shape(self):
+        return self.array.shape

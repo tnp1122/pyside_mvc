@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt, QObject, Signal
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QWidget, QStackedWidget, QTabWidget, QTableWidget, QGraphicsView, QTreeView, QSplitter, \
-    QScrollArea, QVBoxLayout, QSizePolicy, QTableWidgetItem, QPushButton, QDialog
+    QScrollArea, QVBoxLayout, QSizePolicy, QTableWidgetItem, QPushButton, QDialog, QHeaderView
 
 
 def close_event_deco(cls):
@@ -131,6 +131,11 @@ class BaseTableWidgetView(BaseViewMixin, QTableWidget):
         QTableWidget.__init__(self, parent)
         BaseViewMixin.__init__(self, args)
         self.cellClicked.connect(self.on_cell_clicked)
+
+    def set_headers(self, headers):
+        self.setColumnCount(len(headers))
+        self.setHorizontalHeaderLabels(headers)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
     def set_table_items(self, items):
         self.clear_table()
