@@ -190,8 +190,10 @@ class Mask(QObject):
             self.update_mask(emit)
 
     def set_flare_mask(self, update_mask=False, emit=True):
-        _, flare_mask = cv2.threshold(self.plate_image, self.flare_threshold, 255, cv2.THRESH_BINARY_INV)
-        self.flare_mask = cv2.bitwise_not(flare_mask)
+        b, g, r = cv2.split(self.plate_image)
+        threshold = self.flare_threshold
+        self.flare_mask = np.zeros_like(self.plate_image)
+        self.flare_mask[(r > threshold) | (g > threshold) | (b > threshold)] = 255
 
         if update_mask:
             self.update_mask(emit)
