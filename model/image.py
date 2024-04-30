@@ -32,3 +32,7 @@ class Image:
     @property
     def shape(self):
         return self.array.shape
+
+    @property
+    def has_image(self):
+        return self.array is not None

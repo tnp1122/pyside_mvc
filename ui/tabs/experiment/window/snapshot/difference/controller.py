@@ -46,7 +46,7 @@ class ColorDifferenceController(BaseController):
         enable_check = 0
         for snapshot in model.snapshots:
             snapshot: Snapshot
-            if snapshot.mask_editable:
+            if snapshot.mask_editable or snapshot.snapshot_loaded:
                 enable_check += 1
         if enable_check < 2:
             return

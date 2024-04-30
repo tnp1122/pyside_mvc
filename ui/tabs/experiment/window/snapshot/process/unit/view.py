@@ -25,6 +25,7 @@ class ProcessUnitView(BaseWidgetView):
 
         self.snapshot = snapshot
         self.snapshot.origin_image_changed.connect(self.update_pixmap)
+        self.snapshot.processed.connect(self.update_pixmap)
 
     def closeEvent(self, event):
         if hasattr(self, "mask_manager") and self.mask_manager is not None:
@@ -84,8 +85,8 @@ class ProcessUnitView(BaseWidgetView):
             self.lb_image.setStyleSheet("border: 2px solid black;")
 
     def update_pixmap(self):
-        if self.snapshot.mask_editable:
-            pixmap = self.snapshot.cropped_pixmap
+        pixmap = self.snapshot.cropped_pixmap
+        if pixmap:
             self.lb_image.setPixmap(pixmap.scaled(self.lb_image.size(), Qt.KeepAspectRatio))
         else:
             self.lb_image.setText("No Image")
@@ -112,9 +113,10 @@ class ProcessUnitView(BaseWidgetView):
         self.snapshot.set_target(self.targets.item_from_name(target_name)[1])
 
     def open_mask_manager(self):
-        self.mask_manager = MaskManagerController(snapshot=self.snapshot)
-        self.mask_manager.closed.connect(self.on_manager_closed)
-        self.mask_manager.view.exec()
+        if self.snapshot.mask_editable:
+            self.mask_manager = MaskManagerController(snapshot=self.snapshot)
+            self.mask_manager.closed.connect(self.on_manager_closed)
+            self.mask_manager.view.exec()
 
     def on_manager_closed(self):
         self.mask_manager = None

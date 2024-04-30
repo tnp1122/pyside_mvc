@@ -52,14 +52,17 @@ class SnapshotDataManager:
         np.savez_compressed(self.path_mask, data=mask)
 
     def load_datas(self) -> (Image, dict, dict, np.ndarray):
-        plate_image = Image().from_path(self.path_image)
+        try:
+            plate_image = Image().from_path(self.path_image)
+        except:
+            plate_image = Image()
 
         try:
             with open(self.path_mean_colors, "r") as mean_colors_file:
-                mean_colors_data = json.load(mean_colors_file)
+                mean_colors_data = json.load(mean_colors_file).get("mean_colors")
 
-            with open(self.path_snapshot_info, "r") as mask_info_file:
-                snapshot_info_data = json.load(mask_info_file).get("snapshot_info")
+            with open(self.path_snapshot_info, "r") as snapshot_info_file:
+                snapshot_info_data = json.load(snapshot_info_file).get("snapshot_info")
         except:
             with open(self.path_mcmi, "r") as mcmi_file:
                 mcmi = json.load(mcmi_file)

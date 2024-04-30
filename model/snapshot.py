@@ -145,17 +145,22 @@ class Mask(QObject):
     def basic_mask(self):
         return np.logical_or(self.circle_mask, self.flare_mask)
 
-    def init_mask_info(self, plate_image: np.ndarray, plate: PlatePosition, mask_info: dict):
+    @property
+    def shape(self):
+        return self.plate_image.shape if self.plate_image is not None else (10, 10, 3)
+
+    def init_mask_info(self, plate_image: np.ndarray, plate: PlatePosition, mask_info: dict, set=True):
         self.plate_image = plate_image
         self.columns = plate.columns
         self.rows = plate.rows
         self.radius = mask_info.get("radius") or 35
         self.flare_threshold = mask_info.get("flare_threshold") or 200
 
-        self.set_mask()
+        if set:
+            self.set_mask()
 
     def set_mask(self):
-        shape = self.plate_image.shape if self.plate_image is not None else (10, 10, 3)
+        shape = self.shape
         self.circle_mask = np.full(shape, 255, np.uint8)
         self.flare_mask = np.full(shape, 0, np.uint8)
         self.custom_mask = np.full(shape, 0, np.uint8)
@@ -180,7 +185,7 @@ class Mask(QObject):
         self.set_flare_mask(update_mask=True, emit=emit)
 
     def set_circle_mask(self, update_mask=False, emit=True):
-        self.circle_mask = np.full_like(self.plate_image[:, :, :3], 255, dtype=np.uint8)
+        self.circle_mask = np.full(self.shape, 255, dtype=np.uint8)
 
         for y in self.rows:
             for x in self.columns:
@@ -192,7 +197,7 @@ class Mask(QObject):
     def set_flare_mask(self, update_mask=False, emit=True):
         b, g, r = cv2.split(self.plate_image)
         threshold = self.flare_threshold
-        self.flare_mask = np.zeros_like(self.plate_image)
+        self.flare_mask = np.zeros(self.shape)
         self.flare_mask[(r > threshold) | (g > threshold) | (b > threshold)] = 255
 
         if update_mask:
@@ -224,7 +229,9 @@ class Snapshot(QObject):
         self.plate_position = PlatePosition()
         self.mask = Mask()
         self.target: Target = None
+
         self.mask_editable = False
+        self.snapshot_loaded = False
         self.is_property_referenced = False
 
         self._mean_colors: np.ndarray = None  # 96개 평균 RGB 배열
@@ -250,7 +257,7 @@ class Snapshot(QObject):
         self.init_property_reference()
 
     def init_property_reference(self):
-        if self.is_property_referenced:
+        if self.is_property_referenced and self.mask_editable:
             self.is_property_referenced = False
             self._mean_colors = None
             self._cropped_array = None
@@ -260,6 +267,7 @@ class Snapshot(QObject):
     def init_origin_image(self, image: Image, has_alpha: bool = False):
         self.origin_image = image
         self.mask_editable = True
+        self.snapshot_time = datetime.now()
 
         plate_mask_info = SettingManager().get_mask_area_info()
 
@@ -284,7 +292,14 @@ class Snapshot(QObject):
         mean_colors = {"mean_colors": self.mean_colors}
         snapshot_info = {
             "snapshot_info": {
-                "x": 0, "y": 0, "width": w, "height": h, "direction": d, "radius": r, "flare_threshold": t
+                "x": 0,
+                "y": 0,
+                "width": w,
+                "height": h,
+                "direction": d,
+                "radius": r,
+                "flare_threshold": t,
+                "snapshot_time": self.snapshot_time
             }
         }
         mask_array = mask.masked_array.mask
@@ -294,19 +309,29 @@ class Snapshot(QObject):
 
     def load_snapshot(self, snapshot_path: str, snapshot_age: int, target_name: str):
         sdm = SnapshotDataManager(snapshot_path, snapshot_age, target_name)
-        plate_image, _, snapshot_info, mask = sdm.load_datas()
+        plate_image: Image
+        mask: np.ndarray
 
+        plate_image, mean_colors, snapshot_info, mask = sdm.load_datas()
+
+        self.snapshot_time = snapshot_info.get("snapshot_time")
         plate_info_keys = ["x", "y", "width", "height", "direction"]
         mask_info_keys = ["radius", "flare_threshold"]
         plate_info = {key: value for key, value in snapshot_info.items() if key in plate_info_keys}
         mask_info = {key: value for key, value in snapshot_info.items() if key in mask_info_keys}
 
+        self.mask_editable = plate_image.has_image
+        self.snapshot_loaded = True
         self.origin_image = plate_image
-        self.mask_editable = True
-        plate = self.plate_position.init_plate_info(plate_info)
-        self.mask.init_mask_info(self.cropped_array, plate, mask_info)
+        self._mean_colors = mean_colors
 
-        self.origin_image_changed.emit(plate_image)
+        plate = self.plate_position.init_plate_info(plate_info)
+        if self.mask_editable:
+            self.mask.init_mask_info(self.cropped_array, plate, mask_info, set=True)
+        else:
+            self.mask.init_mask_info(None, plate, mask_info, set=False)
+
+        self.processed.emit()
 
     def set_target(self, target: Target):
         self.target = target
@@ -379,10 +404,13 @@ class Snapshot(QObject):
     @property
     # crop된 플레이트 원본 또는 평균색 픽스맵
     def cropped_pixmap(self) -> QPixmap:
-        if self.origin_image:
+        if self.mask_editable:
             return ic.array_to_q_pixmap(self.cropped_array)
 
-        return self.mean_color_pixmap
+        if self.snapshot_loaded:
+            return self.mean_color_pixmap
+
+        return None
 
     @property
     def origin_sized_masked_pixmap(self) -> QPixmap:
