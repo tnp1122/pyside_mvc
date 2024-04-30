@@ -39,15 +39,15 @@ class SnapshotDataManager:
         self.path_mask = f"{snapshot_path}.npz"
         self.path_mcmi = f"{snapshot_path}.mcmi"
 
-    def save_datas(self, plate_image: np.ndarray, mean_colors: dict, mask_info: dict, mask: np.ndarray):
+    def save_datas(self, plate_image: np.ndarray, mean_colors: dict, snapshot_info: dict, mask: np.ndarray):
         converted_image = cv2.cvtColor(plate_image, cv2.COLOR_RGB2BGR)
         ic.img_write(self.path_image, converted_image)
 
         with open(self.path_mean_colors, "w") as mc_file:
             json.dump(mean_colors, mc_file)
 
-        with open(self.path_snapshot_info, "w") as mi_file:
-            json.dump(mask_info, mi_file)
+        with open(self.path_snapshot_info, "w") as snapshot_file:
+            json.dump(snapshot_info, snapshot_file)
 
         np.savez_compressed(self.path_mask, data=mask)
 

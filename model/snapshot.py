@@ -203,9 +203,9 @@ class Mask(QObject):
         if update_mask:
             self.update_mask(emit)
 
-    def set_custom_mask(self, mask: np.ndarray):
+    def set_custom_mask(self, mask: np.ndarray, emit=True):
         self.custom_mask = mask
-        self.update_mask()
+        self.update_mask(emit)
 
     def update_mask(self, emit=True):
         self.on_mask_changed()
@@ -299,13 +299,13 @@ class Snapshot(QObject):
                 "direction": d,
                 "radius": r,
                 "flare_threshold": t,
-                "snapshot_time": self.snapshot_time
+                "snapshot_time": self.snapshot_time.strftime('%Y-%m-%dT%H:%M:%S')
             }
         }
-        mask_array = mask.masked_array.mask
+        custom_mask = mask.custom_mask
 
         sdm = SnapshotDataManager(snapshot_path, snapshot_age, self.target.name)
-        sdm.save_datas(plate_image, mean_colors, snapshot_info, mask_array)
+        sdm.save_datas(plate_image, mean_colors, snapshot_info, custom_mask)
 
     def load_snapshot(self, snapshot_path: str, snapshot_age: int, target_name: str):
         sdm = SnapshotDataManager(snapshot_path, snapshot_age, target_name)
@@ -314,7 +314,8 @@ class Snapshot(QObject):
 
         plate_image, mean_colors, snapshot_info, mask = sdm.load_datas()
 
-        self.snapshot_time = snapshot_info.get("snapshot_time")
+        snapshot_time_str = snapshot_info.get("snapshot_time") or "1970-01-01T00:00:00"
+        self.snapshot_time = datetime.strptime(snapshot_time_str, '%Y-%m-%dT%H:%M:%S')
         plate_info_keys = ["x", "y", "width", "height", "direction"]
         mask_info_keys = ["radius", "flare_threshold"]
         plate_info = {key: value for key, value in snapshot_info.items() if key in plate_info_keys}
@@ -328,6 +329,7 @@ class Snapshot(QObject):
         plate = self.plate_position.init_plate_info(plate_info)
         if self.mask_editable:
             self.mask.init_mask_info(self.cropped_array, plate, mask_info, set=True)
+            self.mask.set_custom_mask(mask, emit=False)
         else:
             self.mask.init_mask_info(None, plate, mask_info, set=False)
 
