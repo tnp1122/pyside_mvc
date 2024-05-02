@@ -186,6 +186,7 @@ class MaskManagerView(BaseDialogView):
         self.ET_threshold.textChanged.connect(lambda t: mask.set_flare_threshold(int(t)))
 
         plate.position_changed.connect(self.update_area_position_text)
+        mask.flare_threshold_changed.connect(self.update_scene)
 
     def on_select_changed(self, index):
         view_index = MaskViewIndex(index)

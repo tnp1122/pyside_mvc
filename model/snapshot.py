@@ -121,7 +121,7 @@ class PlatePosition(QObject):
 
 class Mask(QObject):
     radius_changed = Signal(int)
-    flare_threshold_changed = Signal(int)
+    flare_threshold_changed = Signal()
 
     mask_updated = Signal()
 
@@ -183,6 +183,7 @@ class Mask(QObject):
     def set_flare_threshold(self, flare_threshold: int, emit=True):
         self.flare_threshold = flare_threshold
         self.set_flare_mask(update_mask=True, emit=emit)
+        self.flare_threshold_changed.emit()
 
     def set_circle_mask(self, update_mask=False, emit=True):
         self.circle_mask = np.full(self.shape, 255, dtype=np.uint8)
