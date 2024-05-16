@@ -27,6 +27,10 @@ class MaterialSample(Item):
     def serialize(self):
         return {"id": self.id, "name": self.name, "made_at": self.made_at, self.subject_type: self.subject.id}
 
+    @property
+    def name_with_subject(self):
+        return f"{self.name} ({self.subject.name})"
+
 
 class MaterialSamples(Items):
     def __init__(self, *args, **kwargs):
@@ -51,3 +55,7 @@ class MaterialSamples(Items):
 
     def serialize(self):
         return [sample.serialize() for sample in self]
+
+    @property
+    def names_with_subject(self):
+        return [item.name_with_subject for item in self]

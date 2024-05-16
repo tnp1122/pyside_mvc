@@ -64,6 +64,11 @@ class MileStoneRadio(QWidget):
         self.selected_idx = idx
         self.selected.emit(self.selected_idx)
 
+    def set_visibility(self, index, visibility=True):
+        if index >= len(self.stones):
+            return
+        self.stones[index].setVisible(visibility)
+
 
 def main():
     app = QApplication([])

@@ -1,12 +1,15 @@
+import copy
 from datetime import datetime
 
 import cv2
 import numpy as np
+import pandas as pd
 from PySide6.QtCore import QObject, Signal, QRectF
 from PySide6.QtGui import QPixmap
 
 from model import Image, Target
 from util import image_converter as ic, SnapshotDataManager
+from util.local_storage_manager import TimelineDataManager
 from util.setting_manager import SettingManager
 
 MASK_COLOR = (255, 255, 255)
@@ -159,6 +162,10 @@ class Mask(QObject):
         if set:
             self.set_mask()
 
+    def change_plate_image(self, plate_image: np.ndarray):
+        self.plate_image = plate_image
+        self.on_mask_changed()
+
     def set_mask(self):
         shape = self.shape
         self.circle_mask = np.full(shape, 255, np.uint8)
@@ -241,7 +248,6 @@ class Snapshot(QObject):
         self._cropped_pixmap: QPixmap = None  # 1.crop된 플레이트 원본 픽스맵 / 2.crop된 평균 RGB 픽스맵
         self._origin_sized_masked_pixmap: QPixmap = None  # 원본 사이즈 마스크처리 된 픽스맵(마스크 매니저에 사용)
 
-        self.interval: int = None
         self.snapshot_time: datetime = None
 
         self.plate_position.position_changed.connect(self.on_position_changed)
@@ -278,6 +284,15 @@ class Snapshot(QObject):
 
         self.origin_image_changed.emit(image)
 
+    def change_origin_image(self, image: Image):
+        self.origin_image = image
+        self.mask_editable = True
+        self.snapshot_time = datetime.now()
+        self.mask.change_plate_image(self.cropped_array)
+
+        self.init_property_reference()
+        # self.origin_image_changed.emit(image)
+
     def save_snapshot(self, snapshot_path: str, snapshot_age: int):
         plate: PlatePosition = self.plate_position
         mask: Mask = self.mask
@@ -290,7 +305,13 @@ class Snapshot(QObject):
         r, t = mask.get_mask_info()
 
         plate_image = self.cropped_array
-        mean_colors = {"mean_colors": self.mean_colors}
+        mean_colors = copy.deepcopy(self.mean_colors)
+        for rows in mean_colors:
+            for column in rows:
+                for i in range(3):
+                    column[i] = int(column[i])
+
+        mean_colors = {"mean_colors": mean_colors}
         snapshot_info = {
             "snapshot_info": {
                 "x": 0,
@@ -362,10 +383,13 @@ class Snapshot(QObject):
                 x1, x2 = int(circle_x - r), int(circle_x + r)
                 y1, y2 = int(circle_y - r), int(circle_y + r)
                 cell = plate_image[y1:y2, x1:x2]
-                mean_color = np.mean(cell, axis=(0, 1))
+                # mean_color = np.mean(cell, axis=(0, 1)).astype(np.uint8)
+                mean_color = np.mean(cell, axis=(0, 1)).astype(np.float32)
+                # mean_color = np.mean(cell, axis=(0, 1))
                 for i, color in enumerate(mean_color):
                     if isinstance(color, np.ma.core.MaskedConstant):
-                        mean_color[i] = np.float64(0.0)
+                        # mean_color[i] = np.uint8(0)
+                        mean_color[i] = np.float32(0.0)
                 mean_colors[j].append(list(mean_color))
 
         return mean_colors
@@ -392,13 +416,17 @@ class Snapshot(QObject):
         _, _, width, height = plate.get_crop_area()
 
         new_array = np.full((height, width, 3), 0, dtype=np.uint8)
+        mean_colors = copy.deepcopy(self.mean_colors)
         for j, circle_y in enumerate(plate.rows):
             for i, circle_x in enumerate(plate.columns):
-                mean_color = self.mean_colors[j][i]
+                color = mean_colors[j][i]
+                for k in range(3):
+                    color[k] = np.float64(color[k])
                 try:
-                    cv2.circle(new_array, (int(circle_x), int(circle_y)), mask.radius, mean_color, cv2.FILLED)
+                    cv2.circle(new_array, (int(circle_x), int(circle_y)), mask.radius, color, cv2.FILLED)
                 except:
                     pass
+                cv2.circle(new_array, (int(circle_x), int(circle_y)), mask.radius, color, cv2.FILLED)
         self._mean_color_pixmap = ic.array_to_q_pixmap(new_array)
         self.is_property_referenced = True
 
@@ -429,8 +457,229 @@ class Snapshot(QObject):
 
         return self._origin_sized_masked_pixmap
 
-    # def set_interval(self, interval: int):
-    #     self.interval = interval
-    #
-    # def set_snapshot_time(self, snapshot_time: datetime):
-    #     self.snapshot_time = snapshot_time
+
+class NotAIntValue(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+        self.message = message
+
+
+class RoundModel(list):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        need_init = kwargs.get("need_init")
+        if need_init:
+            self.add_round()
+
+    def set_rounds(self, rounds):
+        for round_data in rounds:
+            self.append(round_data)
+
+    def add_round(self):
+        last_round = self[-1] if self else {"interval": 1, "count": 100}
+        self.append({"interval": last_round["interval"], "count": last_round["count"]})
+
+        return self[-1]
+
+    def remove_round(self, index):
+        self.remove(self[index])
+
+    def get_end_point(self, index=None):
+        point = 0
+        index = index if index is not None else len(self)
+        for round_data in self[:index + 1]:
+            point += round_data["interval"] * round_data["count"]
+
+        return point
+
+    def set_interval(self, index, interval):
+        if not isinstance(interval, int):
+            raise NotAIntValue("Failed to set interval")
+        self[index]["interval"] = interval
+
+    def set_count(self, index, count):
+        if not isinstance(count, int):
+            raise NotAIntValue("Failed to set interval")
+        self[index]["count"] = count
+
+
+class Timeline(dict):
+    def __init__(self, timeline_name: str, target_name: str, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.timeline_data_manager = TimelineDataManager(timeline_name, target_name)
+
+        self["rounds"] = RoundModel(need_init=True)
+        self.num_cells = 96
+
+        self.info_saved = False
+        self.datas: pd.DataFrame
+        self.init_data_frame()
+
+    def init_plate_info(self, snapshot: Snapshot):
+        x, y, w, h = snapshot.plate_position.get_plate_size()
+        d = snapshot.plate_position.direction
+        r, t = snapshot.mask.get_mask_info()
+        self["x"] = x
+        self["y"] = y
+        self["width"] = w
+        self["height"] = h
+        self["direction"] = d
+        self["radius"] = r
+        self["flare_threshold"] = t
+
+    def init_data_frame(self):
+        columns = ["elapsed_time"]
+        for idx in range(96):
+            columns.extend([f"R{idx + 1}", f"G{idx + 1}", f"B{idx + 1}"])
+        for idx in range(96):
+            columns.append(f"ColorDistance{idx + 1}")
+        for idx in range(96):
+            columns.append(f"ColorVelocity{idx + 1}")
+
+        self.datas = pd.DataFrame(columns=columns)
+
+    def append_snapshot(self, snapshot: Snapshot):
+        current_time = snapshot.snapshot_time.strftime("%y%m%d-%H%M%S.%f")[:-5]
+
+        elapsed_time = self.elapsed_time
+        new_row = [elapsed_time]
+
+        for color_row in snapshot.mean_colors[::-1]:
+            for cell_colors in color_row:
+                for color in cell_colors:
+                    new_row.append(color)
+        for _ in range(self.num_cells * 2):
+            new_row.append(np.float32(0))
+
+        self.datas.loc[current_time] = new_row
+
+        current_count = self.current_count
+        if current_count > 1:
+            init_colors = self.datas.iloc[0].iloc[1:289].values.reshape(self.num_cells, 3)
+            current_colors = self.datas.iloc[current_count - 1].iloc[1:289].values.reshape(self.num_cells, 3)
+            for idx in range(self.num_cells):
+                init_color = init_colors[idx]
+                current_color = current_colors[idx]
+                distance = self.get_color_distance(init_color, current_color)
+                self.datas.loc[current_time, f"ColorDistance{idx + 1}"] = distance
+        if current_count > 2:
+            distance_idx = 96 * 3 + 1
+            for idx in range(self.num_cells):
+                prev_distance = np.float32(self.datas.iloc[current_count - 2].iloc[distance_idx + idx])
+                current_distance = np.float32(self.datas.iloc[current_count - 1].iloc[distance_idx + idx])
+                self.datas.loc[current_time, f"ColorVelocity{idx + 1}"] = current_distance - prev_distance
+
+        self.save_timeline()
+
+    def get_color_distance(self, color1, color2) -> np.float32:
+        return np.float32(round(np.linalg.norm(color1 - color2), 3))
+
+    def get_datas(self, indexes: list) -> (list, list[pd.DataFrame]):
+        elapsed_times = self.datas["elapsed_time"].tolist()
+        distance_datas = [f"ColorDistance{idx + 1}" for idx in indexes]
+        velocity_datas = ([f"ColorVelocity{idx + 1}" for idx in indexes])
+        return elapsed_times, [self.datas[distance_datas], self.datas[velocity_datas]]
+
+    def save_timeline(self):
+        if not self.info_saved:
+            self.timeline_data_manager.save_timeline_info(self)
+            self.info_saved = True
+
+        mean_colors = self.datas.iloc[:, :288]
+        self.timeline_data_manager.save_timeline(mean_colors)
+
+    def load_timeline(self, snapshot_instance: Snapshot):
+        timeline_info, mean_colors = self.timeline_data_manager.load_timeline()
+        if mean_colors is None:
+            return False
+
+        for key, value in timeline_info.items():
+            if key == "rounds":
+                continue
+            self[key] = value
+        self["rounds"] = RoundModel(timeline_info["rounds"], need_init=False)
+
+        snapshot_instance.plate_position.init_plate_info(timeline_info)
+        snapshot_instance.mask.set_radius(self["radius"])
+        snapshot_instance.mask.set_flare_threshold(self["flare_threshold"], False)
+
+        self.datas = pd.concat([self.datas, mean_colors])
+
+        init_colors = mean_colors.iloc[0].values.reshape(self.num_cells, 3)
+        for row in self.datas.index[1:]:
+            current_colors = self.datas.loc[row].iloc[1:289].values.reshape(self.num_cells, 3)
+            for idx in range(self.num_cells):
+                init_color = init_colors[idx]
+                current_color = current_colors[idx]
+                distance = self.get_color_distance(init_color, current_color)
+                self.datas.loc[row, f"ColorDistance{idx + 1}"] = distance
+
+        for idx in range(self.num_cells):
+            distance_columns = self.datas[f"ColorDistance{idx + 1}"]
+            self.datas[f"ColorVelocity{idx + 1}"] = distance_columns - distance_columns.shift(1)
+
+        self.info_saved = True
+        return True
+
+    @property
+    def rounds(self) -> RoundModel:
+        return self["rounds"]
+
+    @property
+    def current_count(self):
+        return len(self.datas)
+
+    @property
+    def current_round(self):
+        total_count = 0
+
+        for i, round_info in enumerate(self.rounds):
+            total_count += round_info["count"]
+            if self.current_count < total_count:
+                return i
+        return len(self.rounds) - 1
+
+    @property
+    def elapsed_time(self):
+        elapsed_time = 0
+        current_round = self.current_round
+        if current_round > 0:
+            for i in range(self.current_round):
+                round_info = self.rounds[i]
+                elapsed_time += round_info["interval"] * round_info["count"]
+
+        elapsed_time += self.rounds[current_round]["interval"] * self.count_of_current_round
+        return elapsed_time
+
+    @property
+    def end_count(self):
+        count = 1
+        for i in range(self.total_round):
+            count += self.rounds[i]["count"]
+
+        return count
+
+    @property
+    def total_round(self):
+        return len(self.rounds)
+
+    @property
+    def count_of_current_round(self):
+        if self.current_round == 0:
+            return self.current_count
+
+        total_count = 0
+        for i in range(self.current_round):
+            total_count += self.rounds[i]["count"]
+
+        return self.current_count - total_count
+
+    @property
+    def total_count_of_current_round(self):
+        return self.rounds[self.current_round]["count"]
+
+    @property
+    def current_interval(self):
+        return self.rounds[self.current_round]["interval"]

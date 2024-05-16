@@ -240,8 +240,12 @@ class APIManager:
 
     """ sensor """
 
-    def get_sensor_combination(self, callback, experiment_id):
+    def get_sensor_combinations(self, callback, experiment_id):
         endpoint = self.EXPERIMENT + f"{experiment_id}/sensor-combination/"
+        self._call_api(GET, endpoint, callback)
+
+    def get_sensor_combination(self, callback, combination_id):
+        endpoint = self.EXPERIMENT + f"1/sensor-combination/{combination_id}/"
         self._call_api(GET, endpoint, callback)
 
     def add_sensor_combination(self, callback, experiment_id, sensor_combination):
@@ -273,4 +277,19 @@ class APIManager:
 
     def remove_snapshot(self, callback, plate_id, snapshot_id):
         endpoint = self.PLATE + f"{plate_id}/snapshot/{snapshot_id}/remove/"
+        self._call_api(POST, endpoint, callback)
+
+    """ timeline """
+    TIMELINE = "timeline/"
+
+    def add_timeline(self, callback, timeline):
+        endpoint = self.TIMELINE
+        self._call_api(POST, endpoint, callback, timeline)
+
+    def get_timeline(self, callback, timeline_id):
+        endpoint = self.TIMELINE + f"{timeline_id}/"
+        self._call_api(GET, endpoint, callback)
+
+    def remove_timeline(self, callback, timeline_id):
+        endpoint = self.TIMELINE + f"{timeline_id}/remove/"
         self._call_api(POST, endpoint, callback)

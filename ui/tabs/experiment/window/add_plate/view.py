@@ -3,6 +3,8 @@ from datetime import datetime
 from PySide6.QtGui import QFont, Qt
 from PySide6.QtWidgets import QLabel, QComboBox, QHBoxLayout, QWidget, QVBoxLayout, QLineEdit
 
+from model import Experiments, Combinations, Targets
+from model.api.metal_sample import MetalSamples
 from ui.common import BaseWidgetView, ColoredButton
 from ui.common.date_picker import DateWidget, HourWidget
 from util.setting_manager import SettingManager
@@ -22,7 +24,8 @@ class AddPlateView(BaseWidgetView):
 
     metal_samples = []
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, add_timeline=False):
+        self.add_timeline = add_timeline
         super().__init__(parent)
 
     def init_view(self):
@@ -33,7 +36,8 @@ class AddPlateView(BaseWidgetView):
         font = QFont()
         font.setBold(True)
         font.setPointSize(16)
-        lb_title = QLabel("플레이트 추가")
+        title_str = "새 촬영" if self.add_timeline else "새 플레이트"
+        lb_title = QLabel(title_str)
         lb_title.setFont(font)
         lb_title.setStyleSheet(f"padding: {self.padding_title}px;")
         lyt_title = QHBoxLayout()
@@ -47,19 +51,26 @@ class AddPlateView(BaseWidgetView):
         lyt_experiment.addWidget(lb_experiment)
         lyt_experiment.addWidget(self.cmb_experiment)
 
-        lb_combination = QLabel("조합")
-        self.cmb_combination = QComboBox()
-        self.cmb_combination.setFixedWidth(self.width_box)
-        lyt_combination = QHBoxLayout()
-        lyt_combination.addWidget(lb_combination)
-        lyt_combination.addWidget(self.cmb_combination)
-
         lb_metal = QLabel("전이 금속")
         self.cmb_metal = QComboBox()
         self.cmb_metal.setFixedWidth(self.width_box)
         lyt_metal = QHBoxLayout()
         lyt_metal.addWidget(lb_metal)
         lyt_metal.addWidget(self.cmb_metal)
+
+        lb_target = QLabel("타겟 물질")
+        self.cmb_target = QComboBox()
+        self.cmb_target.setFixedWidth(self.width_box)
+        lyt_target = QHBoxLayout()
+        lyt_target.addWidget(lb_target)
+        lyt_target.addWidget(self.cmb_target)
+
+        lb_combination = QLabel("조합")
+        self.cmb_combination = QComboBox()
+        self.cmb_combination.setFixedWidth(self.width_box)
+        lyt_combination = QHBoxLayout()
+        lyt_combination.addWidget(lb_combination)
+        lyt_combination.addWidget(self.cmb_combination)
 
         """ 제작 일시 """
         lb_datetime = QLabel("제작 일시")
@@ -86,7 +97,7 @@ class AddPlateView(BaseWidgetView):
         lyt_datetime.addWidget(wig_datetime_input)
 
         lb_note = QLabel("식별 문구")
-        self.et_note = QLineEdit()  # QLineEdit(self.setting_manager.get_experimenter_name())
+        self.et_note = QLineEdit()
         self.et_note.setFixedWidth(self.width_box)
         lyt_note = QHBoxLayout()
         lyt_note.addWidget(lb_note)
@@ -95,6 +106,7 @@ class AddPlateView(BaseWidgetView):
         lb_name = QLabel("플레이트 명")
         self.lb_plate_name = QLabel("")
         self.lb_plate_name.setFixedWidth(self.width_box)
+        self.lb_plate_name.setWordWrap(True)
         lyt_name = QHBoxLayout()
         lyt_name.addWidget(lb_name)
         lyt_name.addWidget(self.lb_plate_name)
@@ -102,8 +114,10 @@ class AddPlateView(BaseWidgetView):
         lyt_form = QVBoxLayout()
         lyt_form.addStretch()
         lyt_form.addLayout(lyt_experiment)
-        lyt_form.addLayout(lyt_combination)
         lyt_form.addLayout(lyt_metal)
+        if self.add_timeline:
+            lyt_form.addLayout(lyt_target)
+        lyt_form.addLayout(lyt_combination)
         lyt_form.addLayout(lyt_datetime)
         lyt_form.addLayout(lyt_note)
         lyt_form.addLayout(lyt_name)
@@ -122,41 +136,54 @@ class AddPlateView(BaseWidgetView):
         lyt.addLayout(lyt_confirm)
         lyt.addStretch()
 
-    def set_experiment_cmb_items(self, experiments):
+    def set_experiment_cmb_items(self, experiments: Experiments):
         self.cmb_experiment.clear()
         if experiments:
-            for experiment in experiments:
-                self.cmb_experiment.addItem(experiment["name"])
+            self.cmb_experiment.addItems(experiments.names)
         else:
             self.cmb_experiment.addItem("실험을 생성하세요.")
 
-    def set_combination_cmb_items(self, combinations):
-        self.cmb_combination.clear()
-        if combinations:
-            for combination in combinations:
-                self.cmb_combination.addItem(combination["name"])
-        else:
-            self.cmb_combination.addItem("조합을 생성하세요.")
-
-    def set_metal_cmb_items(self, metal_samples):
+    def set_metal_cmb_items(self, metal_samples: MetalSamples):
         self.metal_samples = metal_samples
         self.cmb_metal.clear()
         if metal_samples:
-            for metal_sample in metal_samples:
-                self.cmb_metal.addItem(metal_sample["name"])
+            self.cmb_metal.addItems(metal_samples.names_with_subject)
         else:
             self.cmb_metal.addItem("금속을 추가하세요.")
+
+    def set_combination_cmb_items(self, combinations: Combinations):
+        self.cmb_combination.clear()
+        if combinations:
+            self.cmb_combination.addItems(combinations.names)
+        else:
+            self.cmb_combination.addItem("조합을 생성하세요.")
+
+    def set_target_cmb_items(self, targets: Targets):
+        self.cmb_target.clear()
+        if targets:
+            self.cmb_target.addItems(targets.names)
+        else:
+            self.cmb_target.addItem("타겟을 생성하세요.")
 
     def set_plate_name(self):
         metal_index = self.cmb_metal.currentIndex()
         if self.metal_samples:
-            metal = self.metal_samples[metal_index]["metal"]["name"]
+            metal = self.metal_samples[metal_index].subject.name
         else:
             metal = "metal"
-        date = self.wig_date.lb.text()
-        note = self.et_note.text()
 
+        note = self.et_note.text()
+        if self.add_timeline:
+            target = f"_{self.cmb_target.currentText()}"
+            combi = f" ({self.cmb_combination.currentText()})"
+            date = ""
+        else:
+            target = ""
+            combi = ""
+            date = f"_{self.wig_date.lb.text()}"
+
+        info_str = f"{target}{combi}{date}"
         note_str = f"_{note}" if note else ""
-        plate_name = f"{metal}_{date}{note_str}"
+        plate_name = f"{metal}{info_str}{note_str}"
 
         self.lb_plate_name.setText(plate_name)

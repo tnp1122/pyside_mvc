@@ -44,6 +44,16 @@ class ExplorerController(BaseController):
                 combination_name = combination["name"]
                 plates = combination["plates"]
                 plate_branch = OrderedDict()
+
+                timelines = combination.get("timelines")
+                if timelines:
+                    timeline_branch = []
+                    for timeline in timelines:
+                        timeline_name = timeline["name"]
+                        timeline_branch.append(timeline_name)
+                    if timeline_branch:
+                        plate_branch["연속촬영"] = timeline_branch
+
                 for plate in plates:
                     plate_name = plate["name"]
                     snapshots = plate["plate_snapshots"]

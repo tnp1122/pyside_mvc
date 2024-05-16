@@ -36,6 +36,12 @@ class Items(list):
             item_object = item_type(item["id"], item["name"])
             self.append(item_object)
 
+        return self
+
+    @property
+    def names(self):
+        return [item.name for item in self]
+
     def item_from_id(self, item_id):
         for index, item in enumerate(self):
             if item.id == item_id:

@@ -112,7 +112,7 @@ class CombinationController(BaseController):
                 self.api_manager.on_failure(reply)
 
         experiment_id = self.experiments[ex_index]["id"]
-        self.api_manager.get_sensor_combination(api_handler, experiment_id)
+        self.api_manager.get_sensor_combinations(api_handler, experiment_id)
 
     def update_solvents(self):
         def api_handler(reply):

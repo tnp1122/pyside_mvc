@@ -1,8 +1,11 @@
+import gzip
 import json
 import os
+import pickle
 
 import cv2
 import numpy as np
+import pandas as pd
 
 from model import Image
 from . import image_converter as ic
@@ -26,25 +29,43 @@ def get_absolute_path(main_path="", sub_path="", make_directory=True) -> str:
     return absolute_path
 
 
+def save_with_compress(data, file_name):
+    serialized_data = pickle.dumps(data)
+    compressed_data = gzip.compress(serialized_data)
+    with gzip.open(file_name, "wb") as f:
+        f.write(compressed_data)
+
+
+def load_with_decompress(file_name):
+    with gzip.open(file_name, "rb") as f:
+        compressed_data = f.read()
+        serialized_data = gzip.decompress(compressed_data)
+        return pickle.loads(serialized_data)
+
+
 class SnapshotDataManager:
-    def __init__(self, snapshot_path: str, snapshot_age: int, target_name: str):
+    def __init__(self, snapshot_name: str, snapshot_age: int, target_name: str):
         storage_path = os.getenv("LOCAL_STORAGE_PATH")
-        directory_path = get_absolute_path(storage_path, snapshot_path)
+        directory_path = get_absolute_path(storage_path, snapshot_name)
         capture_name = f"{snapshot_age}H_{target_name}"
 
         snapshot_path = os.path.join(directory_path, capture_name)
-        self.path_image = f"{snapshot_path}.png"
-        self.path_mean_colors = f"{snapshot_path}.mc"
+        self.path_image_jpg = f"{snapshot_path}.jpg"
+        self.path_image_png = f"{snapshot_path}.png"  # will be depreciated
+        self.path_mean_colors = f"{snapshot_path}.mc"  # will be depreciated
+        self.path_mean_colors_gz = f"{snapshot_path}.mcgz"
         self.path_snapshot_info = f"{snapshot_path}.dat"
         self.path_mask = f"{snapshot_path}.npz"
         self.path_mcmi = f"{snapshot_path}.mcmi"
 
     def save_datas(self, plate_image: np.ndarray, mean_colors: dict, snapshot_info: dict, mask: np.ndarray):
         converted_image = cv2.cvtColor(plate_image, cv2.COLOR_RGB2BGR)
-        ic.img_write(self.path_image, converted_image)
+        ic.img_write(self.path_image_jpg, converted_image)
 
-        with open(self.path_mean_colors, "w") as mc_file:
-            json.dump(mean_colors, mc_file)
+        serialized_data = pickle.dumps(mean_colors)
+        compressed_data = gzip.compress(serialized_data)
+        with gzip.open(self.path_mean_colors_gz, "wb") as f:
+            f.write(compressed_data)
 
         with open(self.path_snapshot_info, "w") as snapshot_file:
             json.dump(snapshot_info, snapshot_file)
@@ -53,13 +74,23 @@ class SnapshotDataManager:
 
     def load_datas(self) -> (Image, dict, dict, np.ndarray):
         try:
-            plate_image = Image().from_path(self.path_image)
+            plate_image = Image().from_path(self.path_image_jpg)
         except:
-            plate_image = Image()
+            try:
+                plate_image = Image().from_path(self.path_image_png)
+            except:
+                plate_image = Image()
 
         try:
-            with open(self.path_mean_colors, "r") as mean_colors_file:
-                mean_colors_data = json.load(mean_colors_file).get("mean_colors")
+            try:
+                with gzip.open(self.path_mean_colors_gz, "rb") as f:
+                    compressed_data = f.read()
+                    decompressed_data = gzip.decompress(compressed_data)
+                    mean_colors_data = pickle.loads(decompressed_data).get("mean_colors")
+
+            except:
+                with open(self.path_mean_colors, "r") as mean_colors_file:
+                    mean_colors_data = json.load(mean_colors_file).get("mean_colors")
 
             with open(self.path_snapshot_info, "r") as snapshot_info_file:
                 snapshot_info_data = json.load(snapshot_info_file).get("snapshot_info")
@@ -83,3 +114,31 @@ class SnapshotDataManager:
 
         mask = np.load(self.path_mask)["data"]
         return plate_image, mean_colors_data, snapshot_info_data, mask
+
+
+class TimelineDataManager:
+    def __init__(self, timeline_name: str, target_name: str):
+        storage_path = os.getenv("LOCAL_STORAGE_PATH")
+        directory_path = get_absolute_path(storage_path, timeline_name)
+        timeline_name = os.path.join(directory_path, target_name)
+
+        self.ti_file_name = f"{timeline_name}.tigz"
+        self.mc_file_name = f"{timeline_name}.mcgz"
+
+    def save_timeline_info(self, timeline_info: dict):
+        timeline_info_data = {"timeline_info": timeline_info}
+        save_with_compress(timeline_info_data, self.ti_file_name)
+
+    def save_timeline(self, mean_colors: pd.DataFrame):
+        mean_colors_data = {"mean_colors": mean_colors}
+
+        save_with_compress(mean_colors_data, self.mc_file_name)
+
+    def load_timeline(self) -> (dict, pd.DataFrame):
+        if not os.path.exists(self.mc_file_name):
+            return None, None
+
+        timeline_info = load_with_decompress(self.ti_file_name)["timeline_info"]
+        mean_colors = load_with_decompress(self.mc_file_name)["mean_colors"]
+
+        return timeline_info, mean_colors

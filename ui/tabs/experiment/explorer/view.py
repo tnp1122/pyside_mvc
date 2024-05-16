@@ -25,20 +25,20 @@ class ExplorerView(BaseWidgetView):
         self.btn_add = ColoredButton("실험 추가", size=(65, 30))
         self.btn_refresh = RefreshButton()
         expand_img = lsm.get_static_image_path("expand_arrow.png")
+        self.btn_toggle = Toggle("연속촬영", "스냅샷", (90, 26))
         self.btn_expand = ImageButton(image=expand_img, size=(30, 30))
         lyt_top.addWidget(self.btn_add)
         lyt_top.addWidget(self.btn_refresh)
         lyt_top.addStretch()
-        lyt_top.addWidget(self.btn_expand)
-
-        self.btn_toggle = Toggle("스냅샷", "타임 라인", (90, 26))
+        lyt_top.addWidget(self.btn_toggle)
 
         self.tree = TreeView()
+
+        self.btn_toggle.switched.connect(self.tree.switch_visibility)
 
         logo = Logo(size=(200, 200))
 
         lyt.addLayout(lyt_top)
-        lyt.addWidget(self.btn_toggle)
         lyt.addWidget(self.tree)
         lyt.addWidget(logo, alignment=Qt.AlignHCenter)
 

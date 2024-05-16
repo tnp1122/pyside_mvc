@@ -3,6 +3,7 @@ from datetime import datetime
 from PySide6.QtCore import Signal
 from PySide6.QtNetwork import QNetworkReply
 
+from model import Target
 from ui.common import BaseController
 from ui.common.confirmation_dialog import ConfirmationDialog
 from ui.common.tree_view import TreeRow, TreeSignalData
@@ -12,6 +13,7 @@ from ui.tabs.experiment.window import ExperimentWindowController
 from ui.tabs.experiment.window.add_experiment import AddExperimentController
 from ui.tabs.experiment.window.add_plate import AddPlateController, AddPlateView
 from ui.tabs.experiment.window.snapshot import PlateSnapshotController
+from ui.tabs.experiment.window.timeline import PlateTimelineController
 
 
 class ExperimentController(BaseController):
@@ -34,7 +36,7 @@ class ExperimentController(BaseController):
 
         explorer_view.btn_add.clicked.connect(self.add_experiment)
         tree_root.add_signal.connect(self.on_tree_add_button)
-        tree_root.double_clicked_signal.connect(self.open_snapshot_tab)
+        tree_root.double_clicked_signal.connect(self.on_child_double_clicked)
         tree_root.remove_signal.connect(self.on_tree_remove_clicked)
 
         view.window_widget.view.tabCloseRequested.connect(lambda index: self.remove_tab_with_index(index))
@@ -69,7 +71,12 @@ class ExperimentController(BaseController):
             experiment_index = indexes[0]
             combination_index = indexes[1]
 
-            add_plate = AddPlateController()
+            if tree_signal_data.type == "timeline":
+                add_plate = AddPlateController(add_timeline=True)
+                tab_name = "새 촬영"
+            else:
+                add_plate = AddPlateController()
+                tab_name = "새 플레이트"
             add_plate_view: AddPlateView = add_plate.view
 
             def on_combination_loaded():
@@ -77,15 +84,50 @@ class ExperimentController(BaseController):
                     add_plate_view.cmb_combination.setCurrentIndex(combination_index)
 
             add_plate.plate_added_signal.connect(lambda controller: self.on_plate_added(controller))
+            add_plate.timeline_added_signal.connect(lambda controller: self.on_plate_added(controller))
             add_plate.experiment_loaded.connect(lambda: add_plate_view.cmb_experiment.setCurrentIndex(experiment_index))
             add_plate.combination_loaded.connect(on_combination_loaded)
 
-            self.add_tab(add_plate, 0, "새 플레이트")
+            self.add_tab(add_plate, 0, tab_name)
 
         elif depth == 3:
-            self.open_snapshot_tab(indexes)
+            self.open_snapshot_tab(tree_signal_data)
 
-    def open_snapshot_tab(self, indexes: list):
+    def on_child_double_clicked(self, tree_signal_data: TreeSignalData):
+        if tree_signal_data.type == "open_timeline":
+            self.open_timeline_tab(tree_signal_data)
+        else:
+            self.open_snapshot_tab(tree_signal_data)
+
+    def open_timeline_tab(self, tree_signal_data: TreeSignalData):
+        indexes = tree_signal_data.indexes
+        view: ExperimentView = self.view
+
+        experiment_index = indexes[0]
+        combination_index = indexes[1]
+        timeline_index = indexes[3]
+
+        explorer: ExplorerController = view.explorer
+        experiment = explorer.experiment_tree[experiment_index]
+        combination = experiment["sensor_combinations"][combination_index]
+        timeline = combination["timelines"][timeline_index]
+
+        experiment_name = experiment["name"]
+        combination_id = combination["id"]
+        combination_name = combination["name"]
+        timeline_name = timeline["name"]
+
+        target_data = timeline["target"]
+        target = Target(target_data["id"], target_data["name"])
+        timeline_path = "\\".join([experiment_name, combination_name, 'timelines', timeline_name])
+
+        args = {"combination_id": combination_id, "timeline_path": timeline_path, "target": target}
+        plate_timeline = PlateTimelineController(args=args)
+        self.add_tab(plate_timeline, 1, "타임라인")
+
+    def open_snapshot_tab(self, tree_signal_data: TreeSignalData):
+        indexes = tree_signal_data.indexes
+
         view: ExperimentView = self.view
         depth = len(indexes)
 
@@ -133,8 +175,8 @@ class ExperimentController(BaseController):
         indexes = tree_signal_data.indexes
 
         experiment_tree = self.view.explorer.experiment_tree
-        experiment, combination, plate, snapshot = None, None, None, None
-        experiment_id, combination_id, plate_id, snapshot_id = None, None, None, None
+        experiment, combination, plate, snapshot, timeline = None, None, None, None, None
+        experiment_id, combination_id, plate_id, snapshot_id, timeline_id = None, None, None, None, None
 
         title, content = "", ""
         cancel_text = "취소"
@@ -142,6 +184,7 @@ class ExperimentController(BaseController):
         use_confirm = True
 
         depth = len(indexes)
+        signal_type = tree_signal_data.type
         if depth > 0:
             experiment = experiment_tree[indexes[0]]
             experiment_id = experiment["id"]
@@ -155,8 +198,13 @@ class ExperimentController(BaseController):
             plate_id = plate["id"]
 
         if depth > 3:
-            snapshot = plate["plate_snapshots"][indexes[3]]
-            snapshot_id = snapshot["id"]
+            if signal_type == "timeline":
+                timelines = combination["timelines"]
+                timeline = timelines[indexes[3]]
+                timeline_id = timeline["id"]
+            else:
+                snapshot = plate["plate_snapshots"][indexes[3]]
+                snapshot_id = snapshot["id"]
 
         if depth == 1:
             experiment_name = experiment["name"]
@@ -193,11 +241,17 @@ class ExperimentController(BaseController):
                 content = "하위 스냅샷을 삭제한 뒤에 플레이트를 삭제할 수 있습니다."
 
         elif depth == 4:
-            snapshot_age = snapshot["age"]
-            snapshot_name = f"{plate['name']}_{snapshot_age}H"
+            if signal_type == "timeline":
+                timeline_name = f"{timeline['name']}"
+                title = "연속촬영 삭제"
+                content = f"[연속촬영] {timeline_name}을(를) 삭제하시겠습니까?"
 
-            title = "스냅샷 삭제"
-            content = f"[스냅샷] {snapshot_name}을(를) 삭제하시겠습니까?"
+            else:
+                snapshot_age = snapshot["age"]
+                snapshot_name = f"{plate['name']}_{snapshot_age}H"
+
+                title = "스냅샷 삭제"
+                content = f"[스냅샷] {snapshot_name}을(를) 삭제하시겠습니까?"
 
         if has_refer:
             cancel_text = "확인"
@@ -207,10 +261,10 @@ class ExperimentController(BaseController):
             title, content, cancel_text=cancel_text, use_confirm=use_confirm, parent=self.view)
 
         dlg_confirm.confirmed.connect(
-            lambda: self.remove_tree_item(depth, experiment_id, combination_id, plate_id, snapshot_id))
+            lambda: self.remove_tree_item(depth, experiment_id, combination_id, plate_id, snapshot_id, timeline_id))
         dlg_confirm.exec()
 
-    def remove_tree_item(self, depth, experiment_id, combination_id, plate_id, snapshot_id):
+    def remove_tree_item(self, depth, experiment_id, combination_id, plate_id, snapshot_id, timeline_id):
         def api_handler(reply):
             if reply.error() == QNetworkReply.NoError:
                 self.view.explorer.update_tree_view()
@@ -224,7 +278,10 @@ class ExperimentController(BaseController):
         elif depth == 3:
             self.api_manager.remove_plate(api_handler, plate_id)
         elif depth == 4:
-            self.api_manager.remove_snapshot(api_handler, plate_id, snapshot_id)
+            if timeline_id is not None:
+                self.api_manager.remove_timeline(api_handler, timeline_id)
+            else:
+                self.api_manager.remove_snapshot(api_handler, plate_id, snapshot_id)
 
     def on_experiment_added(self, controller: AddExperimentController):
         self.view.explorer.update_tree_view()

@@ -129,7 +129,7 @@ class ClickableLabel(QLabel):
 
 
 class Toggle(QWidget):
-    widget_clicked = Signal(QMouseEvent)
+    switched = Signal(bool)
 
     def __init__(self, text_left="", text_right="", size: tuple = None, parent=None):
         super().__init__(parent)
@@ -144,8 +144,8 @@ class Toggle(QWidget):
         self.toggle_left = True
         self.text_left = text_left
         self.text_right = text_right
-        self.color_left = "#2962A5"
-        self.color_right = "#00A368"
+        self.color_left = "#00A368"
+        self.color_right = "#2962A5"
 
         self.setFixedSize(*size)
         self.setAttribute(Qt.WA_StyledBackground)
@@ -179,8 +179,8 @@ class Toggle(QWidget):
             if event.button() == Qt.LeftButton:
                 if event.modifiers() == Qt.NoModifier:
                     if event.type() == QEvent.MouseButtonRelease:
-                        self.widget_clicked.emit(event)
                         self.toggle()
+                        self.switched.emit(self.toggle_left)
 
         super().mouseReleaseEvent(event)
 
