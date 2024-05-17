@@ -565,11 +565,17 @@ class Timeline(dict):
                 distance = self.get_color_distance(init_color, current_color)
                 self.datas.loc[current_time, f"ColorDistance{idx + 1}"] = distance
         if current_count > 2:
+            # distance_idx = 96 * 3 + 1
+            # for idx in range(self.num_cells):
+            #     prev_distance = np.float32(self.datas.iloc[current_count - 2].iloc[distance_idx + idx])
+            #     current_distance = np.float32(self.datas.iloc[current_count - 1].iloc[distance_idx + idx])
+            #     self.datas.loc[current_time, f"ColorVelocity{idx + 1}"] = (current_distance - prev_distance) / prev_distance
             distance_idx = 96 * 3 + 1
-            for idx in range(self.num_cells):
-                prev_distance = np.float32(self.datas.iloc[current_count - 2].iloc[distance_idx + idx])
-                current_distance = np.float32(self.datas.iloc[current_count - 1].iloc[distance_idx + idx])
-                self.datas.loc[current_time, f"ColorVelocity{idx + 1}"] = current_distance - prev_distance
+            prev_distances = self.datas.iloc[current_count - 2, distance_idx:distance_idx + self.num_cells].astype(np.float32)
+            current_distances = self.datas.iloc[current_count - 1, distance_idx:distance_idx + self.num_cells].astype(np.float32)
+            color_velocities = (current_distances - prev_distances) / prev_distances / 100
+            for idx, velocity in enumerate(color_velocities):
+                self.datas.loc[current_time, f"ColorVelocity{idx + 1}"] = velocity
 
         self.save_timeline()
 
@@ -605,7 +611,7 @@ class Timeline(dict):
         snapshot_instance.mask.set_radius(self["radius"])
         snapshot_instance.mask.set_flare_threshold(self["flare_threshold"], False)
 
-        self.datas = pd.concat([self.datas, mean_colors])
+        self.datas = mean_colors.reindex(columns=self.datas.columns)
 
         init_colors = mean_colors.iloc[0].values.reshape(self.num_cells, 3)
         for row in self.datas.index[1:]:
@@ -617,8 +623,7 @@ class Timeline(dict):
                 self.datas.loc[row, f"ColorDistance{idx + 1}"] = distance
 
         for idx in range(self.num_cells):
-            distance_columns = self.datas[f"ColorDistance{idx + 1}"]
-            self.datas[f"ColorVelocity{idx + 1}"] = distance_columns - distance_columns.shift(1)
+            self.datas[f"ColorVelocity{idx + 1}"] = self.datas[f"ColorDistance{idx + 1}"].pct_change(fill_method=None) / 100
 
         self.info_saved = True
         return True
