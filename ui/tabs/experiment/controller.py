@@ -48,10 +48,10 @@ class ExperimentController(BaseController):
     def remove_tab(self, controller: BaseController):
         window_widget: ExperimentWindowController = self.view.window_widget
         window_widget.remove_tab(controller)
+        self.tabs.remove(controller)
 
     def remove_tab_with_index(self, index):
         self.remove_tab(self.tabs[index])
-        del self.tabs[index]
 
     def add_experiment(self):
         add_experiment = AddExperimentController()
