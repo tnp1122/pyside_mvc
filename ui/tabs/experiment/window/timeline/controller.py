@@ -72,26 +72,25 @@ class PlateTimelineController(BaseController):
         if not self.model.is_running:
             return
 
+        view: PlateTimelineView = self.view
+        image_viewer: ImageViewerController = view.image_viewer
+
         model: PlateTimelineModel = self.model
         timeline: Timeline = model.timeline
         snapshot_instance: Snapshot = model.snapshot_instance
-
-        QTimer.singleShot(timeline.current_interval * 1000, self.take_snapshot)
-
-        view: PlateTimelineView = self.view
-        view.update_lb_interval_info()
-
-        image_viewer: ImageViewerController = view.image_viewer
-        image_viewer.take_snapshot()
-
-        timeline.append_snapshot(snapshot_instance)
-
-        self.update_graph()
 
         if timeline.current_count >= timeline.end_count:
             self.model.is_running = False
             view.update_lb_interval_info(str_run_complete)
             return
+
+        QTimer.singleShot(timeline.current_interval * 1000, self.take_snapshot)
+
+        image_viewer.take_snapshot()
+        view.update_lb_interval_info()
+        timeline.append_snapshot(snapshot_instance)
+
+        self.update_graph()
 
 
 def main():

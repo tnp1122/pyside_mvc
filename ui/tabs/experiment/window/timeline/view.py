@@ -91,7 +91,7 @@ class PlateTimelineView(BaseWidgetView):
             total_count = tl.total_count_of_current_round
 
             info_str = (f"[{total_round}라운드 중 {current_round + 1}라운드 (촬영 주기: {current_interval}초)] "
-                        f"{count + 1}/{total_count}")
+                        f"{count}/{total_count}")
         self.lb_interval_info.setText(info_str)
 
     def show_interval_config(self):
