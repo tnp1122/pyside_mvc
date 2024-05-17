@@ -133,7 +133,7 @@ class ExperimentController(BaseController):
 
         experiment_index = indexes[0]
         combination_index = indexes[1]
-        plate_index = indexes[2]
+        plate_index = indexes[2] - 1
 
         explorer: ExplorerController = view.explorer
         experiment = explorer.experiment_tree[experiment_index]
@@ -194,7 +194,7 @@ class ExperimentController(BaseController):
             combination_id = combination["id"]
 
         if depth > 2:
-            plate = combination["plates"][indexes[2]]
+            plate = combination["plates"][(indexes[2] - 1)]
             plate_id = plate["id"]
 
         if depth > 3:
