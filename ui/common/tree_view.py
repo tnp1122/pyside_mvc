@@ -71,6 +71,7 @@ class TreeView(BaseScrollAreaView):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
+        self.show_timeline = True
         self.data = OrderedDict()
         self.root = TreeRow()
 
@@ -92,9 +93,10 @@ class TreeView(BaseScrollAreaView):
         lyt.addStretch()
         lyt.setAlignment(Qt.AlignTop)
         self.setWidget(tree)
-        self.switch_visibility()
+        self.switch_visibility(self.show_timeline)
 
     def switch_visibility(self, show_timeline=True):
+        self.show_timeline = show_timeline
         self.root.switch_visibility(show_timeline)
 
 
@@ -111,6 +113,7 @@ class TreeRow(QWidget):
 
         self.children = []
         self.is_expanded = True
+        self.is_visible = True
 
         self.is_directory = is_directory
         self.parent = parent
@@ -188,18 +191,22 @@ class TreeRow(QWidget):
                 widget.deleteLater()
                 widget.close()
 
+    def set_branch_visible(self, visible: bool) -> None:
+        self.is_visible = visible
+        super().setVisible(visible)
+
     def switch_visibility(self, show_timeline=True):
         if self.level == 3:
             if show_timeline:
                 if self.title == timeline_title:
-                    self.setVisible(True)
+                    self.set_branch_visible(True)
                 else:
-                    self.setVisible(False)
+                    self.set_branch_visible(False)
             else:
                 if self.title == timeline_title:
-                    self.setVisible(False)
+                    self.set_branch_visible(False)
                 else:
-                    self.setVisible(True)
+                    self.set_branch_visible(True)
 
         for child in self.children:
             child: TreeRow
@@ -211,7 +218,6 @@ class TreeRow(QWidget):
         self.lb_title.setContextMenuPolicy(Qt.CustomContextMenu)
         self.lb_title.customContextMenuRequested.connect(self.show_snapshot_context_menu)
         self.btn_expand.clicked.connect(self.expand)
-        # self.btn_add.clicked.connect(lambda: self.bubble_event("add"))
         self.btn_add.clicked.connect(lambda event: self.on_add_button_clicked(event))
         self.btn_add.timeline_clicked.connect(lambda: self.bubble_event("add_timeline"))
         self.btn_add.snapshot_clicked.connect(lambda: self.bubble_event("add_snapshot"))
@@ -222,10 +228,8 @@ class TreeRow(QWidget):
     def expand(self):
         self.is_expanded = not self.is_expanded
 
-        # self.btn_expand.set_transformed_icon(self.get_expand_icon_degree())
-
         for child in self.children:
-            child.setVisible(self.is_expanded)
+            child.setVisible(self.is_expanded and child.is_visible)
 
     def add_child(self, child_value):
         is_directory = isinstance(child_value, dict)
