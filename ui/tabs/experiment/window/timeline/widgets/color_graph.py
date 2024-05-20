@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from PySide6.QtGui import QColor
-from PySide6.QtWidgets import QVBoxLayout
+from PySide6.QtWidgets import QVBoxLayout, QSizePolicy
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 
@@ -19,11 +19,12 @@ class ColorGraphView(BaseWidgetView):
 
     def init_view(self):
         super().init_view()
-        self.setMinimumWidth(500)
+
         self.fig = plt.Figure()
         self.canvas = FigureCanvasQTAgg(self.fig)
         self.ax1 = self.fig.add_subplot(111)
         self.ax2 = self.ax1.twinx()
+        self.fig.subplots_adjust(right=0.6)
 
         self.ax1.set_ylabel("distance")
         self.ax2.set_ylabel("velocity")
@@ -31,7 +32,11 @@ class ColorGraphView(BaseWidgetView):
         self.colors = []
 
         lyt = QVBoxLayout(self)
+
         lyt.addWidget(self.canvas)
+        self.setStyleSheet("border: 1px solid blue")
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
     def set_colors(self, num_display: int):
         new_colors = [plt.cm.rainbow(a) for a in np.linspace(0.0, 1.0, num_display)]
@@ -52,13 +57,16 @@ class ColorGraphView(BaseWidgetView):
             ax1.plot(elapsed_times, distance_values, color=self.colors[idx], label=distance_column, linestyle="-")
             ax2.plot(elapsed_times, velocity_values, color=self.colors[idx], label=velocity_column, linestyle="--")
 
-        # ax1.set_ylabel("distance")
-        # ax2.set_ylabel("velocity")
+        ax1.set_ylabel("distance")
+        ax2.set_ylabel("velocity")
+        ax2.yaxis.set_label_position("right")
+        ax2.yaxis.tick_right()
+
         lines1, labels1 = ax1.get_legend_handles_labels()
         lines2, labels2 = ax2.get_legend_handles_labels()
         lines = lines1 + lines2
         labels = labels1 + labels2
-        ax1.legend(lines, labels, loc="upper center")
+        ax1.legend(lines, labels, loc="upper left", bbox_to_anchor=(1.2, 1), borderaxespad=0.)
 
         self.canvas.draw()
 
