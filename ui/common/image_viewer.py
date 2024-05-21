@@ -195,7 +195,11 @@ class ImageViewerController(BaseController):
             self.capture_clicked.emit()
             return
 
-        self.is_running_timeline = not self.is_running_timeline
+        if self.mode == 1:
+            self.switch_running_timeline(not self.is_running_timeline)
+
+    def switch_running_timeline(self, run_timeline):
+        self.is_running_timeline = run_timeline
 
         view: ImageViewerView = self.view
         if self.is_running_timeline:

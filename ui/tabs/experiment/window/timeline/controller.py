@@ -78,7 +78,8 @@ class PlateTimelineController(BaseController):
         snapshot_instance: Snapshot = model.snapshot_instance
 
         if timeline.current_count >= timeline.end_count:
-            self.model.is_running = False
+            model.is_running = False
+            image_viewer.switch_running_timeline(False)
             view.update_lb_interval_info()
             return
 
