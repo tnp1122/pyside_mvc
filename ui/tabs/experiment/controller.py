@@ -123,7 +123,7 @@ class ExperimentController(BaseController):
 
         args = {"combination_id": combination_id, "timeline_path": timeline_path, "target": target}
         plate_timeline = PlateTimelineController(args=args)
-        self.add_tab(plate_timeline, 1, "타임라인")
+        self.add_tab(plate_timeline, 1, self.truncate_str(timeline_name))
 
     def open_snapshot_tab(self, tree_signal_data: TreeSignalData):
         indexes = tree_signal_data.indexes
@@ -159,7 +159,7 @@ class ExperimentController(BaseController):
             snapshot_id = snapshot["id"]
             snapshot_age = snapshot["age"]
             snapshot_captured_at = snapshot["captured_at"]
-            tab_name = self.get_tab_name(plate_name, snapshot_age)
+            tab_name = self.get_snapshot_tab_name(plate_name, snapshot_age)
 
         snapshot_info = {"experiment_id": experiment_id, "plate_id": plate["id"], "plate_made_at": plate_made_at,
                          "snapshot_path": snapshot_path, "snapshot_id": snapshot_id, "snapshot_age": snapshot_age,
@@ -294,16 +294,19 @@ class ExperimentController(BaseController):
     def on_snapshot_added(self, plate_snapshot: PlateSnapshotController, plate_name, snapshot_age):
         self.view.explorer.update_tree_view()
 
-        tab_name = self.get_tab_name(plate_name, snapshot_age)
+        tab_name = self.get_snapshot_tab_name(plate_name, snapshot_age)
         self.view.window_widget.set_tab_name(plate_snapshot, tab_name)
 
-    def get_tab_name(self, plate_name, snapshot_age):
+    def get_snapshot_tab_name(self, plate_name, snapshot_age):
         tab_name = f"{plate_name}_{snapshot_age}H"
 
-        if len(tab_name) > 16:
-            tab_name = tab_name[:12] + "..." + tab_name[-3:]
+        return self.truncate_str(tab_name)
 
-        return tab_name
+    def truncate_str(self, value: str, max_len=16):
+        if len(value) > max_len:
+            value = value[:max_len-4] + "..." + value[-3:]
+
+        return value
 
 
 def main():
