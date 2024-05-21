@@ -1,4 +1,5 @@
 from ui.common import BaseTabWidgetView
+from util.colors import WHITE_GRAY
 
 
 class ExperimentWindowView(BaseTabWidgetView):
@@ -18,7 +19,7 @@ class ExperimentWindowView(BaseTabWidgetView):
             #ExperimentWindowTabBar::tab {{
                 margin: 0px;
                 padding: 5px 10px 5px 10px;
-                background-color: white;
+                background-color: {WHITE_GRAY};
                 border: 0.5px solid lightgray;
         }}
             #ExperimentWindowTabBar::tab:selected {{
