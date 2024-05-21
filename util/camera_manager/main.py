@@ -108,6 +108,8 @@ class CameraUnit(QObject):
 
     @staticmethod
     def cameraCallback(nEvent, ctx):
+        if not isinstance(ctx, CameraUnit):
+            return
         if nEvent == toupcam.TOUPCAM_EVENT_IMAGE:
             try:
                 ctx.cam.PullImageV2(ctx.buf, 24, None)
