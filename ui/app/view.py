@@ -20,6 +20,10 @@ class AppView(BaseWidgetView):
         super().showEvent(event)
         self.update_floating_widget_position()
 
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.update_floating_widget_position()
+
     def init_view(self):
         super().init_view()
 
@@ -37,9 +41,14 @@ class AppView(BaseWidgetView):
         self.toast.raise_()
         self.toast.toasted_signal.connect(self.update_toast_position)
 
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        self.update_floating_widget_position()
+    def set_style_sheet(self):
+        self.setObjectName("App")
+        style = f"""
+            #App {{
+                background-color: white;
+            }}
+        """
+        self.setStyleSheet(style)
 
     def update_floating_widget_position(self):
         window_width, window_height = self.width(), self.height()

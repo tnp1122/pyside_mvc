@@ -1,3 +1,4 @@
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame
 
@@ -16,8 +17,6 @@ class PlateTimelineView(BaseWidgetView):
     width_et_box = 35
     width_combo_box = 48
     height_et = 24
-
-    time_combo = ["분", "시간", "일"]
 
     def __init__(self, parent=None, combination_id=None):
         self.combination_id = combination_id
@@ -43,9 +42,8 @@ class PlateTimelineView(BaseWidgetView):
         self.btn_interval_config = ImageButton(cogwheel)
         self.btn_interval_config.clicked.connect(self.show_interval_config)
         lyt_interval_info = QHBoxLayout()
-        lyt_interval_info.addWidget(self.lb_interval_info)
-        lyt_interval_info.addStretch()
-        lyt_interval_info.addWidget(self.btn_interval_config)
+        lyt_interval_info.addWidget(self.lb_interval_info, 0, alignment=Qt.AlignLeft)
+        lyt_interval_info.addWidget(self.btn_interval_config, 0, alignment=Qt.AlignRight)
 
         lyt_main_content = QVBoxLayout()
         lyt_main_content.setContentsMargins(10, 0, 10, 0)
@@ -61,11 +59,9 @@ class PlateTimelineView(BaseWidgetView):
         # 컨텐츠 컨테이너
         lyt_content = QHBoxLayout()
         lyt_content.setContentsMargins(10, 0, 10, 0)
-        lyt_content.addStretch()
         lyt_content.addLayout(lyt_main_content)
         lyt_content.addWidget(self.graph.view)
         lyt_content.addWidget(self.combination_table.view)
-        lyt_content.addStretch()
 
         divider1 = QFrame()
         divider1.setFrameShape(QFrame.HLine)

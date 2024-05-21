@@ -84,7 +84,7 @@ class SelectCombinationTableView(BaseTableWidgetView):
     def set_first_row(self):
         self.insertRow(0)
         cell = QTableWidgetItem()
-        self.setSpan(0, 0, 1, 2)
+        self.setSpan(0, 0, 1, 3)
         self.setItem(0, 0, cell)
         self.set_editable(cell, False)
 

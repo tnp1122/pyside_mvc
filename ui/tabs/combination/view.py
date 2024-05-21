@@ -45,7 +45,6 @@ class CombinationView(BaseWidgetView):
 
         lyt = QVBoxLayout(self)
         lyt.addWidget(widget_tob_bar)
-        lyt.addStretch()
         lyt.addLayout(self.lyt_grid)
         lyt.addStretch()
 
@@ -78,7 +77,7 @@ class CombinationView(BaseWidgetView):
 
         for x in range(8):
             lb = Label(x, False)
-            self.add_to_grid(lb, x+1, 12)
+            self.add_to_grid(lb, x + 1, 12)
 
         for y in range(12):
             lb = Label(12 - y)

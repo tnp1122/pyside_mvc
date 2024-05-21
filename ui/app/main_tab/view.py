@@ -1,5 +1,6 @@
 from PySide6.QtWidgets import QWidget
 
+from util.colors import WHITE_GRAY
 from ui.common import BaseTabWidgetView
 from ui.tabs.admin import AdminController
 from ui.tabs.combination import CombinationController
@@ -32,6 +33,29 @@ class MainTabView(BaseTabWidgetView):
         self.addTab(self.data, "데이터")
 
         self.setMinimumSize(640, 500)
+
+    def set_style_sheet(self):
+        self.setObjectName("MainTab")
+        self.tabBar().setObjectName("MainTabBar")
+        style = f"""
+            #MainTab::pane {{
+                margin: 0px;
+                padding: 0px;
+                border: none;
+                background-color: {WHITE_GRAY};
+            }}
+            #MainTabBar::tab {{
+                margin: 0px;
+                padding: 5px 10px 5px 10px;
+                background-color: white;
+                border: 0.5px solid {WHITE_GRAY};
+            }}
+            #MainTabBar::tab:selected {{
+                background-color: {WHITE_GRAY};
+                border-bottom-color: {WHITE_GRAY};
+            }}
+        """
+        self.setStyleSheet(style)
 
     def set_admin_tab(self, visible=False):
         if visible:

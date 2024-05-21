@@ -150,19 +150,10 @@ class Toggle(QWidget):
         self.setFixedSize(*size)
         self.setAttribute(Qt.WA_StyledBackground)
         self.setObjectName("toggle")
-        self.setStyleSheet(
-            f"""
-            #toggle {{
-                background-color: {self.color_left};
-                border-radius: {self.radius}px;
-            }}
-            """
-        )
 
         self.lb = QLabel(text_left, self)
         self.lb.setFixedSize(*self.label_size)
         self.lb.setAlignment(Qt.AlignCenter)
-        self.lb.setStyleSheet("color: white;")
 
         self.switch = QWidget(self)
         self.switch.setFixedSize(self.switch_radius * 2, self.switch_radius * 2)
@@ -172,7 +163,7 @@ class Toggle(QWidget):
         pos_switch = self.size().width() - self.switch_padding - self.switch_radius * 2, self.switch_padding
         self.lb.move(*pos_lb)
         self.switch.move(*pos_switch)
-        # self.toggle()
+        self.set_color(self.color_left)
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
         if self.rect().contains(event.position().toPoint(), True):
@@ -184,17 +175,24 @@ class Toggle(QWidget):
 
         super().mouseReleaseEvent(event)
 
+    def set_color(self, color):
+        self.setStyleSheet(
+            f"""
+            #toggle {{
+                background-color: {color};
+                border-radius: {self.radius}px;
+            }}
+            """
+        )
+        self.lb.setStyleSheet(f"""
+            background-color: {color};
+            color: white;
+        """)
+
     def toggle(self):
         self.toggle_left = not self.toggle_left
         if self.toggle_left:
-            self.setStyleSheet(
-                f"""
-                #toggle {{
-                    background-color: {self.color_left};
-                    border-radius: {self.radius}px;
-                }}
-                """
-            )
+            self.set_color(self.color_left)
             self.lb.setText(self.text_left)
             pos_lb = (self.switch_padding, self.switch_padding)
             self.lb.move(*pos_lb)
@@ -204,14 +202,7 @@ class Toggle(QWidget):
             self.animation.setDuration(200)
             self.animation.start()
         else:
-            self.setStyleSheet(
-                f"""
-                #toggle {{
-                    background-color: {self.color_right};
-                    border-radius: {self.radius}px;
-                }}
-                """
-            )
+            self.set_color(self.color_right)
             self.lb.setText(self.text_right)
             pos_lb = ((self.switch_radius + self.switch_padding) * 2, self.switch_padding)
             self.lb.move(*pos_lb)

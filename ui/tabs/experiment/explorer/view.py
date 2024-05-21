@@ -20,6 +20,7 @@ class ExplorerView(BaseWidgetView):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         lyt = QVBoxLayout(self)
+        lyt.setContentsMargins(10, 10, 0, 0)
 
         lyt_top = QHBoxLayout()
         self.btn_add = ColoredButton("실험 추가", size=(65, 30))

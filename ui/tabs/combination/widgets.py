@@ -58,8 +58,8 @@ class Cell(BaseCell):
             self.style_half = style_editable + "color: #BBBBBB;"
             self.style_void = style_editable
         else:
-            self.style_sensor = self.style + "background-color: #DDDDDD; border: 1px solid white;"
-            self.style_void = self.style + "background-color: #F5F5F5; border: 1px solid white; color: white;"
+            self.style_sensor = self.style + "background-color: lightgray; border: none;"
+            self.style_void = self.style + "background-color: #F5F5F5; border: none; color: white;"
             self.style_half = self.style_void
 
         self._set_text()

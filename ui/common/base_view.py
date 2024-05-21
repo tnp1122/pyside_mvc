@@ -29,15 +29,16 @@ class BaseViewMixin:
         self._late_init = LateInit()
 
     def init_view(self):
-        # print(f"parent init view")
         pass
 
     def on_view_initialized(self):
-        # print(f"on view initiailized")
-        pass
+        self.set_style_sheet()
 
     def late_init(self):
         self._late_init.signal.emit()
+
+    def set_style_sheet(self):
+        pass
 
     def with_container(self, widget, mode=0):
         container = QWidget()
@@ -130,6 +131,12 @@ class BaseTableWidgetView(BaseViewMixin, QTableWidget):
     def __init__(self, parent=None, args=None):
         QTableWidget.__init__(self, parent)
         BaseViewMixin.__init__(self, args)
+
+        style = """
+            QTableWidget { border: none; }
+        """
+        self.setStyleSheet(style)
+
         self.cellClicked.connect(self.on_cell_clicked)
 
     def set_headers(self, headers):

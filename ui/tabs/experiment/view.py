@@ -14,6 +14,7 @@ class ExperimentView(BaseWidgetView):
         super().init_view()
 
         lyt = QVBoxLayout(self)
+        lyt.setContentsMargins(0, 0, 0, 0)
 
         self.splitter = QSplitter(self)
         self.splitter.setOrientation(Qt.Horizontal)
