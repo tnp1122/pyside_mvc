@@ -7,8 +7,6 @@ from ui.tabs.experiment.window.timeline import PlateTimelineModel, PlateTimeline
 from ui.tabs.experiment.window.timeline.widgets.color_graph import ColorGraphController
 from ui.tabs.experiment.window.timeline.widgets.select_combination_table import SelectCombinationTableController
 
-str_run_complete = "타임라인 촬영 완료"
-
 
 class PlateTimelineController(BaseController):
     def __init__(self, parent=None, args=None):
@@ -43,7 +41,7 @@ class PlateTimelineController(BaseController):
         timeline: Timeline = model.timeline
         if timeline.load_timeline(model.snapshot_instance):
             self.update_graph()
-            view.update_lb_interval_info(str_run_complete)
+            view.update_lb_interval_info()
 
     def on_associations_changed(self, association_indexes: list):
         color_graph: ColorGraphController = self.view.graph
@@ -81,7 +79,7 @@ class PlateTimelineController(BaseController):
 
         if timeline.current_count >= timeline.end_count:
             self.model.is_running = False
-            view.update_lb_interval_info(str_run_complete)
+            view.update_lb_interval_info()
             return
 
         QTimer.singleShot(timeline.current_interval * 1000, self.take_snapshot)

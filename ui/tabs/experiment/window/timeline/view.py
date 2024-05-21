@@ -76,18 +76,21 @@ class PlateTimelineView(BaseWidgetView):
         lyt.setSpacing(5)
         lyt.addLayout(lyt_content)
 
-    def update_lb_interval_info(self, info_str=None):
-        if not info_str:
-            tl: Timeline = self.model.timeline
+    def update_lb_interval_info(self):
+        timeline: Timeline = self.model.timeline
 
-            current_round = tl.current_round
-            total_round = tl.total_round
-            current_interval = tl.current_interval
-            count = tl.count_of_current_round
-            total_count = tl.total_count_of_current_round
+        if timeline.current_count >= timeline.end_count:
+            info_str = "타임라인 촬영 완료"
+        else:
+            current_round = timeline.current_round
+            total_round = timeline.total_round
+            current_interval = timeline.current_interval
+            count = timeline.count_of_current_round
+            total_count = timeline.total_count_of_current_round
 
             info_str = (f"[{total_round}라운드 중 {current_round + 1}라운드 (촬영 주기: {current_interval}초)] "
                         f"{count}/{total_count}")
+
         self.lb_interval_info.setText(info_str)
 
     def show_interval_config(self):
