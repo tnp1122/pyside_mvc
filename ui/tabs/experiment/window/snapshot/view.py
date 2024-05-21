@@ -33,7 +33,7 @@ class PlateSnapshotView(BaseTabWidgetView):
 
         self.addTab(self.plate_process.view, "이미지 처리")
         self.addTab(self.mean_color.view, "평균 색")
-        self.addTab(self.color_graph, "그래프")
+        # self.addTab(self.color_graph, "그래프")
         self.addTab(self.color_difference.view, "색 차이")
 
     def set_style_sheet(self):

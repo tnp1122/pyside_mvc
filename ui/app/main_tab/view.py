@@ -30,7 +30,7 @@ class MainTabView(BaseTabWidgetView):
         self.addTab(self.material.view, "시료")
         self.addTab(self.combination.view, "조합")
         self.addTab(self.target.view, "타겟 물질")
-        self.addTab(self.data, "데이터")
+        # self.addTab(self.data, "데이터")
 
         self.setMinimumSize(640, 500)
 
@@ -59,8 +59,8 @@ class MainTabView(BaseTabWidgetView):
 
     def set_admin_tab(self, visible=False):
         if visible:
-            if self.count() == 6:
-                self.addTab(self.admin.view, "관리자 화면")
-        else:
-            if self.count() == 7:
-                self.removeTab(6)
+            # if self.count() == 6:
+            self.addTab(self.admin.view, "관리자 화면")
+        # else:
+        #     if self.count() == 7:
+        #         self.removeTab(6)
