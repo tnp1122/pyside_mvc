@@ -1,4 +1,4 @@
-from model.api import Item, Items
+from models.api import Item, Items
 
 
 class Experiment(Item):

@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QPen, QBrush, QColor
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsEllipseItem
 
-from model.snapshot import PlatePosition, Snapshot, Mask
+from models.snapshot import PlatePosition, Snapshot, Mask
 
 
 class MaskArea(QGraphicsRectItem):

@@ -1,4 +1,4 @@
-from model.api import MaterialSample, MaterialSamples
+from models.api import MaterialSample, MaterialSamples
 
 
 class MetalSample(MaterialSample):

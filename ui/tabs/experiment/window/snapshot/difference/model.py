@@ -2,8 +2,8 @@ import numpy as np
 from colormath.color_conversions import convert_color
 from colormath.color_objects import sRGBColor, xyYColor, LabColor
 
-from model import Targets
-from model.snapshot import Snapshot
+from models import Targets
+from models.snapshot import Snapshot
 
 
 class ColorDifferenceModel:

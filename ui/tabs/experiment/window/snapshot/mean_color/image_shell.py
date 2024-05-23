@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout
 
-from model.snapshot import Snapshot
+from models.snapshot import Snapshot
 
 
 class ImageShell(QWidget):

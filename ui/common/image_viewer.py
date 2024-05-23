@@ -3,8 +3,8 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPainter, QPen, QPixmap
 from PySide6.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout, QWidget
 
-from model import Image
-from model.snapshot import Snapshot
+from models import Image
+from models.snapshot import Snapshot
 from ui.common import BaseWidgetView, BaseController, ColoredButton, ImageButton
 from ui.tabs.experiment.window.snapshot.process.unit.mask_manager import MaskManagerController, MaskManagerView
 from util.camera_manager import CameraManager

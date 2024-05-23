@@ -1,8 +1,6 @@
 import numpy as np
 from PySide6.QtGui import QImage, QPixmap
 
-from util import image_converter as ic
-
 
 class Image:
     def __init__(self, array: np.ndarray = None, has_alpha: bool = False):
@@ -10,6 +8,8 @@ class Image:
         self.has_alpha = has_alpha
 
     def from_path(self, image_path: str):
+        from util import image_converter as ic
+
         self.array = ic.path_to_nd_array(image_path)
         return self
 

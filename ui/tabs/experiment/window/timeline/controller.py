@@ -1,6 +1,6 @@
 from PySide6.QtCore import QTimer
 
-from model.snapshot import Snapshot, Timeline
+from models.snapshot import Snapshot, Timeline
 from ui.common import BaseController
 from ui.common.image_viewer import ImageViewerController
 from ui.tabs.experiment.window.timeline import PlateTimelineModel, PlateTimelineView

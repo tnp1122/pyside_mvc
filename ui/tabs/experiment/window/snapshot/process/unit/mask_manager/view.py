@@ -1,7 +1,7 @@
 from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QPushButton, QLineEdit, QFrame, QLabel
 
-from model.snapshot import Snapshot, PlatePosition, Mask
+from models.snapshot import Snapshot, PlatePosition, Mask
 from ui.common import MileStoneRadio, BaseDialogView, ColoredButton
 from ui.tabs.experiment.window.snapshot.process.unit.mask_manager.draw_mask import DrawMask
 from ui.tabs.experiment.window.snapshot.process.unit.mask_manager.mask_graphics.controller import MaskGraphicsController

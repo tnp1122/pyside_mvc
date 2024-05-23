@@ -2,7 +2,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame
 
-from model.snapshot import Snapshot, Timeline
+from models.snapshot import Snapshot, Timeline
 from ui.common import BaseWidgetView, ImageButton
 from ui.common.image_viewer import ImageViewerController
 from ui.tabs.experiment.window.timeline import PlateTimelineModel
