@@ -2,7 +2,7 @@ from PySide6.QtCore import Signal
 from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import QGraphicsScene, QGraphicsSceneMouseEvent, QGraphicsPixmapItem
 
-from model.snapshot import Snapshot
+from models.snapshot import Snapshot
 from ui.common import BaseGraphicsView
 from ui.tabs.experiment.window.snapshot.process.unit.mask_manager.mask_graphics.view.mask_area import MaskArea
 

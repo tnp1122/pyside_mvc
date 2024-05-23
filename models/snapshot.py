@@ -7,7 +7,7 @@ import pandas as pd
 from PySide6.QtCore import QObject, Signal, QRectF
 from PySide6.QtGui import QPixmap
 
-from model import Image, Target
+from models import Image, Target
 from util import image_converter as ic, SnapshotDataManager
 from util.local_storage_manager import TimelineDataManager
 from util.setting_manager import SettingManager

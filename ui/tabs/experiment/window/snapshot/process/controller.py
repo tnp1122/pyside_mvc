@@ -1,6 +1,6 @@
 import logging
 
-from model import Image
+from models import Image
 from ui.common import BaseController
 from ui.common.toast import Toast
 from ui.tabs.experiment.window.snapshot.process import SnapshotProcessModel, SnapshotProcessView

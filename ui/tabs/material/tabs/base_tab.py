@@ -3,7 +3,7 @@ import logging
 from PySide6.QtNetwork import QNetworkReply
 from PySide6.QtWidgets import QWidget, QHBoxLayout
 
-from model import Materials, MaterialSamples
+from models import Materials, MaterialSamples
 from ui.common import BaseTabWidgetView, BaseController, ColoredButton, BaseWidgetView, TabWidgetController
 from ui.common.toast import Toast
 

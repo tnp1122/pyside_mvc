@@ -2,7 +2,7 @@ from enum import Enum
 
 from PySide6.QtCore import Qt, QRectF, QPointF
 
-from model.snapshot import PlatePosition
+from models.snapshot import PlatePosition
 from ui.tabs.experiment.window.snapshot.process.unit.mask_manager.mask_graphics.view.mask_area import MaskArea
 
 

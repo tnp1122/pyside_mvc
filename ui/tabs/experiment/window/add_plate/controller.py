@@ -4,8 +4,8 @@ from datetime import datetime
 from PySide6.QtCore import Signal, QObject
 from PySide6.QtNetwork import QNetworkReply
 
-from model import Targets, Experiments, Combinations, Materials
-from model.api.metal_sample import MetalSamples
+from models import Targets, Experiments, Combinations, Materials
+from models.api.metal_sample import MetalSamples
 from ui.common import BaseController
 from ui.tabs.experiment.window.add_plate import AddPlateModel, AddPlateView
 

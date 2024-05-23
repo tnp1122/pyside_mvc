@@ -1,4 +1,4 @@
-from model.snapshot import Snapshot
+from models.snapshot import Snapshot
 from ui.common import BaseController
 from ui.tabs.experiment.window.snapshot.process.unit.mask_manager import MaskManagerView, MaskManagerModel
 from util import image_converter as ic

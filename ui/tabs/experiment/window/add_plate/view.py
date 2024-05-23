@@ -3,8 +3,8 @@ from datetime import datetime
 from PySide6.QtGui import QFont, Qt
 from PySide6.QtWidgets import QLabel, QComboBox, QHBoxLayout, QWidget, QVBoxLayout, QLineEdit
 
-from model import Experiments, Combinations, Targets
-from model.api.metal_sample import MetalSamples
+from models import Experiments, Combinations, Targets
+from models.api.metal_sample import MetalSamples
 from ui.common import BaseWidgetView, ColoredButton
 from ui.common.date_picker import DateWidget, HourWidget
 from util.setting_manager import SettingManager

@@ -3,7 +3,7 @@ from datetime import datetime
 from PySide6.QtCore import Signal
 from PySide6.QtNetwork import QNetworkReply
 
-from model import Target
+from models import Target
 from ui.common import BaseController
 from ui.common.confirmation_dialog import ConfirmationDialog
 from ui.common.tree_view import TreeRow, TreeSignalData

@@ -5,8 +5,8 @@ from datetime import datetime
 from PySide6.QtCore import Signal
 from PySide6.QtNetwork import QNetworkReply
 
-from model import Targets
-from model.snapshot import Snapshot
+from models import Targets
+from models.snapshot import Snapshot
 from ui.common import TabWidgetController
 from ui.common.confirmation_dialog import ConfirmationDialog
 from ui.common.toast import Toast

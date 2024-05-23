@@ -1,7 +1,7 @@
 from PySide6.QtGui import QImage
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QPushButton
 
-from model.snapshot import Snapshot
+from models.snapshot import Snapshot
 from ui.common import BaseController
 from ui.tabs.experiment.window.snapshot.process.unit.mask_manager.mask_graphics import MaskGraphicsModel, \
     MaskGraphicsView

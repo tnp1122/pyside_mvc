@@ -2,8 +2,8 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QSizePolicy, QWidget, QHBoxLayout, QPushButton, QVBoxLayout
 
-from model import Image, Targets
-from model.snapshot import Snapshot
+from models import Image, Targets
+from models.snapshot import Snapshot
 from ui.common import BaseScrollAreaView, BaseController
 from ui.tabs.experiment.window.snapshot.process.unit import ProcessUnitController, ProcessUnitView
 

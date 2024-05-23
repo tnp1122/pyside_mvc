@@ -1,7 +1,7 @@
 import cv2
 from PySide6.QtCore import QObject, QTimer, Signal
 
-from model.snapshot import Snapshot
+from models.snapshot import Snapshot
 
 WINDOW_NAME = "draw_mask"
 MASK_COLOR = (255, 255, 255)

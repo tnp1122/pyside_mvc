@@ -3,7 +3,7 @@ from datetime import datetime
 from PySide6.QtCore import QSignalMapper, Qt
 from PySide6.QtWidgets import QHeaderView, QTableWidgetItem, QCheckBox, QWidget, QHBoxLayout, QComboBox, QLabel
 
-from model import Materials, MaterialSample, MaterialSamples
+from models import Materials, MaterialSample, MaterialSamples
 from ui.common import BaseTableWidgetView, ImageButton, TableWidgetController
 from ui.common.date_picker import DatePicker
 from ui.common.toast import Toast

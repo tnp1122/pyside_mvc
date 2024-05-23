@@ -2,7 +2,7 @@ from PySide6.QtCore import QSignalMapper, Signal
 from PySide6.QtGui import QIntValidator, Qt
 from PySide6.QtWidgets import QWidget, QLineEdit, QLabel, QHBoxLayout, QVBoxLayout, QPushButton, QDialog
 
-from model.snapshot import RoundModel
+from models.snapshot import RoundModel
 from ui.common import ColoredButton
 
 

@@ -2,7 +2,7 @@ import logging
 
 from PySide6.QtNetwork import QNetworkReply
 
-from model import Experiments, Targets
+from models import Experiments, Targets
 from ui.common import BaseController
 from ui.common.toast import Toast
 from ui.tabs.target_material import TargetMaterialModel, TargetMaterialView

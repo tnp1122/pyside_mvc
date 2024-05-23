@@ -1,4 +1,5 @@
 import gzip
+import io
 import json
 import os
 import pickle
@@ -7,8 +8,21 @@ import cv2
 import numpy as np
 import pandas as pd
 
-from model import Image
+from models import Image
 from . import image_converter as ic
+
+
+class ModuleFixUnpickler(pickle.Unpickler):
+    def find_class(self, module, name):
+        print(f"[LSM] module: {module}")
+        if module.startswith("model.snapshot"):
+            module = module.replace("model.snapshot", "models.snapshot", 1)
+
+        return super().find_class(module, name)
+
+
+def loads_with_pickle(object):
+    return ModuleFixUnpickler(io.BytesIO(object)).load()
 
 
 def get_static_image_path(image_name: str) -> str:
@@ -40,7 +54,8 @@ def load_with_decompress(file_name):
     with gzip.open(file_name, "rb") as f:
         compressed_data = f.read()
         serialized_data = gzip.decompress(compressed_data)
-        return pickle.loads(serialized_data)
+        # return pickle.loads(serialized_data)
+        return loads_with_pickle(serialized_data)
 
 
 class SnapshotDataManager:
@@ -86,7 +101,8 @@ class SnapshotDataManager:
                 with gzip.open(self.path_mean_colors_gz, "rb") as f:
                     compressed_data = f.read()
                     decompressed_data = gzip.decompress(compressed_data)
-                    mean_colors_data = pickle.loads(decompressed_data).get("mean_colors")
+                    # mean_colors_data = pickle.loads(decompressed_data).get("mean_colors")
+                    mean_colors_data = loads_with_pickle(decompressed_data).get("mean_colors")
 
             except:
                 with open(self.path_mean_colors, "r") as mean_colors_file:

@@ -1,5 +1,5 @@
-from model import Image
-from model.snapshot import Snapshot
+from models import Image
+from models.snapshot import Snapshot
 from ui.common import BaseController
 from ui.tabs.experiment.window.snapshot.process.unit import ProcessUnitModel, ProcessUnitView
 

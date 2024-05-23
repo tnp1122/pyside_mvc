@@ -1,6 +1,6 @@
 from PySide6.QtCore import QObject, Signal
 
-from model.snapshot import Snapshot, Timeline
+from models.snapshot import Snapshot, Timeline
 
 
 class PlateTimelineModel(QObject):

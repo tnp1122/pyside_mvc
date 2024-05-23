@@ -1,7 +1,7 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QSizePolicy, QWidget, QHBoxLayout
 
-from model.snapshot import Snapshot
+from models.snapshot import Snapshot
 from ui.common import BaseScrollAreaView, BaseController
 from ui.tabs.experiment.window.snapshot.mean_color.image_shell import ImageShell
 
