@@ -48,7 +48,7 @@ class MainTabView(BaseTabWidgetView):
                 margin: 0px;
                 padding: 5px 10px 5px 10px;
                 background-color: white;
-                border: 0.5px solid {WHITE_GRAY};
+                border: none;
             }}
             #MainTabBar::tab:selected {{
                 background-color: {WHITE_GRAY};

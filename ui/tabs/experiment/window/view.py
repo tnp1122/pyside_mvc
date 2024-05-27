@@ -20,7 +20,7 @@ class ExperimentWindowView(BaseTabWidgetView):
                 margin: 0px;
                 padding: 5px 10px 5px 10px;
                 background-color: {WHITE_GRAY};
-                border: 0.5px solid lightgray;
+                border: none;
         }}
             #ExperimentWindowTabBar::tab:selected {{
                 background-color: lightgray;

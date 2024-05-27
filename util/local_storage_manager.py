@@ -14,7 +14,6 @@ from . import image_converter as ic
 
 class ModuleFixUnpickler(pickle.Unpickler):
     def find_class(self, module, name):
-        print(f"[LSM] module: {module}")
         if module.startswith("model.snapshot"):
             module = module.replace("model.snapshot", "models.snapshot", 1)
 

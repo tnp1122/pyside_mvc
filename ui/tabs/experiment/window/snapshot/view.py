@@ -48,8 +48,7 @@ class PlateSnapshotView(BaseTabWidgetView):
                 margin: 0px;
                 padding: 5px 10px 5px 10px;
                 background-color: white;
-                border: 0.5px solid lightgray;
-                border-top: none;
+                border: none;
         }}
             #PlateSnapshotBatTap::tab:first {{
                 border-left: none;
