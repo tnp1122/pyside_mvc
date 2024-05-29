@@ -21,4 +21,4 @@ class FirstTabView(BaseStackedWidgetView):
             elif FirstTabIndex(index) == FirstTabIndex.HOME:
                 self.addWidget(self.with_container(self.home.view))
             elif FirstTabIndex(index) == FirstTabIndex.SETTING:
-                self.addWidget(self.with_container(self.setting.view))
+                self.addWidget(self.setting.view)

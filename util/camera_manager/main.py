@@ -8,7 +8,7 @@ from ui.common.toast import Toast
 from util.camera_manager import toupcam
 
 
-class CanNotFindDeviceError(Exception):
+class CameraUnitError(Exception):
     def __init__(self, message):
         super().__init__(message)
         self.message = message
@@ -28,102 +28,175 @@ class CameraManager(QObject):
             if parent is not None:
                 super().__init__()
 
+                logging.info("init Camera Manager")
                 self.initialized = True
-                self.camera_unit = CameraUnit()
 
-                self.connect_to_camera()
-
-    def connect_to_camera(self):
-        logging.info("connect to camera")
-        if self.camera_unit:
-            self.camera_unit.close()
-            self.camera_unit = None
-
-        toupcams = toupcam.Toupcam.EnumV2()
-        for cam in toupcams:
-            try:
-                self.camera_unit = CameraUnit(cam.displayname, cam.id, cam.model)
-                break
-            except Exception as e:
-                msg = f"카메라 연결 실패: {e}"
-                Toast().toast(msg)
-                logging.warning(msg)
-
-        if self.camera_unit:
-            try:
-                self.camera_unit.connect_to_camera()
-            except Exception as e:
-                msg = f"카메라 연결 실패: {e}"
-                Toast().toast(msg)
-                logging.error(msg)
-
-            self.camera_unit.signal_image.connect(lambda img: self.signal_image.emit(img))
+                self.camera_unit = CameraUnit(parent)
+                self.camera_unit.open_camera()
+                self.camera_unit.signal_image.connect(self.signal_image.emit)
 
     def get_current_image(self):
-        if self.camera_unit:
+        if hasattr(self, "camera_unit") and self.camera_unit is not None:
             unit: CameraUnit = self.camera_unit
-            image = unit.get_current_image()
-
-            return image
+            return unit.current_image
         return None
 
     def set_direction(self):
+        self.rotate_direction()
+
+    def rotate_direction(self):
         unit: CameraUnit = self.camera_unit
-        unit.set_direction()
+        unit.rotate_direction()
 
 
 class CameraUnit(QObject):
+    _instance = None
+
+    evtCallback = Signal(int)
+
+    video_started = Signal(bool)
     signal_image = Signal(np.ndarray)
     direction = 1
 
-    def __init__(self, name=None, cam_id=None, model=None):
-        super().__init__()
-        self.name = name
-        self.cam_id = cam_id
-        self.model = model
-        self.cam = None
-        self.buf = None
-        self.width = 0
-        self.height = 0
+    def __new__(cls, parent=None):
+        if not cls._instance:
+            cls._instance = super(CameraUnit, cls).__new__(cls)
+        return cls._instance
 
-    def close(self):
-        if self.cam is not None:
+    def __init__(self, parent=None):
+        if not hasattr(self, "initialized"):
+            if parent is not None:
+                super().__init__()
+
+                logging.info("init Camera Unit")
+
+                self.cam = None
+                self.imgWidth = 0
+                self.imgHeight = 0
+                self.pData = None
+                self.res = 0
+                self.temp = toupcam.TOUPCAM_TEMP_DEF
+                self.tint = toupcam.TOUPCAM_TINT_DEF
+
+                self.initialized = True
+                self.evtCallback.connect(self.onevtCallback)
+
+    def close_camera(self):
+        if self.cam:
             self.cam.Close()
-            self.cam = None
-        self.deleteLater()
+        self.cam = None
+        self.pData = None
 
-    def connect_to_camera(self):
-        try:
-            self.cam = toupcam.Toupcam.Open(self.cam_id)
-        except Exception as e:
-            raise e
+    def open_camera(self):
+        logging.info("open Camera Unit")
+        arr = toupcam.Toupcam.EnumV2()
+        if len(arr) == 0:
+            raise CameraUnitError("카메라를 인식하지 못했습니다.")
 
-        self.width, self.height = self.cam.get_Size()
-        bufsize = ((self.width * 24 + 31) // 32 * 4) * self.height
-        self.buf = bytes(bufsize)
-
-        if sys.platform == "win32":
+        self.cur = arr[0]
+        self.cam = toupcam.Toupcam.Open(self.cur.id)
+        if self.cam:
+            self.res = self.cam.get_eSize()
+            self.imgWidth = self.cur.model.res[self.res].width
+            self.imgHeight = self.cur.model.res[self.res].height
             self.cam.put_Option(toupcam.TOUPCAM_OPTION_BYTEORDER, 0)
-            self.cam.StartPullModeWithCallback(self.cameraCallback, self)
+            self.cam.put_AutoExpoEnable(1)
+            self.start_camera()
+
+    def start_camera(self):
+        self.pData = bytes(toupcam.TDIBWIDTHBYTES(self.imgWidth * 24) * self.imgHeight)
+        try:
+            self.cam.StartPullModeWithCallback(self.eventCallBack, self)
+        except toupcam.HRESULTException:
+            self.close_camera()
+            raise CameraUnitError("이미지를 받아오는데 실패했습니다.")
+        else:
+            self.video_started.emit(True)
 
     @staticmethod
-    def cameraCallback(nEvent, ctx):
-        if not isinstance(ctx, CameraUnit):
-            return
-        if nEvent == toupcam.TOUPCAM_EVENT_IMAGE:
-            try:
-                ctx.cam.PullImageV2(ctx.buf, 24, None)
-            except toupcam.HRESULTException as e:
-                ctx.exception.emit(f"pull image failed: {e}")
-            else:
-                img_np = ctx.get_current_image()
-                ctx.signal_image.emit(img_np)
+    def eventCallBack(nEvent, self):
+        '''callbacks come from toupcam.dll/so internal threads, so we use qt signal to post this event to the UI thread'''
+        self.evtCallback.emit(nEvent)
 
-    def get_current_image(self):
-        image = np.frombuffer(self.buf, dtype=np.uint8).reshape((self.height, self.width, 3))
-        image = np.rot90(image, k=-self.direction)
-        image = np.ascontiguousarray(image)
-        return image
+    def onevtCallback(self, nEvent):
+        '''this run in the UI thread'''
+        if self.cam:
+            if toupcam.TOUPCAM_EVENT_IMAGE == nEvent:
+                self.handleImageEvent()
 
-    def set_direction(self):
+    def handleImageEvent(self):
+        try:
+            self.cam.PullImageV3(self.pData, 0, 24, 0, None)
+        except toupcam.HRESULTException:
+            pass
+        else:
+            self.signal_image.emit(self.current_image)
+
+    @property
+    def current_image(self):
+        img = np.frombuffer(self.pData, dtype=np.uint8).reshape((self.imgHeight, self.imgWidth, 3))
+        img = np.rot90(img, k=-self.direction)
+        return np.ascontiguousarray(img)
+
+    @property
+    def resolutions(self):
+        resolution = []
+        for i in range(self.cur.model.preview):
+            resolution.append((self.cur.model.res[i].width, self.cur.model.res[i].height))
+
+        return resolution
+
+    def rotate_direction(self):
         self.direction = (self.direction + 1) % 4
+
+    def set_resolution(self, index):
+        if self.cam:
+            self.cam.Stop()
+
+        self.res = index
+        self.imgWidth = self.cur.model.res[index].width
+        self.imgHeight = self.cur.model.res[index].height
+
+        if self.cam:
+            self.cam.put_eSize(self.res)
+            self.start_camera()
+
+    def set_auto_expo(self, state):
+        if self.cam:
+            self.cam.put_AutoExpoEnable(1 if state else 0)
+            return True
+        return False
+
+    def set_expo_time(self, value):
+        if self.cam:
+            if self.cam.get_AutoExpoEnable() != 1:
+                self.cam.put_ExpoTime(value)
+            return True
+        return False
+
+    def set_expo_gain(self, value):
+        if self.cam:
+            if self.cam.get_AutoExpoEnable() != 1:
+                self.cam.put_ExpoAGain(value)
+            return True
+        return False
+
+    def set_auto_WB(self):
+        if self.cam:
+            self.cam.AwbOnce()
+            return True
+        return False
+
+    def set_WB_temp(self, value):
+        if self.cam:
+            self.temp = value
+            self.cam.put_TempTint(self.temp, self.tint)
+            return True
+        return False
+
+    def set_WB_tint(self, value):
+        if self.cam:
+            self.tint = value
+            self.cam.put_TempTint(self.temp, self.tint)
+            return True
+        return False

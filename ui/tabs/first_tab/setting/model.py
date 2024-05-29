@@ -1,3 +1,6 @@
+from util.enums import SettingViewIndex
+
+
 class SettingModel:
     def __init__(self):
-        pass
+        self.current_index = SettingViewIndex.DEFAULT
