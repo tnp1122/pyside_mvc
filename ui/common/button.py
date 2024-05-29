@@ -1,33 +1,59 @@
 from typing import Union
 
 from PySide6.QtCore import QSize, Qt, Signal, QEvent, QPropertyAnimation, QPoint
-from PySide6.QtGui import QPixmap, QIcon, QMouseEvent
+from PySide6.QtGui import QPixmap, QIcon, QMouseEvent, QTransform
 from PySide6.QtWidgets import QPushButton, QApplication, QWidget, QVBoxLayout, QLabel
 
 from util import local_storage_manager as lsm
 
 
 class ImageButton(QPushButton):
-    def __init__(self, image: Union[str, QPixmap, QIcon], size=None, padding=(0, 0, 0, 0), parent=None):
+    def __init__(self, image: Union[str, QPixmap, QIcon], size=None, padding=(0, 0, 0, 0), angle: int = 0, parent=None):
         super().__init__(parent=parent)
 
-        self.set_icon(image, size, padding)
+        self.original_pixmap = None
+        self.size = size
+        self.padding = padding
+        self.angle = angle
 
-    def set_icon(self, image: Union[str, QPixmap, QIcon], size=None, padding=(0, 0, 0, 0)):
+        self.set_icon(image, size, padding, angle)
+
+    def set_icon(self, image: Union[str, QPixmap, QIcon], size=None, padding=None, angle: int = None):
         if isinstance(image, QIcon):
-            self.setIcon(image)
+            icon = image
+            self.original_pixmap = icon.pixmap(icon.availableSizes()[0])
         else:
             if isinstance(image, QPixmap):
                 pixmap = image
             else:
                 pixmap = QPixmap(image)
-            self.setIcon(pixmap)
+            self.original_pixmap = pixmap
 
-        if size:
-            icon_size = QSize(*size)
+        self.size = size or self.size
+        self.padding = padding or self.padding
+        self.angle = angle or self.angle
+
+        self.update_pixmap_icon()
+
+    @property
+    def rotated_pixmap(self):
+        if self.angle == 0:
+            return self.original_pixmap
+
+        transform = QTransform().rotate(self.angle)
+        rotated_pixmap = self.original_pixmap.transformed(transform, Qt.SmoothTransformation)
+        return rotated_pixmap
+
+    def update_pixmap_icon(self):
+        icon = QIcon(self.rotated_pixmap)
+        self.setIcon(icon)
+
+        if self.size:
+            icon_size = QSize(*self.size)
         else:
             icon_size = self.iconSize()
 
+        padding = self.padding
         widget_size = (icon_size.width() + padding[1] + padding[3], icon_size.height() + padding[0] + padding[2])
         self.setIconSize(icon_size)
         self.setFixedSize(*widget_size)
