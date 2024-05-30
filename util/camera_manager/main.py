@@ -146,6 +146,11 @@ class CameraUnit(QObject):
 
         return resolution
 
+    @property
+    def rgb(self):
+        if self.cam:
+            return self.cam.get_BlackBalance()
+
     def rotate_direction(self):
         self.direction = (self.direction + 1) % 4
 
@@ -161,42 +166,98 @@ class CameraUnit(QObject):
             self.cam.put_eSize(self.res)
             self.start_camera()
 
-    def set_auto_expo(self, state):
+    def _execute_if_cam(self, func, *args, **kwargs):
         if self.cam:
-            self.cam.put_AutoExpoEnable(1 if state else 0)
+            func(*args, **kwargs)
             return True
         return False
+
+    """ 노출 및 게인"""
+
+    def set_auto_expo(self, state):
+        return self._execute_if_cam(self.cam.put_AutoExpoEnable, 1 if state else 0)
+
+    def set_expo_target(self, value):
+        return self._execute_if_cam(self._set_expo_target, value)
+
+    def _set_expo_target(self, value):
+        if self.cam.get_AutoExpoEnable() == 1:  # 노출 타겟은 자동일 때 작동함
+            self.cam.put_AutoExpoTarget(value)
 
     def set_expo_time(self, value):
-        if self.cam:
-            if self.cam.get_AutoExpoEnable() != 1:
-                self.cam.put_ExpoTime(value)
-            return True
-        return False
+        return self._execute_if_cam(self._set_expo_time, value)
+
+    def _set_expo_time(self, value):
+        if self.cam.get_AutoExpoEnable() != 1:
+            self.cam.put_ExpoTime(value)
 
     def set_expo_gain(self, value):
-        if self.cam:
-            if self.cam.get_AutoExpoEnable() != 1:
-                self.cam.put_ExpoAGain(value)
-            return True
-        return False
+        return self._execute_if_cam(self._set_expo_gain, value)
 
-    def set_auto_WB(self):
-        if self.cam:
-            self.cam.AwbOnce()
-            return True
-        return False
+    def _set_expo_gain(self, value):
+        if self.cam.get_AutoExpoEnable() != 1:
+            self.cam.put_ExpoAGain(value)
 
-    def set_WB_temp(self, value):
-        if self.cam:
-            self.temp = value
-            self.cam.put_TempTint(self.temp, self.tint)
-            return True
-        return False
+    """ 화이트 밸런스 """
 
-    def set_WB_tint(self, value):
-        if self.cam:
-            self.tint = value
-            self.cam.put_TempTint(self.temp, self.tint)
-            return True
-        return False
+    def init_white_balance(self):
+        return self._execute_if_cam(self._init_white_balance)
+
+    def _init_white_balance(self):
+        self.cam.put_TempTint(toupcam.TOUPCAM_TEMP_DEF, toupcam.TOUPCAM_TINT_DEF)
+
+    def auto_white_balance_once(self):
+        return self._execute_if_cam(self.cam.AwbOnce)
+
+    def set_white_balance_temp(self, value):
+        self.temp = value
+        return self._execute_if_cam(self.cam.put_TempTint, self.temp, self.tint)
+
+    def set_white_balance_tint(self, value):
+        self.tint = value
+        return self._execute_if_cam(self.cam.put_TempTint, self.temp, self.tint)
+
+    """ 블랙 밸런스 """
+
+    def auto_black_blance_once(self):
+        return self._execute_if_cam(self.cam.AbbOnce)
+
+    def set_black_balance(self, color_index: int, value: int):
+        rgb = list(self.rgb)
+        rgb[color_index] = value
+        return self._execute_if_cam(self.cam.put_BlackBalance, rgb)
+
+    def init_black_balance(self):
+        return self._execute_if_cam(self.cam.put_BlackBalance, (0, 0, 0))
+
+    """ 색 조정 """
+
+    def set_hue(self, value):
+        return self._execute_if_cam(self.cam.put_Hue, value)
+
+    def set_saturation(self, value):
+        return self._execute_if_cam(self.cam.put_Saturation, value)
+
+    def set_brightness(self, value):
+        return self._execute_if_cam(self.cam.put_Brightness, value)
+
+    def set_contrast(self, value):
+        return self._execute_if_cam(self.cam.put_Contrast, value)
+
+    def set_gamma(self, value):
+        return self._execute_if_cam(self.cam.put_Gamma, value)
+
+    def init_color(self):
+        return self._execute_if_cam(self._init_color)
+
+    def _init_color(self):
+        hue = toupcam.TOUPCAM_HUE_DEF
+        saturation = toupcam.TOUPCAM_SATURATION_DEF
+        brightness = toupcam.TOUPCAM_BRIGHTNESS_DEF
+        contrast = toupcam.TOUPCAM_CONTRAST_DEF
+        gamma = toupcam.TOUPCAM_GAMMA_DEF
+        self.cam.put_Hue(hue)
+        self.cam.put_Saturation(saturation)
+        self.cam.put_Brightness(brightness)
+        self.cam.put_Contrast(contrast)
+        self.cam.put_Gamma(gamma)
