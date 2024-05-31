@@ -217,6 +217,21 @@ class CameraUnit(QObject):
         self.tint = value
         return self._execute_if_cam(self.cam.put_TempTint, self.temp, self.tint)
 
+    def set_white_balance_gain(self, rgb):
+        return self._execute_if_cam(self._set_white_balance_gain, rgb)
+
+    def _set_white_balance_gain(self, rgb):
+        tt = self.cam.Gain2TempTint(rgb)
+        print(f"[_set_white_balance_gain] rgb: {rgb}, g2tt: {tt}")
+        self.cam.put_TempTint(*self.cam.Gain2TempTint(rgb))
+
+    def get_white_balance_gain(self):
+        tt = self.cam.get_TempTint()
+        g = self.cam.TempTint2Gain(*self.cam.get_TempTint())
+        print(f"[get_white_balance_gain] tt: {tt}, tt2g: {g}")
+        if self.cam:
+            return self.cam.TempTint2Gain(*self.cam.get_TempTint())
+
     """ 블랙 밸런스 """
 
     def auto_black_blance_once(self):

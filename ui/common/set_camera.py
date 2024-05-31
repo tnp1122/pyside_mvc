@@ -1,7 +1,7 @@
 import numpy as np
 from PySide6.QtCore import Qt, QSignalBlocker
 from PySide6.QtWidgets import QScrollArea, QHBoxLayout, QVBoxLayout, QComboBox, QGroupBox, QCheckBox, QLabel, QSlider, \
-    QPushButton, QWidget, QSizePolicy
+    QPushButton, QWidget, QSizePolicy, QButtonGroup, QRadioButton
 
 from util.camera_manager import CameraUnit, toupcam
 
@@ -82,6 +82,7 @@ class SetCamera(QScrollArea):
         self.slider_expo_gain.valueChanged.connect(self.on_expo_gain_changed)
 
         """ 화이트 밸런스 """
+        ## 온도 색조 모드
         self.lb_temp = QLabel(str(toupcam.TOUPCAM_TEMP_DEF))
         self.lb_tint = QLabel(str(toupcam.TOUPCAM_TINT_DEF))
         self.slider_temp = QSlider(Qt.Horizontal)
@@ -92,20 +93,64 @@ class SetCamera(QScrollArea):
         self.slider_tint.setValue(toupcam.TOUPCAM_TINT_DEF)
         self.slider_temp.setEnabled(self.camera_started)
         self.slider_tint.setEnabled(self.camera_started)
-        self.slider_temp.valueChanged.connect(self.on_WB_temp_changed)
-        self.slider_tint.valueChanged.connect(self.on_WB_tint_changed)
-        self.btn_auto_WB = QPushButton("화이트 밸런스")
-        self.btn_auto_WB.setEnabled(self.camera_started)
-        self.btn_auto_WB.clicked.connect(self.camera_unit.auto_white_balance_once)
-        self.btn_init_WB = QPushButton("기본값")
-        self.btn_init_WB.setEnabled(self.camera_started)
-        self.btn_init_WB.clicked.connect(self.init_white_balance)
-        lyt_WB = QVBoxLayout()
-        lyt_WB.addLayout(get_slider_layout(QLabel("색 온도:"), self.lb_temp, self.slider_temp))
-        lyt_WB.addLayout(get_slider_layout(QLabel("색조:"), self.lb_tint, self.slider_tint))
-        lyt_WB.addLayout(get_twin_button_layout(self.btn_auto_WB, self.btn_init_WB))
-        gbox_WB = QGroupBox("화이트 밸런스")
-        gbox_WB.setLayout(lyt_WB)
+        self.slider_temp.valueChanged.connect(self.on_wb_temp_changed)
+        self.slider_tint.valueChanged.connect(self.on_wb_tint_changed)
+        self.wig_wb_temp_tint = QWidget()
+        lyt_wb_temp_tint = QVBoxLayout(self.wig_wb_temp_tint)
+        lyt_wb_temp_tint.setContentsMargins(0, 0, 0, 0)
+        lyt_wb_temp_tint.addLayout(get_slider_layout(QLabel("색 온도:"), self.lb_temp, self.slider_temp))
+        lyt_wb_temp_tint.addLayout(get_slider_layout(QLabel("색조:"), self.lb_tint, self.slider_tint))
+        # ## rgb 게인 모드
+        # wb_gain_def = toupcam.TOUPCAM_WBGAIN_DEF
+        # wb_gain_min = toupcam.TOUPCAM_WBGAIN_MIN
+        # wb_gain_max = toupcam.TOUPCAM_WBGAIN_MAX
+        # self.lb_r_wb = QLabel(str(wb_gain_def))
+        # self.lb_g_wb = QLabel(str(wb_gain_def))
+        # self.lb_b_wb = QLabel(str(wb_gain_def))
+        # self.slider_r_wb = QSlider(Qt.Horizontal)
+        # self.slider_g_wb = QSlider(Qt.Horizontal)
+        # self.slider_b_wb = QSlider(Qt.Horizontal)
+        # self.slider_r_wb.setRange(wb_gain_min, wb_gain_max)
+        # self.slider_g_wb.setRange(wb_gain_min, wb_gain_max)
+        # self.slider_b_wb.setRange(wb_gain_min, wb_gain_max)
+        # self.slider_r_wb.setValue(wb_gain_def)
+        # self.slider_g_wb.setValue(wb_gain_def)
+        # self.slider_b_wb.setValue(wb_gain_def)
+        # self.slider_r_wb.setEnabled(self.camera_started)
+        # self.slider_g_wb.setEnabled(self.camera_started)
+        # self.slider_b_wb.setEnabled(self.camera_started)
+        # self.slider_r_wb.valueChanged.connect(lambda value: self.on_wb_gain_changed(0, value))
+        # self.slider_g_wb.valueChanged.connect(lambda value: self.on_wb_gain_changed(1, value))
+        # self.slider_b_wb.valueChanged.connect(lambda value: self.on_wb_gain_changed(2, value))
+        # self.wig_wb_gain = QWidget()
+        # lyt_wb_gain = QVBoxLayout(self.wig_wb_gain)
+        # lyt_wb_gain.setContentsMargins(0, 0, 0, 0)
+        # lyt_wb_gain.addLayout(get_slider_layout(QLabel("빨강:"), self.lb_r_wb, self.slider_r_wb))
+        # lyt_wb_gain.addLayout(get_slider_layout(QLabel("초록:"), self.lb_g_wb, self.slider_g_wb))
+        # lyt_wb_gain.addLayout(get_slider_layout(QLabel("파랑:"), self.lb_b_wb, self.slider_b_wb))
+        ## 공통
+        # rb_wb_mode_group = QButtonGroup()
+        # self.rb_wb_temp_tint = QRadioButton("색 온도 색조 모드")
+        # self.rb_wb_gain = QRadioButton("rgb 게인 모드")
+        # rb_wb_mode_group.addButton(self.rb_wb_temp_tint)
+        # rb_wb_mode_group.addButton(self.rb_wb_gain)
+        # lyt_rb_wb_mode = QHBoxLayout()
+        # lyt_rb_wb_mode.setContentsMargins(0, 0, 0, 0)
+        # lyt_rb_wb_mode.addWidget(self.rb_wb_temp_tint)
+        # lyt_rb_wb_mode.addWidget(self.rb_wb_gain)
+        self.btn_auto_wb = QPushButton("화이트 밸런스")
+        self.btn_auto_wb.setEnabled(self.camera_started)
+        self.btn_auto_wb.clicked.connect(self.camera_unit.auto_white_balance_once)
+        self.btn_init_wb = QPushButton("기본값")
+        self.btn_init_wb.setEnabled(self.camera_started)
+        self.btn_init_wb.clicked.connect(self.init_white_balance)
+        lyt_wb = QVBoxLayout()
+        # lyt_wb.addLayout(lyt_rb_wb_mode)
+        lyt_wb.addWidget(self.wig_wb_temp_tint)
+        # lyt_wb.addWidget(self.wig_wb_gain)
+        lyt_wb.addLayout(get_twin_button_layout(self.btn_auto_wb, self.btn_init_wb))
+        gbox_wb = QGroupBox("화이트 밸런스")
+        gbox_wb.setLayout(lyt_wb)
 
         """ 블랙 밸런스 """
         rgb = camera_unit.rgb
@@ -194,7 +239,7 @@ class SetCamera(QScrollArea):
         lyt_content = QVBoxLayout(wig_content)
         lyt_content.addWidget(gbox_res)
         lyt_content.addWidget(gbox_expo)
-        lyt_content.addWidget(gbox_WB)
+        lyt_content.addWidget(gbox_wb)
         lyt_content.addWidget(gbox_BB)
         lyt_content.addWidget(gbox_color)
 
@@ -215,6 +260,9 @@ class SetCamera(QScrollArea):
             self.set_cmb_resolution()
 
             """ 노출 및 게인"""
+            b_auto = camera_unit.cam.get_AutoExpoEnable()
+            self.cb_auto_expo.setChecked(b_auto == 1)
+
             target_min, target_max, target_def = toupcam.TOUPCAM_AETARGET_MIN, toupcam.TOUPCAM_AETARGET_MAX, toupcam.TOUPCAM_AETARGET_DEF
             time_min, time_max, time_def = camera_unit.cam.get_ExpTimeRange()
             gain_min, gain_max, gain_def = camera_unit.cam.get_ExpoAGainRange()
@@ -231,11 +279,11 @@ class SetCamera(QScrollArea):
                 self.handle_temp_tint_event()
 
             """ 화이트 밸런스 """
-            self.btn_auto_WB.setEnabled(camera_unit.cur.model.flag & toupcam.TOUPCAM_FLAG_MONO == 0)
+            self.btn_auto_wb.setEnabled(camera_unit.cur.model.flag & toupcam.TOUPCAM_FLAG_MONO == 0)
             self.slider_temp.setEnabled(camera_unit.cur.model.flag & toupcam.TOUPCAM_FLAG_MONO == 0)
             self.slider_tint.setEnabled(camera_unit.cur.model.flag & toupcam.TOUPCAM_FLAG_MONO == 0)
-            b_auto = camera_unit.cam.get_AutoExpoEnable()
-            self.cb_auto_expo.setChecked(b_auto == 1)
+            # self.handle_white_balance_gain_event()
+            # self.update_white_balance_gain()
 
             """ 색 조정 """
             self.set_color_text()
@@ -275,17 +323,41 @@ class SetCamera(QScrollArea):
 
     """ 화이트 밸런스 """
 
-    def on_WB_temp_changed(self, value):
+    def on_wb_temp_changed(self, value):
         if self.camera_unit.set_white_balance_temp(value):
             self.lb_temp.setText(str(value))
+        # self.update_white_balance_gain()
 
-    def on_WB_tint_changed(self, value):
+    def on_wb_tint_changed(self, value):
         if self.camera_unit.set_white_balance_tint(value):
             self.lb_tint.setText(str(value))
+
+    #     self.update_white_balance_gain()
+    #
+    # def on_wb_gain_changed(self, color_index, value):
+    #     rgb = list(self.camera_unit.get_white_balance_gain())
+    #     rgb[color_index] = value
+    #     print(f"[on wb gain changed] rgb: {rgb}")
+    #     if self.camera_unit.set_white_balance_gain(rgb):
+    #         if color_index == 0:
+    #             self.lb_r_wb.setText(str(value))
+    #         elif color_index == 1:
+    #             self.lb_g_wb.setText(str(value))
+    #         else:
+    #             self.lb_b_wb.setText(str(value))
+    #
+    # def update_white_balance_gain(self):
+    #     unit: CameraUnit = self.camera_unit
+    #     gain = unit.get_white_balance_gain()
+    #     print(f"[handle wb gain] gain: {gain}")
+    #     self.slider_r_wb.setValue(gain[0])
+    #     self.slider_g_wb.setValue(gain[1])
+    #     self.slider_b_wb.setValue(gain[2])
 
     def init_white_balance(self):
         if self.camera_unit.init_white_balance():
             self.handle_temp_tint_event()
+            # self.handle_white_balance_gain_event()
 
     """ 블랙 밸런스 """
 
@@ -351,6 +423,8 @@ class SetCamera(QScrollArea):
                 self.handle_expo_event()
             elif nEvent == toupcam.TOUPCAM_EVENT_TEMPTINT:
                 self.handle_temp_tint_event()
+            # elif nEvent == toupcam.TOUPCAM_EVENT_WBGAIN:
+            #     self.handle_white_balance_gain_event()
             elif nEvent == toupcam.TOUPCAM_EVENT_BLACK:
                 self.handle_black_balance_event()
 
@@ -371,6 +445,18 @@ class SetCamera(QScrollArea):
         temp, tint = unit.cam.get_TempTint()
         self.slider_temp.setValue(temp)
         self.slider_tint.setValue(tint)
+        # self.update_white_balance_gain()
+
+    # def handle_white_balance_gain_event(self):
+    #     unit: CameraUnit = self.camera_unit
+    #     gain = unit.get_white_balance_gain()
+    #     print(f"[handler wb gain] gain: {gain}")
+    #     # with QSignalBlocker(self.slider_r_wb):
+    #     self.slider_r_wb.setValue(gain[0])
+    #     # with QSignalBlocker(self.slider_g_wb):
+    #     self.slider_g_wb.setValue(gain[1])
+    #     # with QSignalBlocker(self.slider_b_wb):
+    #     self.slider_b_wb.setValue(gain[2])
 
     def handle_black_balance_event(self):
         unit: CameraUnit = self.camera_unit
