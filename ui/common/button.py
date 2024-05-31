@@ -35,6 +35,10 @@ class ImageButton(QPushButton):
 
         self.update_pixmap_icon()
 
+    def rotate_icon(self, angle: int):
+        self.angle = angle
+        self.update_pixmap_icon()
+
     @property
     def rotated_pixmap(self):
         if self.angle == 0:
