@@ -60,7 +60,7 @@ class PlateTimelineView(BaseWidgetView):
 
         # 컨텐츠 컨테이너
         lyt_content = QHBoxLayout()
-        lyt_content.setContentsMargins(0, 0, 10, 0)
+        lyt_content.setContentsMargins(0, 0, 0, 0)
         lyt_content.addWidget(set_camera)
         lyt_content.addLayout(lyt_main_content)
         lyt_content.addWidget(self.graph.view)
@@ -75,7 +75,7 @@ class PlateTimelineView(BaseWidgetView):
 
         """ 전체 컨테이너 """
         lyt = QVBoxLayout(self)
-        lyt.setContentsMargins(0, 10, 0, 5)
+        lyt.setContentsMargins(1, 1, 1, 1)
         lyt.setSpacing(5)
         lyt.addLayout(lyt_content)
 

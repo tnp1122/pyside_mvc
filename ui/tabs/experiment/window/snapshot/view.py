@@ -41,7 +41,7 @@ class PlateSnapshotView(BaseTabWidgetView):
         self.tabBar().setObjectName("PlateSnapshotBarTap")
         style = f"""
             #PlateSnapshotBar::pane {{
-                background-color: {WHITE_GRAY};
+                background-color: lightgray;
                 border: none;
         }}
             #PlateSnapshotBarTap::tab {{
@@ -54,8 +54,8 @@ class PlateSnapshotView(BaseTabWidgetView):
                 border-left: none;
         }}
             #PlateSnapshotBarTap::tab:selected {{
-                background-color: {WHITE_GRAY};
-                border-color: {WHITE_GRAY};
+                background-color: lightgray;
+                border-color: lightgray;
         }}
         """
 
