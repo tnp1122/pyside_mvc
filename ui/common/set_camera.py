@@ -1,9 +1,11 @@
 import numpy as np
 from PySide6.QtCore import Qt, QSignalBlocker
-from PySide6.QtWidgets import QScrollArea, QHBoxLayout, QVBoxLayout, QComboBox, QGroupBox, QCheckBox, QLabel, QSlider, \
-    QPushButton, QWidget, QSizePolicy, QButtonGroup, QRadioButton
+from PySide6.QtWidgets import QScrollArea, QHBoxLayout, QVBoxLayout, QComboBox, QCheckBox, QLabel, QSlider, \
+    QPushButton, QWidget, QSizePolicy, QLayout
 
+from ui.common import ImageButton
 from util.camera_manager import CameraUnit, toupcam
+from util import local_storage_manager as lsm
 
 
 class ExponentialFunction:
@@ -38,6 +40,82 @@ def get_twin_button_layout(btn1, btn2):
     return lyt
 
 
+class ButtonTitle(QPushButton):
+    def __init__(self, title="", *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        lb_title = QLabel(title)
+        img_arrow = lsm.get_static_image_path("expand_arrow.png")
+        self.btn_expand = ImageButton(img_arrow)
+
+        lyt = QHBoxLayout(self)
+        lyt.setContentsMargins(2, 0, 2, 0)
+        lyt.addWidget(lb_title)
+        lyt.addStretch()
+        lyt.addWidget(self.btn_expand)
+
+        self.setFixedHeight(24)
+        self.set_style_sheet()
+        self.rotate_arrow(True)
+
+    def set_style_sheet(self):
+        self.setObjectName("ButtonTitle")
+        style = f"""
+            #ButtonTitle {{
+                background-color: lightgray;
+                border: none;
+                border-radius: 1px;
+            }}
+        """
+        self.setStyleSheet(style)
+
+    def rotate_arrow(self, upper):
+        if upper:
+            self.btn_expand.rotate_icon(0)
+        else:
+            self.btn_expand.rotate_icon(180)
+
+
+class GroupBox(QWidget):
+    def __init__(self, title="", parent=None):
+        super().__init__(parent)
+
+        self.wig_title = ButtonTitle(title)
+        self.wig_title.clicked.connect(self.toggle)
+        self.wig_title.btn_expand.clicked.connect(self.toggle)
+        self.wig_content = QWidget()
+
+        self.pane = QWidget()
+        self.lyt = QVBoxLayout(self.pane)
+        self.lyt.setContentsMargins(0, 0, 0, 0)
+        self.lyt.addWidget(self.wig_title)
+        self.lyt.addWidget(self.wig_content)
+
+        lyt_main = QVBoxLayout(self)
+        lyt_main.setContentsMargins(0, 0, 0, 0)
+        lyt_main.addWidget(self.pane)
+
+        self.set_style_sheet()
+
+    def set_style_sheet(self):
+        self.pane.setObjectName("Group")
+        style = f"""
+            QWidget#Group {{
+                background-color: white;
+                border: none;
+            }}
+        """
+        self.pane.setStyleSheet(style)
+
+    def set_content(self, content: QLayout):
+        self.wig_content.setLayout(content)
+
+    def toggle(self):
+        content: QWidget = self.wig_content
+        content.setVisible(not content.isVisible())
+        self.wig_title.rotate_arrow(content.isVisible())
+
+
 class SetCamera(QScrollArea):
     camera_unit = CameraUnit()
 
@@ -54,8 +132,8 @@ class SetCamera(QScrollArea):
         self.cmb_res.setEnabled(False)
         lyt_res = QVBoxLayout()
         lyt_res.addWidget(self.cmb_res)
-        gbox_res = QGroupBox("해상도")
-        gbox_res.setLayout(lyt_res)
+        gbox_res = GroupBox("해상도")
+        gbox_res.set_content(lyt_res)
         self.cmb_res.currentIndexChanged.connect(lambda index: self.camera_unit.set_resolution(index))
 
         """ 노출 및 게인"""
@@ -74,8 +152,8 @@ class SetCamera(QScrollArea):
         lyt_expo.addLayout(get_slider_layout(QLabel("타겟: "), self.lb_expo_target, self.slider_expo_target))
         lyt_expo.addLayout(get_slider_layout(QLabel("노출 시간:"), self.lb_expo_time, self.slider_expo_time))
         lyt_expo.addLayout(get_slider_layout(QLabel("게인:"), self.lb_expo_gain, self.slider_expo_gain))
-        gbox_expo = QGroupBox("노출 및 게인")
-        gbox_expo.setLayout(lyt_expo)
+        gbox_expo = GroupBox("노출 및 게인")
+        gbox_expo.set_content(lyt_expo)
         self.cb_auto_expo.stateChanged.connect(self.on_auto_expo_changed)
         self.slider_expo_target.valueChanged.connect(self.on_expo_target_changed)
         self.slider_expo_time.valueChanged.connect(self.on_expo_time_changed)
@@ -149,8 +227,8 @@ class SetCamera(QScrollArea):
         lyt_wb.addWidget(self.wig_wb_temp_tint)
         # lyt_wb.addWidget(self.wig_wb_gain)
         lyt_wb.addLayout(get_twin_button_layout(self.btn_auto_wb, self.btn_init_wb))
-        gbox_wb = QGroupBox("화이트 밸런스")
-        gbox_wb.setLayout(lyt_wb)
+        gbox_wb = GroupBox("화이트 밸런스")
+        gbox_wb.set_content(lyt_wb)
 
         """ 블랙 밸런스 """
         rgb = camera_unit.rgb
@@ -183,8 +261,9 @@ class SetCamera(QScrollArea):
         lyt_BB.addLayout(get_slider_layout(QLabel("녹색:"), self.lb_g, self.slider_g))
         lyt_BB.addLayout(get_slider_layout(QLabel("파랑:"), self.lb_b, self.slider_b))
         lyt_BB.addLayout(get_twin_button_layout(self.btn_auto_BB, self.btn_init_BB))
-        gbox_BB = QGroupBox("블랙 밸런스")
-        gbox_BB.setLayout(lyt_BB)
+        gbox_BB = GroupBox("블랙 밸런스")
+        gbox_BB.set_content(lyt_BB)
+        # gbox_BB.setStyleSheet("border: 1px solid blue;")
 
         """ 색 조정 """
         h_def, h_min, h_max = toupcam.TOUPCAM_HUE_DEF, toupcam.TOUPCAM_HUE_MIN, toupcam.TOUPCAM_HUE_MAX
@@ -232,16 +311,18 @@ class SetCamera(QScrollArea):
         lyt_color.addLayout(get_slider_layout(QLabel("명암:"), self.lb_contrast, self.slider_contrast))
         lyt_color.addLayout(get_slider_layout(QLabel("감마:"), self.lb_gamma, self.slider_gamma))
         lyt_color.addWidget(self.btn_init_color)
-        gbox_color = QGroupBox("색 조정")
-        gbox_color.setLayout(lyt_color)
+        gbox_color = GroupBox("색 조정")
+        gbox_color.set_content(lyt_color)
 
         wig_content = QWidget()
         lyt_content = QVBoxLayout(wig_content)
+        lyt_content.setContentsMargins(2, 2, 2, 2)
         lyt_content.addWidget(gbox_res)
         lyt_content.addWidget(gbox_expo)
         lyt_content.addWidget(gbox_wb)
         lyt_content.addWidget(gbox_BB)
         lyt_content.addWidget(gbox_color)
+        lyt_content.addStretch()
 
         self.setWidget(wig_content)
         self.setWidgetResizable(True)
