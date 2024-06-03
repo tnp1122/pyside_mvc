@@ -31,11 +31,11 @@ class PlatePosition(QObject):
         self.direction = 0
 
     def init_plate_info(self, plate_info: dict):
-        x, y = plate_info.get("x") or 0, plate_info.get("y") or 0
+        x, y = 2002, 704 # plate_info.get("x") or 0, plate_info.get("y") or 0
         self.x = x
         self.y = y
-        self.width = plate_info.get("width") or 1000
-        self.height = plate_info.get("height") or 600
+        self.width = 2145 # plate_info.get("width") or 1000
+        self.height = 1439 # plate_info.get("height") or 600
         self.direction = plate_info.get("direction") or 1
 
         return self
@@ -156,8 +156,8 @@ class Mask(QObject):
         self.plate_image = plate_image
         self.columns = plate.columns
         self.rows = plate.rows
-        self.radius = mask_info.get("radius") or 35
-        self.flare_threshold = mask_info.get("flare_threshold") or 200
+        self.radius = 30 # mask_info.get("radius") or 35
+        self.flare_threshold = 185 # mask_info.get("flare_threshold") or 200
 
         if set:
             self.set_mask()
