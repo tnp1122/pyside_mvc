@@ -49,7 +49,7 @@ class ButtonTitle(QPushButton):
         self.btn_expand = ImageButton(img_arrow)
 
         lyt = QHBoxLayout(self)
-        lyt.setContentsMargins(2, 0, 2, 0)
+        lyt.setContentsMargins(4, 0, 4, 0)
         lyt.addWidget(lb_title)
         lyt.addStretch()
         lyt.addWidget(self.btn_expand)
