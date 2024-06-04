@@ -41,15 +41,19 @@ class MainTabView(BaseTabWidgetView):
             #MainTab::pane {{
                 margin: 0px;
                 padding: 0px;
-                border: none;
+                border-top: none;
                 background-color: {WHITE_GRAY};
             }}
             #MainTabBar::tab {{
                 margin: 0px;
                 padding: 5px 10px 5px 10px;
                 background-color: white;
-                border: none;
+                border-top: 1px solid {WHITE_GRAY};
+                border-right: 1px solid {WHITE_GRAY};
             }}
+            #ExperimentWindowTabBar::tab:first {{
+                border-left: 1px solid {WHITE_GRAY};
+        }}
             #MainTabBar::tab:selected {{
                 background-color: {WHITE_GRAY};
                 border-bottom-color: {WHITE_GRAY};

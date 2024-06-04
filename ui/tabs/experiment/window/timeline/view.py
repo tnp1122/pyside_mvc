@@ -3,7 +3,7 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame
 
 from models.snapshot import Snapshot, Timeline
-from ui.common import BaseWidgetView, ImageButton
+from ui.common import BaseWidgetView, ImageButton, SetCamera
 from ui.common.image_viewer import ImageViewerController
 from ui.tabs.experiment.window.timeline import PlateTimelineModel
 from ui.tabs.experiment.window.timeline.widgets.color_graph import ColorGraphController
@@ -32,6 +32,8 @@ class PlateTimelineView(BaseWidgetView):
     def init_view(self):
         super().init_view()
 
+        # 카메라 설정
+        set_camera = SetCamera()
         """ 컨텐츠 """
         # 카메라 뷰
         image_viewer_args = {"mode": 1, "snapshot_instance": self.snapshot_instance}
@@ -58,7 +60,8 @@ class PlateTimelineView(BaseWidgetView):
 
         # 컨텐츠 컨테이너
         lyt_content = QHBoxLayout()
-        lyt_content.setContentsMargins(10, 0, 10, 0)
+        lyt_content.setContentsMargins(0, 0, 0, 0)
+        lyt_content.addWidget(set_camera)
         lyt_content.addLayout(lyt_main_content)
         lyt_content.addWidget(self.graph.view)
         lyt_content.addWidget(self.combination_table.view)
@@ -72,7 +75,7 @@ class PlateTimelineView(BaseWidgetView):
 
         """ 전체 컨테이너 """
         lyt = QVBoxLayout(self)
-        lyt.setContentsMargins(0, 10, 0, 5)
+        lyt.setContentsMargins(1, 1, 1, 1)
         lyt.setSpacing(5)
         lyt.addLayout(lyt_content)
 

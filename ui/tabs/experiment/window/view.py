@@ -14,13 +14,17 @@ class ExperimentWindowView(BaseTabWidgetView):
         style = f"""
             #ExperimentWindowTab::pane {{
                 background-color: lightgray;
-                border: 6px solid lightgray;
+                border: none;
         }}
             #ExperimentWindowTabBar::tab {{
                 margin: 0px;
                 padding: 5px 10px 5px 10px;
                 background-color: {WHITE_GRAY};
-                border: none;
+                border-top: 1px solid lightgray;
+                border-right: 1px solid lightgray;
+        }}
+            #ExperimentWindowTabBar::tab:first {{
+                border-left: 1px solid lightgray;
         }}
             #ExperimentWindowTabBar::tab:selected {{
                 background-color: lightgray;

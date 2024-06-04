@@ -11,8 +11,6 @@ from util.setting_manager import SettingManager
 
 
 class AppController(BaseController):
-    # init_app_manager = InitAppManager()
-
     def __init__(self, parent=None):
         self.init_app_manager = InitAppManager()
         self.api_manager = APIManager()
@@ -26,7 +24,7 @@ class AppController(BaseController):
 
         view.setMinimumSize(1280, 840)
         view.info_bar.view.btn_setting.clicked.connect(self.show_setting_widget)
-        view.tabs.view.first.view.setting.view.btn.clicked.connect(self.show_first_widget)
+        view.tabs.view.first.view.setting.view.btn_home.clicked.connect(self.show_first_widget)
         view.tabs.view.first.view.setting.view.btn_logout.clicked.connect(self.do_logout)
         view.tabs.view.first.view.login.set_home_signal.connect(self.update_user_info)
         view.tabs.view.currentChanged.connect(self.tab_switched_handler)

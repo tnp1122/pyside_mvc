@@ -7,6 +7,11 @@ class FirstTabIndex(Enum):
     SETTING = 2
 
 
+class SettingViewIndex(Enum):
+    DEFAULT = 0
+    CAMERA = 1
+
+
 class MaskViewIndex(Enum):
     ORIGIN = 0
     DISTRICT = 1

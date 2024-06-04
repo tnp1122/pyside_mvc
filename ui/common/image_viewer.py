@@ -151,6 +151,8 @@ class ImageViewerView(BaseWidgetView):
 
     def open_mask_manager(self):
         if self.image is not None:
+            snapshot: Snapshot = self.snapshot_instance
+            snapshot.change_origin_image(Image(self.image))
             mask_manager = MaskManagerController(snapshot=self.snapshot_instance)
             manager_view: MaskManagerView = mask_manager.view
             manager_view.on_select_changed(1)
