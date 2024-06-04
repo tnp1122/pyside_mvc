@@ -1,7 +1,7 @@
 import numpy as np
 from PySide6.QtCore import Qt, QSignalBlocker
 from PySide6.QtWidgets import QScrollArea, QHBoxLayout, QVBoxLayout, QComboBox, QCheckBox, QLabel, QSlider, \
-    QPushButton, QWidget, QSizePolicy, QLayout
+    QPushButton, QWidget, QSizePolicy, QLayout, QButtonGroup, QRadioButton
 
 from ui.common import ImageButton
 from util.camera_manager import CameraUnit, toupcam
@@ -126,6 +126,18 @@ class SetCamera(QScrollArea):
         time_min, time_max, _ = camera_unit.cam.get_ExpTimeRange()
         self.exponential_function = ExponentialFunction(0, time_min, 100, time_max)
         self.camera_started = camera_unit.pData is not None
+
+        """ 플랫 필드 보정 """
+        self.cb_ffc = QCheckBox("활성화")
+        self.cb_ffc.setEnabled(False)
+        self.cb_ffc.stateChanged.connect(self.on_cb_ffc_changed)
+        self.btn_capture_ffc_bg = QPushButton("배경 캡처")
+        self.btn_capture_ffc_bg.clicked.connect(self.on_btn_ffc_clicked)
+        lyt_ffc = QVBoxLayout()
+        lyt_ffc.addWidget(self.cb_ffc)
+        lyt_ffc.addWidget(self.btn_capture_ffc_bg)
+        gbox_ffc = GroupBox("플랫 필드 보정")
+        gbox_ffc.set_content(lyt_ffc)
 
         """ 해상도 """
         self.cmb_res = QComboBox()
@@ -313,14 +325,33 @@ class SetCamera(QScrollArea):
         gbox_color = GroupBox("색 조정")
         gbox_color.set_content(lyt_color)
 
+        """ 광원 주파수(Anti-flicker) """
+        self.rb_hz_1 = QRadioButton("교류 전류(50Hz)")
+        self.rb_hz_0 = QRadioButton("교류 전류(60Hz)")
+        self.rb_hz_2 = QRadioButton("직류(DC)")
+        self.rb_group_hz = QButtonGroup(self)
+        self.rb_group_hz.addButton(self.rb_hz_0, 0)
+        self.rb_group_hz.addButton(self.rb_hz_1, 1)
+        self.rb_group_hz.addButton(self.rb_hz_2, 2)
+        self.rb_group_hz.buttonClicked.connect(self.on_rb_hz_changed)
+        lyt_hz = QVBoxLayout()
+        lyt_hz.addWidget(self.rb_hz_0)
+        lyt_hz.addWidget(self.rb_hz_1)
+        lyt_hz.addWidget(self.rb_hz_2)
+        gbox_hz = GroupBox("광원 주파수(Anti-flicker)")
+        gbox_hz.set_content(lyt_hz)
+
+        """ 전체 레이아웃 """
         wig_content = QWidget()
         lyt_content = QVBoxLayout(wig_content)
         lyt_content.setContentsMargins(2, 2, 2, 2)
+        lyt_content.addWidget(gbox_ffc)
         lyt_content.addWidget(gbox_res)
         lyt_content.addWidget(gbox_expo)
         lyt_content.addWidget(gbox_wb)
         lyt_content.addWidget(gbox_bb)
         lyt_content.addWidget(gbox_color)
+        lyt_content.addWidget(gbox_hz)
         lyt_content.addStretch()
 
         self.setWidget(wig_content)
@@ -336,6 +367,8 @@ class SetCamera(QScrollArea):
         if self.camera_started:
             camera_unit: CameraUnit = self.camera_unit
             camera_unit.evtCallback.connect(self.on_event_callback)
+
+            """ 해상도 """
 
             self.set_cmb_resolution()
 
@@ -367,6 +400,27 @@ class SetCamera(QScrollArea):
 
             """ 색 조정 """
             self.set_color_text()
+
+            """ 광원 주파수(Anti-flicker) """
+            hz = camera_unit.cam.get_HZ()
+            if hz == 0:
+                self.rb_hz_0.setChecked(True)
+            elif hz == 1:
+                self.rb_hz_1.setChecked(True)
+            else:
+                self.rb_hz_2.setChecked(True)
+
+    """ 플랫 필드 보정 """
+    def on_cb_ffc_changed(self):
+        camera_unit: CameraUnit = self.camera_unit
+        if self.cb_ffc.isChecked():
+            camera_unit.cam.put_Option(toupcam.TOUPCAM_OPTION_FFC, 1)
+        else:
+            camera_unit.cam.put_Option(toupcam.TOUPCAM_OPTION_FFC, 0)
+
+    def on_btn_ffc_clicked(self):
+        self.camera_unit.cam.FfcOnce()
+        self.cb_ffc.setEnabled(True)
 
     """ 해상도 """
 
@@ -494,6 +548,12 @@ class SetCamera(QScrollArea):
             self.slider_brightness.setValue(brightness)
             self.slider_contrast.setValue(contrast)
             self.slider_gamma.setValue(gamma)
+
+    """ 광원 주파수(Anti-flicker) """
+
+    def on_rb_hz_changed(self, button):
+        button_id = self.rb_group_hz.id(button)
+        self.camera_unit.cam.put_HZ(button_id)
 
     """ 이벤트 핸들러 """
 
