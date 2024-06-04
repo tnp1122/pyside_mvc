@@ -126,7 +126,7 @@ class SettingManager:
         mask_area_info["height"] = 1439
         mask_area_info["radius"] = 30
         mask_area_info["flare_threshold"] = 185
-        return
+        return mask_area_info
 
 
 def main():
