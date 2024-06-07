@@ -91,7 +91,11 @@ class CameraUnit(QObject):
         logging.info("open Camera Unit")
         arr = toupcam.Toupcam.EnumV2()
         if len(arr) == 0:
-            raise CameraUnitError("카메라를 인식하지 못했습니다.")
+            # raise CameraUnitError("카메라를 인식하지 못했습니다.")
+            msg = "카메라를 인식하지 못했습니다."
+            logging.error(msg)
+            Toast().toast(msg)
+            return
 
         self.cur = arr[0]
         self.cam = toupcam.Toupcam.Open(self.cur.id)
@@ -150,6 +154,7 @@ class CameraUnit(QObject):
     def rgb(self):
         if self.cam:
             return self.cam.get_BlackBalance()
+        return [0, 0, 0]
 
     def rotate_direction(self):
         self.direction = (self.direction + 1) % 4
@@ -173,6 +178,11 @@ class CameraUnit(QObject):
         return False
 
     """ 노출 및 게인"""
+
+    def get_exp_time_range(self):
+        if self.cam:
+            return self.cam.get_ExpTimeRange()
+        return 100, 1500000, 0
 
     def set_auto_expo(self, state):
         return self._execute_if_cam(self.cam.put_AutoExpoEnable, 1 if state else 0)

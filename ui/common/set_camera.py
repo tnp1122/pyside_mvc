@@ -123,7 +123,7 @@ class SetCamera(QScrollArea):
         super().__init__(parent)
 
         camera_unit: CameraUnit = self.camera_unit
-        time_min, time_max, _ = camera_unit.cam.get_ExpTimeRange()
+        time_min, time_max, _ = camera_unit.get_exp_time_range()
         self.exponential_function = ExponentialFunction(0, time_min, 100, time_max)
         self.camera_started = camera_unit.pData is not None
 
@@ -133,6 +133,7 @@ class SetCamera(QScrollArea):
         self.cb_ffc.stateChanged.connect(self.on_cb_ffc_changed)
         self.btn_capture_ffc_bg = QPushButton("배경 캡처")
         self.btn_capture_ffc_bg.clicked.connect(self.on_btn_ffc_clicked)
+        self.btn_capture_ffc_bg.setEnabled(self.camera_started)
         lyt_ffc = QVBoxLayout()
         lyt_ffc.addWidget(self.cb_ffc)
         lyt_ffc.addWidget(self.btn_capture_ffc_bg)
@@ -150,6 +151,7 @@ class SetCamera(QScrollArea):
 
         """ 노출 및 게인"""
         self.cb_auto_expo = QCheckBox("자동 노출")
+        self.cb_auto_expo.setEnabled(self.camera_started)
         self.lb_expo_target = QLabel("0")
         self.lb_expo_time = QLabel("0")
         self.lb_expo_gain = QLabel("0")
@@ -329,6 +331,9 @@ class SetCamera(QScrollArea):
         self.rb_hz_1 = QRadioButton("교류 전류(50Hz)")
         self.rb_hz_0 = QRadioButton("교류 전류(60Hz)")
         self.rb_hz_2 = QRadioButton("직류(DC)")
+        self.rb_hz_0.setEnabled(self.camera_started)
+        self.rb_hz_1.setEnabled(self.camera_started)
+        self.rb_hz_2.setEnabled(self.camera_started)
         self.rb_group_hz = QButtonGroup(self)
         self.rb_group_hz.addButton(self.rb_hz_0, 0)
         self.rb_group_hz.addButton(self.rb_hz_1, 1)
