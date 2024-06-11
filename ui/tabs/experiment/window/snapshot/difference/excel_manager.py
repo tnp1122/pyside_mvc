@@ -2,6 +2,7 @@ import os
 
 from openpyxl.workbook import Workbook
 
+from ui.common.toast import Toast
 from ui.tabs.experiment.window.snapshot.difference import ColorDifferenceModel
 from util import local_storage_manager as lsm
 
@@ -108,6 +109,8 @@ class TimelineExcelManager:
         timeline_path = lsm.get_absolute_path(output_path, timeline_path)
         wb.save(f"{timeline_path}.xlsx")
 
+        Toast().toast(f"저장 완료: {timeline_path}.xlsx", duration=6000)
+
     def _save_rgb_colors(self, wb, elapsed_times, datas):
         rgb_sheet = wb.create_sheet("RGB Color")
         rgb_sheet.cell(1, 1, "경과시간")
@@ -121,7 +124,7 @@ class TimelineExcelManager:
 
     def _save_distance_datas(self, wb, elapsed_times, datas):
         distance_sheet = wb.create_sheet("Distance Data")
-        distance_sheet.cell(1, 1, "Elapsed Time")
+        distance_sheet.cell(1, 1, "경과시간")
         for i, elapsed_time in enumerate(elapsed_times, start=2):
             distance_sheet.cell(i, 1, elapsed_time)
 
