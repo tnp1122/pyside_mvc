@@ -7,10 +7,9 @@ from models import Image
 from models.snapshot import Snapshot
 from ui.common import BaseWidgetView, BaseController, ColoredButton, ImageButton
 from ui.tabs.experiment.window.snapshot.process.unit.mask_manager import MaskManagerController, MaskManagerView
-from util.camera_manager import CameraManager
-
-from util import local_storage_manager as lsm
 from util import image_converter as ic
+from util import local_storage_manager as lsm
+from util.camera_manager import CameraManager
 
 
 class ImageViewerModel:
@@ -41,27 +40,29 @@ class ImageViewerView(BaseWidgetView):
 
         self.image: np.ndarray = None
         img_setting = lsm.get_static_image_path("filter.png")
+        img_init_mask = lsm.get_static_image_path("blank_paper.png")
         self.img_view = lsm.get_static_image_path("view.png")
         self.img_view_hide = lsm.get_static_image_path("view_hide.png")
         img_rotate = lsm.get_static_image_path("rotate-right-90.png")
         self.btn_refresh = ColoredButton("카메라 재연결", background_color="gray", padding="10px")
         self.btn_setting = ImageButton(img_setting, size=(35, 35))
         self.btn_setting.setToolTip("마스크 설정")
+        self.btn_init_mask = ImageButton(img_init_mask, size=(35, 35))
+        self.btn_init_mask.setToolTip("마스킹 영역 초기화")
         self.btn_view_mask = ImageButton(self.img_view, size=(30, 30))
         self.btn_view_mask.setToolTip("마스킹 영역 숨기기")
         self.btn_rotate = ImageButton(img_rotate, size=(30, 30))
         self.btn_rotate.setToolTip("시계 방향으로 90도 회전")
         self.btn_refresh.clicked.connect(self.on_refresh_clicked)
-        self.btn_setting.clicked.connect(self.open_mask_manager)
-        self.btn_view_mask.clicked.connect(self.switch_view_mask)
         self.btn_rotate.clicked.connect(self.camera_manager.set_direction)
 
         wig_btn = QWidget()
         lyt_btn = QHBoxLayout(wig_btn)
         lyt_btn.addWidget(self.btn_refresh)
         lyt_btn.addWidget(self.btn_setting)
+        lyt_btn.addWidget(self.btn_init_mask)
         lyt_btn.addWidget(self.btn_view_mask)
-        lyt_btn.addWidget(self.btn_rotate)
+        # lyt_btn.addWidget(self.btn_rotate)
         lyt_btn.setAlignment(Qt.AlignCenter)
         lyt_btn.setContentsMargins(0, 0, 0, 0)
 
@@ -83,9 +84,13 @@ class ImageViewerView(BaseWidgetView):
 
         if self.mode == 0:
             self.btn_setting.setVisible(False)
+            self.btn_init_mask.setVisible(False)
             self.btn_view_mask.setVisible(False)
             self.btn_capture.setText("캡쳐")
         else:
+            self.btn_setting.clicked.connect(self.open_mask_manager)
+            self.btn_init_mask.clicked.connect(self.snapshot_instance.init_plate_mask_info)
+            self.btn_view_mask.clicked.connect(self.switch_view_mask)
             self.btn_capture.setText("타임라인 촬영 시작")
 
         self.camera_manager.signal_image.connect(self.update_image)

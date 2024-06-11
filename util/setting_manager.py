@@ -135,16 +135,7 @@ class SettingManager:
         self._set_json_value(MASK_AREA_INFO, area_info)
 
     def get_mask_area_info(self):
-        # 초기값 임시 고정
-        mask_area_info = self._get_json_data(MASK_AREA_INFO)
-        mask_area_info["x"] = 2002
-        mask_area_info["y"] = 704
-        mask_area_info["width"] = 2145
-        mask_area_info["height"] = 1439
-        mask_area_info["radius"] = 30
-        mask_area_info["flare_threshold"] = 185
-        self.set_mask_area_info(mask_area_info)
-        return mask_area_info
+        return self._get_json_data(MASK_AREA_INFO)
 
     # 카메라 관련
 

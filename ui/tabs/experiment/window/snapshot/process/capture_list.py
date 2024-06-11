@@ -6,6 +6,7 @@ from models import Image, Targets
 from models.snapshot import Snapshot
 from ui.common import BaseScrollAreaView, BaseController
 from ui.tabs.experiment.window.snapshot.process.unit import ProcessUnitController, ProcessUnitView
+from util.setting_manager import SettingManager
 
 
 class CaptureListModel:
@@ -120,6 +121,23 @@ class CaptureListView(BaseScrollAreaView):
             unit_view: ProcessUnitView = unit.view
             unit_view.set_targets(targets)
 
+    def apply_plate_mask_info(self):
+        unit: ProcessUnitController = self.units[self.selected_index]
+        mask = unit.get_custom_mask()
+        plate_mask_info = SettingManager().get_mask_area_info()
+
+        for index, unit in enumerate(self.units):
+            if index == self.selected_index:
+                continue
+            unit: ProcessUnitController
+            unit.set_plate_mask_info(plate_mask_info, plate_mask_info, mask)
+
+    def init_plate_mask_info(self):
+        for unit in self.units:
+            unit: ProcessUnitController
+            snapshot: Snapshot = unit.snapshot
+            snapshot.init_plate_mask_info()
+
 
 class CaptureListController(BaseController):
     def __init__(self, parent=None):
@@ -154,6 +172,14 @@ class CaptureListController(BaseController):
         #             unit.capture_id = plate_capture["id"]
         #             break
         pass
+
+    def apply_plate_mask_info(self):
+        view: CaptureListView = self.view
+        view.apply_plate_mask_info()
+
+    def init_plate_mask_info(self):
+        view: CaptureListView = self.view
+        view.init_plate_mask_info()
 
 
 def main():

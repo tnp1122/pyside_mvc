@@ -5,8 +5,8 @@ from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QWidget, QSizePo
 
 from ui.common import BaseWidgetView, ColoredButton
 from ui.common.date_picker import DateWidget, HourWidget
-from ui.tabs.experiment.window.snapshot.process.capture_list import CaptureListController
 from ui.common.image_viewer import ImageViewerController
+from ui.tabs.experiment.window.snapshot.process.capture_list import CaptureListController
 
 
 class SnapshotProcessView(BaseWidgetView):
@@ -70,6 +70,8 @@ class SnapshotProcessView(BaseWidgetView):
         lyt_age.addWidget(lb_age)
         lyt_age.addWidget(self.lb_snapshot_age)
 
+        self.btn_init_mask = ColoredButton("마스크 초기화", background_color="gray")
+        self.btn_apply_mask = ColoredButton("마스크 일괄 적용", color="black", background_color="white")
         self.btn_save = ColoredButton("저장")
 
         lyt_top = QHBoxLayout()
@@ -77,12 +79,16 @@ class SnapshotProcessView(BaseWidgetView):
         lyt_top.addWidget(divider)
         lyt_top.addLayout(lyt_age)
         lyt_top.addStretch()
+        lyt_top.addWidget(self.btn_init_mask)
+        lyt_top.addWidget(self.btn_apply_mask)
         lyt_top.addWidget(self.btn_save)
 
         self.image_viewer = ImageViewerController()
 
         self.capture_list = CaptureListController()
         self.capture_list.set_unit_size(300, 500)
+        self.btn_init_mask.clicked.connect(self.capture_list.init_plate_mask_info)
+        self.btn_apply_mask.clicked.connect(self.capture_list.apply_plate_mask_info)
 
         lyt_content = QHBoxLayout()
         lyt_content.addWidget(self.image_viewer.view)

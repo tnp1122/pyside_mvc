@@ -40,8 +40,8 @@ class PlatePosition(QObject):
 
         return self
 
-    def get_plate_mask_info_dict(self):
-        plate_mask_info = {
+    def get_plate_info_dict(self):
+        plate_info = {
             "x": self.x,
             "y": self.y,
             "width": self.width,
@@ -51,7 +51,7 @@ class PlatePosition(QObject):
             "solvent_axes": self.solvent_axes
         }
 
-        return plate_mask_info
+        return plate_info
 
     def set_position(self, x=None, y=None, width=None, height=None, update_graphics=True):
         self.x = x or self.x
@@ -255,6 +255,11 @@ class Snapshot(QObject):
         self.mask.mask_updated.connect(self.init_property_reference)
 
     def on_processed(self):
+        plate_info = self.plate_position.get_plate_info_dict()
+        mask_info = self.mask.get_mask_info_dict()
+        plate_mask_info = dict(plate_info, **mask_info)
+
+        SettingManager().set_mask_area_info(plate_mask_info)
         self.mask.update_mask()
         self.processed.emit()
 
@@ -348,6 +353,9 @@ class Snapshot(QObject):
         self.origin_image = plate_image
         self._mean_colors = mean_colors
 
+        self.set_plate_mask_info(plate_info, mask_info, mask)
+
+    def set_plate_mask_info(self, plate_info, mask_info, mask):
         plate = self.plate_position.init_plate_info(plate_info)
         if self.mask_editable:
             self.mask.init_mask_info(self.cropped_array, plate, mask_info, set=True)
@@ -356,6 +364,14 @@ class Snapshot(QObject):
             self.mask.init_mask_info(None, plate, mask_info, set=False)
 
         self.processed.emit()
+
+    def init_plate_mask_info(self):
+        self.init_property_reference()
+        plate_info = {"x": 0, "y": 0, "width": 500, "height": 400, "direction": 1, "rotation": 0}
+        mask_info = {"radius": 20, "flare_threshold": 200}
+        init_shape = (500, 400, 3)
+        new_mask = np.full(init_shape, 0, np.uint8)
+        self.set_plate_mask_info(plate_info, mask_info, new_mask)
 
     def set_target(self, target: Target):
         self.target = target
@@ -571,8 +587,10 @@ class Timeline(dict):
             #     current_distance = np.float32(self.datas.iloc[current_count - 1].iloc[distance_idx + idx])
             #     self.datas.loc[current_time, f"ColorVelocity{idx + 1}"] = (current_distance - prev_distance) / prev_distance
             distance_idx = 96 * 3 + 1
-            prev_distances = self.datas.iloc[current_count - 2, distance_idx:distance_idx + self.num_cells].astype(np.float32)
-            current_distances = self.datas.iloc[current_count - 1, distance_idx:distance_idx + self.num_cells].astype(np.float32)
+            prev_distances = self.datas.iloc[current_count - 2, distance_idx:distance_idx + self.num_cells].astype(
+                np.float32)
+            current_distances = self.datas.iloc[current_count - 1, distance_idx:distance_idx + self.num_cells].astype(
+                np.float32)
             color_velocities = (current_distances - prev_distances) / prev_distances / 100
             for idx, velocity in enumerate(color_velocities):
                 self.datas.loc[current_time, f"ColorVelocity{idx + 1}"] = velocity
@@ -623,7 +641,8 @@ class Timeline(dict):
                 self.datas.loc[row, f"ColorDistance{idx + 1}"] = distance
 
         for idx in range(self.num_cells):
-            self.datas[f"ColorVelocity{idx + 1}"] = self.datas[f"ColorDistance{idx + 1}"].pct_change(fill_method=None) / 100
+            self.datas[f"ColorVelocity{idx + 1}"] = self.datas[f"ColorDistance{idx + 1}"].pct_change(
+                fill_method=None) / 100
 
         self.info_saved = True
         return True
