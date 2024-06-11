@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QScrollArea, QHBoxLayout, QVBoxLayout, QComboBox, 
 from ui.common import ImageButton
 from util.camera_manager import CameraUnit, toupcam
 from util import local_storage_manager as lsm
+from util.setting_manager import SettingManager
 
 
 class ExponentialFunction:
@@ -17,7 +18,7 @@ class ExponentialFunction:
         return (np.log(y / self.a)) / self.b
 
     def calculate_y(self, x):
-        return self.a * np.exp(self.b * x)
+        return int(self.a * np.exp(self.b * x))
 
 
 def get_slider_layout(lb1, lb2, slider):
@@ -118,6 +119,7 @@ class GroupBox(QWidget):
 
 class SetCamera(QScrollArea):
     camera_unit = CameraUnit()
+    setting_manager = SettingManager()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -148,6 +150,7 @@ class SetCamera(QScrollArea):
         gbox_res = GroupBox("해상도")
         gbox_res.set_content(lyt_res)
         self.cmb_res.currentIndexChanged.connect(lambda index: self.camera_unit.set_resolution(index))
+        self.cmb_res.currentIndexChanged.connect(lambda index: self.setting_manager.set_camera_resolution_index(index))
 
         """ 노출 및 게인"""
         self.cb_auto_expo = QCheckBox("자동 노출")
@@ -328,8 +331,8 @@ class SetCamera(QScrollArea):
         gbox_color.set_content(lyt_color)
 
         """ 광원 주파수(Anti-flicker) """
-        self.rb_hz_1 = QRadioButton("교류 전류(50Hz)")
         self.rb_hz_0 = QRadioButton("교류 전류(60Hz)")
+        self.rb_hz_1 = QRadioButton("교류 전류(50Hz)")
         self.rb_hz_2 = QRadioButton("직류(DC)")
         self.rb_hz_0.setEnabled(self.camera_started)
         self.rb_hz_1.setEnabled(self.camera_started)
@@ -376,46 +379,102 @@ class SetCamera(QScrollArea):
             """ 해상도 """
 
             self.set_cmb_resolution()
+            res_index = self.setting_manager.get_camera_resolution_index()
+            if res_index is not None:
+                self.cmb_res.setCurrentIndex(res_index)
+                camera_unit.set_resolution(res_index)
 
             """ 노출 및 게인"""
-            b_auto = camera_unit.cam.get_AutoExpoEnable()
-            self.cb_auto_expo.setChecked(b_auto == 1)
+            auto_expo = self.setting_manager.get_camera_auto_expo()
+            if auto_expo is not None:
+                self.cb_auto_expo.setChecked(auto_expo)
+                self.on_auto_expo_changed(auto_expo)
 
-            target_min, target_max, target_def = toupcam.TOUPCAM_AETARGET_MIN, toupcam.TOUPCAM_AETARGET_MAX, toupcam.TOUPCAM_AETARGET_DEF
-            time_min, time_max, time_def = camera_unit.cam.get_ExpTimeRange()
-            gain_min, gain_max, gain_def = camera_unit.cam.get_ExpoAGainRange()
+            target_min, target_max, _ = toupcam.TOUPCAM_AETARGET_MIN, toupcam.TOUPCAM_AETARGET_MAX, toupcam.TOUPCAM_AETARGET_DEF
+            time_min, time_max, _ = camera_unit.cam.get_ExpTimeRange()
+            gain_min, gain_max, _ = camera_unit.cam.get_ExpoAGainRange()
+            saved_target = self.setting_manager.get_camera_expo_target()
+            saved_time = self.setting_manager.get_camera_expo_time()
+            saved_gain = self.setting_manager.get_camera_expo_gain()
 
             self.slider_expo_target.setRange(target_min, target_max)
-            self.slider_expo_target.setValue(target_def)
             self.slider_expo_time.setRange(0, 100)
-            self.slider_expo_time.setValue(time_def)
             self.slider_expo_gain.setRange(gain_min, gain_max)
-            self.slider_expo_gain.setValue(gain_def)
+            if saved_target is not None:
+                self.slider_expo_target.setValue(saved_target)
+                self.on_expo_target_changed(saved_target)
+            if saved_time:
+                self.slider_expo_time.setValue(saved_time)
+                self.on_expo_time_changed(saved_time)
+            if saved_gain is not None:
+                self.slider_expo_gain.setValue(saved_gain)
+                self.on_expo_gain_changed(saved_gain)
 
             self.handle_expo_event()
             if camera_unit.cur.model.flag & toupcam.TOUPCAM_FLAG_MONO == 0:
                 self.handle_temp_tint_event()
 
             """ 화이트 밸런스 """
+            temp, tint = self.setting_manager.get_camera_wb_temp_tint()
+            if temp:
+                self.lb_temp.setText(str(temp))
+                self.slider_temp.setValue(temp)
+            if tint:
+                self.lb_tint.setText(str(tint))
+                self.slider_tint.setValue(tint)
             self.btn_auto_wb.setEnabled(camera_unit.cur.model.flag & toupcam.TOUPCAM_FLAG_MONO == 0)
             self.slider_temp.setEnabled(camera_unit.cur.model.flag & toupcam.TOUPCAM_FLAG_MONO == 0)
             self.slider_tint.setEnabled(camera_unit.cur.model.flag & toupcam.TOUPCAM_FLAG_MONO == 0)
             # self.handle_white_balance_gain_event()
             # self.update_white_balance_gain()
 
+            """ 블랙 밸런스 """
+            bb_r, bb_g, bb_b = self.setting_manager.get_camera_bb_rgb()
+            if bb_r is not None:
+                self.slider_r.setValue(bb_r)
+                self.on_black_balance_changed(0, bb_r)
+            if bb_g is not None:
+                self.slider_g.setValue(bb_g)
+                self.on_black_balance_changed(1, bb_g)
+            if bb_b is not None:
+                self.slider_b.setValue(bb_b)
+                self.on_black_balance_changed(2, bb_b)
+
             """ 색 조정 """
-            self.set_color_text()
+            self.init_color_text()
+            hue = self.setting_manager.get_camera_hue()
+            saturation = self.setting_manager.get_camera_saturation()
+            brightness = self.setting_manager.get_camera_brightness()
+            contrast = self.setting_manager.get_camera_contrast()
+            gamma = self.setting_manager.get_camera_gamma()
+            if hue is not None:
+                self.slider_hue.setValue(hue)
+                self.on_hue_changed(hue)
+            if saturation is not None:
+                self.slider_saturation.setValue(saturation)
+                self.on_saturation_changed(saturation)
+            if brightness is not None:
+                self.slider_brightness.setValue(brightness)
+                self.on_brightness_changed(brightness)
+            if contrast is not None:
+                self.slider_contrast.setValue(contrast)
+                self.on_contrast_changed(contrast)
+            if gamma is not None:
+                self.slider_gamma.setValue(gamma)
+                self.on_gamma_changed(gamma)
 
             """ 광원 주파수(Anti-flicker) """
-            hz = camera_unit.cam.get_HZ()
-            if hz == 0:
+            hz_index = self.setting_manager.get_camera_anti_flicker()
+            if hz_index == 0:
                 self.rb_hz_0.setChecked(True)
-            elif hz == 1:
+            elif hz_index == 1:
                 self.rb_hz_1.setChecked(True)
             else:
                 self.rb_hz_2.setChecked(True)
+            self.camera_unit.cam.put_HZ(hz_index)
 
     """ 플랫 필드 보정 """
+
     def on_cb_ffc_changed(self):
         camera_unit: CameraUnit = self.camera_unit
         if self.cb_ffc.isChecked():
@@ -433,42 +492,50 @@ class SetCamera(QScrollArea):
         self.cmb_res.clear()
         camera_unit: CameraUnit = self.camera_unit
         if self.camera_started:
-            for i in range(camera_unit.cur.model.preview):
-                res = camera_unit.cur.model.res[i]
-                self.cmb_res.addItem(f"{res.width}*{res.height}")
-            self.cmb_res.setCurrentIndex(camera_unit.res)
+            with QSignalBlocker(self.cmb_res):
+                for i in range(camera_unit.cur.model.preview):
+                    res = camera_unit.cur.model.res[i]
+                    self.cmb_res.addItem(f"{res.width}*{res.height}")
+                self.cmb_res.setCurrentIndex(camera_unit.res)
         self.cmb_res.setEnabled(True)
 
     """ 노출 및 게인"""
 
     def on_auto_expo_changed(self, state):
         if self.camera_unit.set_auto_expo(state):
+            self.setting_manager.set_camera_auto_expo(state)
             self.slider_expo_target.setEnabled(state)
             self.slider_expo_time.setEnabled(not state)
             self.slider_expo_gain.setEnabled(not state)
 
     def on_expo_target_changed(self, value):
         if self.camera_unit.set_expo_target(value):
+            self.setting_manager.set_camera_expo_target(value)
             self.lb_expo_target.setText(str(value))
 
     def on_expo_time_changed(self, slider_value):
         exposure_time = self.exponential_function.calculate_y(slider_value)
-        if self.camera_unit.set_expo_time(int(exposure_time)):
+        if self.camera_unit.set_expo_time(exposure_time):
+            self.setting_manager.set_camera_expo_time(slider_value)
             self.lb_expo_time.setText(f"{round(exposure_time / 1000, 3)}ms")
 
     def on_expo_gain_changed(self, value):
         if self.camera_unit.set_expo_gain(value):
+            self.setting_manager.set_camera_expo_gain(value)
             self.lb_expo_gain.setText(f"{value}%")
 
     """ 화이트 밸런스 """
 
     def on_wb_temp_changed(self, value):
         if self.camera_unit.set_white_balance_temp(value):
+            self.setting_manager.set_camera_wb_temp_tint(temp=value)
             self.lb_temp.setText(str(value))
+
         # self.update_white_balance_gain()
 
     def on_wb_tint_changed(self, value):
         if self.camera_unit.set_white_balance_tint(value):
+            self.setting_manager.set_camera_wb_temp_tint(tint=value)
             self.lb_tint.setText(str(value))
 
     #     self.update_white_balance_gain()
@@ -503,10 +570,13 @@ class SetCamera(QScrollArea):
     def on_black_balance_changed(self, color_index, value):
         if self.camera_unit.set_black_balance(color_index, value):
             if color_index == 0:
+                self.setting_manager.set_camera_bb_rgb(r=value)
                 self.lb_r.setText(str(value))
             elif color_index == 1:
+                self.setting_manager.set_camera_bb_rgb(g=value)
                 self.lb_g.setText(str(value))
             else:
+                self.setting_manager.set_camera_bb_rgb(b=value)
                 self.lb_b.setText(str(value))
 
     def init_black_balance(self):
@@ -517,29 +587,34 @@ class SetCamera(QScrollArea):
 
     def on_hue_changed(self, value):
         if self.camera_unit.set_hue(value):
+            self.setting_manager.set_camera_hue(value)
             self.lb_hue.setText(str(value))
 
     def on_saturation_changed(self, value):
         if self.camera_unit.set_saturation(value):
+            self.setting_manager.set_camera_saturation(value)
             self.lb_saturation.setText(str(value))
 
     def on_brightness_changed(self, value):
         if self.camera_unit.set_brightness(value):
+            self.setting_manager.set_camera_brightness(value)
             self.lb_brightness.setText(str(value))
 
     def on_contrast_changed(self, value):
         if self.camera_unit.set_contrast(value):
+            self.setting_manager.set_camera_contrast(value)
             self.lb_contrast.setText(str(value))
 
     def on_gamma_changed(self, value):
         if self.camera_unit.set_gamma(value):
+            self.setting_manager.set_camera_gamma(value)
             self.lb_gamma.setText(str(value))
 
     def init_color(self):
         if self.camera_unit.init_color():
-            self.set_color_text()
+            self.init_color_text()
 
-    def set_color_text(self):
+    def init_color_text(self):
         camera_unit: CameraUnit = self.camera_unit
         if camera_unit.cam:
             cam = camera_unit.cam
@@ -558,6 +633,7 @@ class SetCamera(QScrollArea):
 
     def on_rb_hz_changed(self, button):
         button_id = self.rb_group_hz.id(button)
+        self.setting_manager.set_camera_anti_flicker(button_id)
         self.camera_unit.cam.put_HZ(button_id)
 
     """ 이벤트 핸들러 """
@@ -590,6 +666,7 @@ class SetCamera(QScrollArea):
         temp, tint = unit.cam.get_TempTint()
         self.slider_temp.setValue(temp)
         self.slider_tint.setValue(tint)
+        self.setting_manager.set_camera_wb_temp_tint(temp, tint)
         # self.update_white_balance_gain()
 
     # def handle_white_balance_gain_event(self):
@@ -606,6 +683,7 @@ class SetCamera(QScrollArea):
     def handle_black_balance_event(self):
         unit: CameraUnit = self.camera_unit
         rgb = unit.rgb
+        self.setting_manager.set_camera_bb_rgb(rgb[0], rgb[1], rgb[2])
         self.slider_r.setValue(rgb[0])
         self.slider_g.setValue(rgb[1])
         self.slider_b.setValue(rgb[2])
