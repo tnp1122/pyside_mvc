@@ -179,9 +179,9 @@ class SettingManager:
         return self._get_value(CAMERA_EXPO_GAIN)
 
     def set_camera_wb_temp_tint(self, temp=None, tint=None):
-        if temp:
+        if temp is not None:
             self._set_value(CAMERA_WB_TEMP, temp)
-        if tint:
+        if tint is not None:
             self._set_value(CAMERA_WB_TINT, tint)
 
     def get_camera_wb_temp_tint(self):
@@ -190,11 +190,11 @@ class SettingManager:
         return temp, tint
 
     def set_camera_bb_rgb(self, r=None, g=None, b=None):
-        if r:
+        if r is not None:
             self._set_value(CAMERA_BB_R, r)
-        if g:
+        if g is not None:
             self._set_value(CAMERA_BB_G, g)
-        if b:
+        if b is not None:
             self._set_value(CAMERA_BB_B, b)
 
     def get_camera_bb_rgb(self):
