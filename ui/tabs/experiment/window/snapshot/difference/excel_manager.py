@@ -27,13 +27,13 @@ class ExcelManager:
             return
 
         wb = Workbook()
-        self.save_rgb_colors(wb, target_index)
-        self.save_color_differences(wb, target_index, "xyy")
-        self.save_color_differences(wb, target_index, "lab")
+        self._save_rgb_colors(wb, target_index)
+        self._save_color_differences(wb, target_index, "xyy")
+        self._save_color_differences(wb, target_index, "lab")
         wb.remove(wb["Sheet"])
         wb.save(self.get_path_to_save(target_index))
 
-    def save_rgb_colors(self, wb, target_index):
+    def _save_rgb_colors(self, wb, target_index):
         target_rgb_colors, control_rgb_colors, rgb_differences = self.model.get_color_datas("rgb", target_index)
         target_name = self.targets.item_name(target_index)
         control_name = self.control_name
@@ -68,7 +68,7 @@ class ExcelManager:
             rgb_difference_sheet.cell(i + 2, 1, cell_name)
             rgb_difference_sheet.cell(i + 2, 2, diff)
 
-    def save_color_differences(self, wb, target_index, color_type):
+    def _save_color_differences(self, wb, target_index, color_type):
         model: ColorDifferenceModel = self.model
 
         if color_type == "xyy":
@@ -94,3 +94,38 @@ class ExcelManager:
             cell_name = f"{chr(ord('A') + additive_i)}-{solvent_i + 1}"
             sheet.cell(i + 2, 1, cell_name)
             sheet.cell(i + 2, 2, color_difference)
+
+
+class TimelineExcelManager:
+    def save_timeline_datas(self, elapsed_times, rgb_datas, distance_datas, timeline_path):
+        wb = Workbook()
+        wb.remove(wb.active)
+
+        self._save_rgb_colors(wb, elapsed_times, rgb_datas)
+        self._save_distance_datas(wb, elapsed_times, distance_datas)
+
+        output_path = os.getenv("LOCAL_OUTPUT_PATH")
+        timeline_path = lsm.get_absolute_path(output_path, timeline_path)
+        wb.save(f"{timeline_path}.xlsx")
+
+    def _save_rgb_colors(self, wb, elapsed_times, datas):
+        rgb_sheet = wb.create_sheet("RGB Color")
+        rgb_sheet.cell(1, 1, "경과시간")
+        for i, elapsed_time in enumerate(elapsed_times, start=2):
+            rgb_sheet.cell(i, 1, elapsed_time)
+
+        for col_num, column_name in enumerate(datas.columns, start=2):
+            rgb_sheet.cell(1, col_num, column_name)
+            for row_num, value in enumerate(datas[column_name], start=2):
+                rgb_sheet.cell(row_num, col_num, value)
+
+    def _save_distance_datas(self, wb, elapsed_times, datas):
+        distance_sheet = wb.create_sheet("Distance Data")
+        distance_sheet.cell(1, 1, "Elapsed Time")
+        for i, elapsed_time in enumerate(elapsed_times, start=2):
+            distance_sheet.cell(i, 1, elapsed_time)
+
+        for col_num, column_name in enumerate(datas.columns, start=2):
+            distance_sheet.cell(1, col_num, column_name)
+            for row_num, value in enumerate(datas[column_name], start=2):
+                distance_sheet.cell(row_num, col_num, value)

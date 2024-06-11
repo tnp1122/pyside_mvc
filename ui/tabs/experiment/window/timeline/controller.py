@@ -3,6 +3,7 @@ from PySide6.QtCore import QTimer
 from models.snapshot import Snapshot, Timeline
 from ui.common import BaseController
 from ui.common.image_viewer import ImageViewerController
+from ui.tabs.experiment.window.snapshot.difference.excel_manager import TimelineExcelManager
 from ui.tabs.experiment.window.timeline import PlateTimelineModel, PlateTimelineView
 from ui.tabs.experiment.window.timeline.widgets.color_graph import ColorGraphController
 from ui.tabs.experiment.window.timeline.widgets.select_combination_table import SelectCombinationTableController
@@ -14,14 +15,16 @@ class PlateTimelineController(BaseController):
         super().__init__(PlateTimelineModel, PlateTimelineView, parent, combination_id)
 
         self.target = args["target"]
+        self.timeline_path = args["timeline_path"]
         self.association_indexes = []
 
         model: PlateTimelineModel = self.model
-        model.init_timeline_instance(args["timeline_path"], self.target.name)
+        model.init_timeline_instance(self.timeline_path, self.target.name)
 
         view: PlateTimelineView = self.view
         view.update_lb_interval_info()
         view.image_viewer.instance_initialized.connect(self.load_timeline)
+        view.btn_export_to_excel.clicked.connect(self.export_to_excel)
 
         combination_table: SelectCombinationTableController = view.combination_table
         combination_table.display_associations_changed.connect(self.on_associations_changed)
@@ -34,6 +37,11 @@ class PlateTimelineController(BaseController):
 
         image_viewer: ImageViewerController = self.view.image_viewer
         image_viewer.run_timeline_clicked.connect(self.on_run_timeline_clicked)
+
+    def export_to_excel(self):
+        timeline: Timeline = self.model.timeline
+        elapsed_times, rgb_datas, distance_datas = timeline.get_timeline_datas(self.association_indexes)
+        TimelineExcelManager().save_timeline_datas(elapsed_times, rgb_datas, distance_datas, self.timeline_path)
 
     def load_timeline(self):
         view: PlateTimelineView = self.view

@@ -3,14 +3,14 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame
 
 from models.snapshot import Snapshot, Timeline
-from ui.common import BaseWidgetView, ImageButton, SetCamera
+from ui.common import BaseWidgetView, ImageButton, SetCamera, ColoredButton
 from ui.common.image_viewer import ImageViewerController
 from ui.tabs.experiment.window.timeline import PlateTimelineModel
 from ui.tabs.experiment.window.timeline.widgets.color_graph import ColorGraphController
 from ui.tabs.experiment.window.timeline.widgets.interval_config import IntervalConfig
 from ui.tabs.experiment.window.timeline.widgets.select_combination_table import SelectCombinationTableController
-
 from util import local_storage_manager as lsm
+from util.colors import EXCEL_GREEN
 
 
 class PlateTimelineView(BaseWidgetView):
@@ -54,9 +54,16 @@ class PlateTimelineView(BaseWidgetView):
         lyt_main_content.addLayout(lyt_interval_info)
         lyt_main_content.addStretch()
 
-        # 조합 선택
+        # 그래프
         self.graph = ColorGraphController()
+
+        # 조합 선택
+        self.btn_export_to_excel = ColoredButton("엑셀로 저장", background_color=EXCEL_GREEN)
         self.combination_table = SelectCombinationTableController(combination_id=self.combination_id)
+        lyt_combination = QVBoxLayout()
+        lyt_combination.setContentsMargins(0, 0, 0, 0)
+        lyt_combination.addWidget(self.btn_export_to_excel)
+        lyt_combination.addWidget(self.combination_table.view)
 
         # 컨텐츠 컨테이너
         lyt_content = QHBoxLayout()
@@ -64,7 +71,7 @@ class PlateTimelineView(BaseWidgetView):
         lyt_content.addWidget(set_camera)
         lyt_content.addLayout(lyt_main_content)
         lyt_content.addWidget(self.graph.view)
-        lyt_content.addWidget(self.combination_table.view)
+        lyt_content.addLayout(lyt_combination)
 
         divider1 = QFrame()
         divider1.setFrameShape(QFrame.HLine)

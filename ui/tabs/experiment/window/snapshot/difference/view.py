@@ -2,6 +2,7 @@ from PySide6.QtWidgets import QLabel, QComboBox, QHBoxLayout, QVBoxLayout
 
 from ui.common import BaseWidgetView, ColoredButton, MileStoneRadio
 from ui.tabs.experiment.window.snapshot.difference.difference_table import ColorDifferenceTableController
+from util.colors import EXCEL_GREEN
 
 
 class ColorDifferenceView(BaseWidgetView):
@@ -15,7 +16,7 @@ class ColorDifferenceView(BaseWidgetView):
         lb_control = QLabel("Control")
         self.cmb_target = QComboBox()
         self.cmb_control = QComboBox()
-        self.btn_to_excel = ColoredButton("엑셀로 저장")
+        self.btn_to_excel = ColoredButton("엑셀로 저장", background_color=EXCEL_GREEN)
 
         lyt_top = QHBoxLayout()
         lyt_top.addWidget(lb_target)

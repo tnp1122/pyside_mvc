@@ -606,6 +606,25 @@ class Timeline(dict):
         velocity_datas = ([f"ColorVelocity{idx + 1}" for idx in indexes])
         return elapsed_times, [self.datas[distance_datas], self.datas[velocity_datas]]
 
+    def get_timeline_datas(self, indexes: list) -> (list, pd.DataFrame, pd.DataFrame):
+        rgb_columns = []
+        distance_columns = []
+        for idx in indexes:
+            rgb_columns.extend([f"R{idx + 1}", f"G{idx + 1}", f"B{idx + 1}"])
+        for idx in indexes:
+            distance_columns.extend([f"ColorDistance{idx + 1}"])
+
+        rgb_datas = self.datas[rgb_columns]
+        distance_datas = self.datas[distance_columns]
+
+        rows = self.datas.index.tolist()
+        datetimes = [datetime.strptime(row, '%y%m%d-%H%M%S.%f') for row in rows]
+        real_elapsed_times = [0.0]
+        for i in range(1, len(datetimes)):
+            delta = (datetimes[i] - datetimes[0]).total_seconds()
+            real_elapsed_times.append(round(delta, 1))
+        return real_elapsed_times, rgb_datas, distance_datas
+
     def save_timeline(self):
         if not self.info_saved:
             self.timeline_data_manager.save_timeline_info(self)
