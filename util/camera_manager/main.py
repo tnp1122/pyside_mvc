@@ -138,9 +138,11 @@ class CameraUnit(QObject):
 
     @property
     def current_image(self):
-        img = np.frombuffer(self.pData, dtype=np.uint8).reshape((self.imgHeight, self.imgWidth, 3))
-        img = np.rot90(img, k=-self.direction)
-        return np.ascontiguousarray(img)
+        if self.direction % 2 == 0:
+            img = np.frombuffer(self.pData, dtype=np.uint8).reshape((self.imgHeight, self.imgWidth, 3))
+        else:
+            img = np.frombuffer(self.pData, dtype=np.uint8).reshape((self.imgWidth, self.imgHeight, 3))
+        return img
 
     @property
     def resolutions(self):
@@ -158,6 +160,10 @@ class CameraUnit(QObject):
 
     def rotate_direction(self):
         self.direction = (self.direction + 1) % 4
+
+    def set_rotate(self, index):
+        self.direction = index % 4
+        self.cam.put_Option(toupcam.TOUPCAM_OPTION_ROTATE, index % 4 * 90)
 
     def set_resolution(self, index):
         if self.cam:

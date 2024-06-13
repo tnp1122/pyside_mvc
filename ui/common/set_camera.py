@@ -473,6 +473,9 @@ class SetCamera(QScrollArea):
                 self.rb_hz_2.setChecked(True)
             self.camera_unit.cam.put_HZ(hz_index)
 
+            """ 카메라 회전 """
+            self.camera_unit.set_rotate(1)
+
     """ 플랫 필드 보정 """
 
     def on_cb_ffc_changed(self):
