@@ -37,6 +37,7 @@ class CombinationController(BaseController):
 
         view.btn_refresh.clicked.connect(self.refresh)
         view.btn_cancel.clicked.connect(self.on_cancel_clicked)
+        view.btn_init_censor.clicked.connect(self.on_init_censor_clicked)
         view.btn_save.clicked.connect(self.on_save_clicked)
         view.btn_new_combination.clicked.connect(self.on_new_combination_clicked)
 
@@ -213,6 +214,14 @@ class CombinationController(BaseController):
         if event > -1:
             self.combination_index = event
             self.load_sensors()
+
+    def on_init_censor_clicked(self):
+        view: CombinationView = self.view
+        for y in range(11, -1, -1):
+            for x in range(1, 9):
+                cell: Cell = view.lyt_grid.itemAtPosition(y, x).widget()
+                cell.set_additive(None)
+                cell.set_solvent(None)
 
     def on_cell_clicked(self, index: str):
         view: CombinationView = self.view
