@@ -560,37 +560,28 @@ class Timeline(dict):
         current_time = snapshot.snapshot_time.strftime("%y%m%d-%H%M%S.%f")[:-5]
 
         elapsed_time = self.elapsed_time
-        new_row = [elapsed_time]
-
-        for color_row in snapshot.mean_colors[::-1]:
-            for cell_colors in color_row:
-                for color in cell_colors:
-                    new_row.append(color)
-        for _ in range(self.num_cells * 2):
-            new_row.append(np.float32(0))
+        mean_colors = np.array(snapshot.mean_colors[::-1]).reshape(-1, 3)
+        new_row = np.zeros(self.num_cells * 5 + 1, dtype=np.float32)
+        new_row[0] = elapsed_time
+        new_row[1:1 + mean_colors.size] = mean_colors.flatten()
 
         self.datas.loc[current_time] = new_row
 
-        current_count = self.current_count
-        if current_count > 1:
-            init_colors = self.datas.iloc[0].iloc[1:289].values.reshape(self.num_cells, 3)
-            current_colors = self.datas.iloc[current_count - 1].iloc[1:289].values.reshape(self.num_cells, 3)
+        if self.current_count > 1:
+            init_colors = self.datas.iloc[0, 1:289].values.reshape(self.num_cells, 3)
+            current_colors = self.datas.iloc[self.current_count - 1, 1:289].values.reshape(self.num_cells, 3)
             for idx in range(self.num_cells):
                 init_color = init_colors[idx]
                 current_color = current_colors[idx]
                 distance = self.get_color_distance(init_color, current_color)
                 self.datas.loc[current_time, f"ColorDistance{idx + 1}"] = distance
-        if current_count > 2:
-            # distance_idx = 96 * 3 + 1
-            # for idx in range(self.num_cells):
-            #     prev_distance = np.float32(self.datas.iloc[current_count - 2].iloc[distance_idx + idx])
-            #     current_distance = np.float32(self.datas.iloc[current_count - 1].iloc[distance_idx + idx])
-            #     self.datas.loc[current_time, f"ColorVelocity{idx + 1}"] = (current_distance - prev_distance) / prev_distance
+
+        if self.current_count > 2:
             distance_idx = 96 * 3 + 1
-            prev_distances = self.datas.iloc[current_count - 2, distance_idx:distance_idx + self.num_cells].astype(
-                np.float32)
-            current_distances = self.datas.iloc[current_count - 1, distance_idx:distance_idx + self.num_cells].astype(
-                np.float32)
+            prev_distances = self.datas.iloc[
+                             self.current_count - 2, distance_idx:distance_idx + self.num_cells].astype(np.float32)
+            current_distances = self.datas.iloc[
+                                self.current_count - 1, distance_idx:distance_idx + self.num_cells].astype(np.float32)
             color_velocities = (current_distances - prev_distances) / prev_distances / 100
             for idx, velocity in enumerate(color_velocities):
                 self.datas.loc[current_time, f"ColorVelocity{idx + 1}"] = velocity
