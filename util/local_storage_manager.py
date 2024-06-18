@@ -146,7 +146,6 @@ class TimelineDataManager:
 
     def save_timeline(self, mean_colors: pd.DataFrame):
         mean_colors_data = {"mean_colors": mean_colors}
-
         save_with_compress(mean_colors_data, self.mc_file_name)
 
     def load_timeline(self) -> (dict, pd.DataFrame):

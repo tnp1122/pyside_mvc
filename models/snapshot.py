@@ -582,7 +582,7 @@ class Timeline(dict):
                              self.current_count - 2, distance_idx:distance_idx + self.num_cells].astype(np.float32)
             current_distances = self.datas.iloc[
                                 self.current_count - 1, distance_idx:distance_idx + self.num_cells].astype(np.float32)
-            color_velocities = (current_distances - prev_distances) / prev_distances / 100
+            color_velocities = (current_distances - prev_distances) / prev_distances
             for idx, velocity in enumerate(color_velocities):
                 self.datas.loc[current_time, f"ColorVelocity{idx + 1}"] = velocity
 
@@ -641,18 +641,24 @@ class Timeline(dict):
 
         self.datas = mean_colors.reindex(columns=self.datas.columns)
 
-        init_colors = mean_colors.iloc[0].values.reshape(self.num_cells, 3)
-        for row in self.datas.index[1:]:
-            current_colors = self.datas.loc[row].iloc[1:289].values.reshape(self.num_cells, 3)
+        init_colors = self.datas.iloc[0, 1:289].values.reshape(self.num_cells, 3)
+
+        distance_idx = 96 * 3 + 1
+        for i, row in enumerate(self.datas.index[1:]):
+            current_colors = self.datas.iloc[i + 1, 1:289].values.reshape(self.num_cells, 3)
             for idx in range(self.num_cells):
                 init_color = init_colors[idx]
                 current_color = current_colors[idx]
                 distance = self.get_color_distance(init_color, current_color)
                 self.datas.loc[row, f"ColorDistance{idx + 1}"] = distance
 
-        for idx in range(self.num_cells):
-            self.datas[f"ColorVelocity{idx + 1}"] = self.datas[f"ColorDistance{idx + 1}"].pct_change(
-                fill_method=None) / 100
+            if i > 0:
+                prev_distances = self.datas.iloc[i, distance_idx: distance_idx + self.num_cells].astype(np.float32)
+                current_distances = self.datas.iloc[i + 1, distance_idx:distance_idx + self.num_cells].astype(
+                    np.float32)
+                color_velocities = (current_distances - prev_distances) / prev_distances
+                for idx, velocity in enumerate(color_velocities):
+                    self.datas.loc[row, f"ColorVelocity{idx + 1}"] = velocity
 
         self.info_saved = True
         return True
