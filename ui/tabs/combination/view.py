@@ -7,7 +7,7 @@ from ui.tabs.combination.widgets import LabelTitle, Cell, SelectSensorWidget, La
 
 class CombinationView(BaseWidgetView):
     cell_clicked_signal = Signal(str)
-    box_width = 140
+    box_width = 160
 
     def __init__(self, parent=None):
         super().__init__(parent)
