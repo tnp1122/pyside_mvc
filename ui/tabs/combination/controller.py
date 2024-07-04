@@ -4,6 +4,7 @@ from PySide6.QtNetwork import QNetworkReply
 
 from data.api.api_manager import APIManager
 from ui.common import BaseController
+from ui.common.confirmation_dialog import ConfirmationDialog
 from ui.common.toast import Toast
 from ui.tabs.combination import CombinationModel, CombinationView
 from ui.tabs.combination.widgets import BaseCell, Cell
@@ -143,10 +144,26 @@ class CombinationController(BaseController):
         self.set_editable(False)
         self.load_sensors()
 
+    def get_combination_names(self):
+        combinations = self.combinations[self.experiment_index]
+        names = []
+        for combination in combinations:
+            names.append(combination["name"])
+
+        return names
+
     def on_save_clicked(self):
         view: CombinationView = self.view
 
         name = view.et_combination_name.text()
+        combination_names = self.get_combination_names()
+        if name in combination_names:
+            dlg_duplicated_name_warning = ConfirmationDialog(
+                "조합 추가", "이미 존재하는 조합이름 입니다.", cancel_text="확인", use_confirm=False
+            )
+            dlg_duplicated_name_warning.exec()
+            return
+
         combination = {"name": name, "sensor_associations": []}
 
         ex_index = self.experiment_index
