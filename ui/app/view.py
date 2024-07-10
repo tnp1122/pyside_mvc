@@ -62,10 +62,11 @@ class AppView(BaseWidgetView):
         self.tabs.view.setFixedSize(window_width, window_height)
         self.info_bar.view.move(info_x, info_y)
 
-        self.update_toast_position(window_width, window_height)
+        self.update_toast_position()
         self.update_loading_spinner_position(window_width, window_height)
 
-    def update_toast_position(self, window_width, window_height):
+    def update_toast_position(self):
+        window_width, window_height = self.width(), self.height()
         toast_x = int((window_width - self.toast.width()) / 2)
         toast_y = window_height - self.toast_margin - self.toast.height()
         self.toast.move(toast_x, toast_y)
