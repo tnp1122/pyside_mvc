@@ -7,6 +7,7 @@ import pickle
 import cv2
 import numpy as np
 import pandas as pd
+from PySide6.QtCore import QThread, Signal, QObject
 
 from models import Image
 from . import image_converter as ic
@@ -131,7 +132,53 @@ class SnapshotDataManager:
         return plate_image, mean_colors_data, snapshot_info_data, mask
 
 
-class TimelineDataManager:
+class TimeLineLoadWorker(QThread):
+    finished = Signal(dict, pd.DataFrame)
+
+    def __init__(self, timeline, snapshot_instance, timeline_info, mean_colors, parent=None):
+        super().__init__(parent)
+        self.timeline = timeline
+        self.snapshot_instance = snapshot_instance
+        self.timeline_info = timeline_info
+        self.mean_colors = mean_colors
+
+    def run(self):
+        datas = self.calculate_timeline_datas()
+        self.finished.emit(self.timeline_info, datas)
+        self.exec()
+
+    def calculate_timeline_datas(self):
+        datas = self.mean_colors.reindex(columns=self.timeline.datas.columns)
+        num_cells = self.timeline.num_cells
+
+        init_colors = datas.iloc[0, 1:289].values.reshape(num_cells, 3)
+
+        current_colors_matrix = datas.iloc[1:, 1:289].values.reshape(-1, num_cells, 3)
+        distances = np.linalg.norm(init_colors - current_colors_matrix, axis=2)
+
+        for idx in range(num_cells):
+            datas.iloc[1:, datas.columns.get_loc(f"ColorDistance{idx + 1}")] = distances[:, idx]
+
+        distance_columns = [f"ColorDistance{idx + 1}" for idx in range(num_cells)]
+        prev_distances = datas.iloc[1:-1, datas.columns.get_loc(distance_columns[0]):datas.columns.get_loc(
+            distance_columns[-1]) + 1].astype(np.float32).values
+        current_distances = datas.iloc[2:, datas.columns.get_loc(distance_columns[0]):datas.columns.get_loc(
+            distance_columns[-1]) + 1].astype(np.float32).values
+        prev_distances[prev_distances == 0] = np.finfo(np.float32).eps
+        color_velocities = (current_distances - prev_distances) / prev_distances
+
+        for idx, col in enumerate(distance_columns):
+            datas.iloc[2:, datas.columns.get_loc(f"ColorVelocity{idx + 1}")] = color_velocities[:, idx]
+
+        return datas
+
+    def get_color_distance(self, color1, color2) -> np.float32:
+        return np.float32(round(np.linalg.norm(color1 - color2), 3))
+
+
+class TimelineDataManager(QObject):
+    timeline_loaded = Signal
+
     def __init__(self, timeline_name: str, target_name: str):
         storage_path = os.getenv("LOCAL_STORAGE_PATH")
         directory_path = get_absolute_path(storage_path, timeline_name)
@@ -148,11 +195,12 @@ class TimelineDataManager:
         mean_colors_data = {"mean_colors": mean_colors}
         save_with_compress(mean_colors_data, self.mc_file_name)
 
-    def load_timeline(self) -> (dict, pd.DataFrame):
+    def load_timeline(self, timeline, snapshot_instance) -> (dict, pd.DataFrame):
         if not os.path.exists(self.mc_file_name):
-            return None, None
+            return None
 
         timeline_info = load_with_decompress(self.ti_file_name)["timeline_info"]
         mean_colors = load_with_decompress(self.mc_file_name)["mean_colors"]
+        worker = TimeLineLoadWorker(timeline, snapshot_instance, timeline_info, mean_colors)
 
-        return timeline_info, mean_colors
+        return worker

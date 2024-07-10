@@ -625,10 +625,12 @@ class Timeline(dict):
         self.timeline_data_manager.save_timeline(mean_colors)
 
     def load_timeline(self, snapshot_instance: Snapshot):
-        timeline_info, mean_colors = self.timeline_data_manager.load_timeline()
-        if mean_colors is None:
-            return False
+        worker = self.timeline_data_manager.load_timeline(timeline=self, snapshot_instance=snapshot_instance)
+        if worker is not None:
+            worker.finished.connect(lambda i, d: self.on_timeline_data_loaded(snapshot_instance, i, d))
+        return worker
 
+    def on_timeline_data_loaded(self, snapshot_instance, timeline_info, datas):
         for key, value in timeline_info.items():
             if key == "rounds":
                 continue
@@ -639,29 +641,8 @@ class Timeline(dict):
         snapshot_instance.mask.set_radius(self["radius"])
         snapshot_instance.mask.set_flare_threshold(self["flare_threshold"], False)
 
-        self.datas = mean_colors.reindex(columns=self.datas.columns)
-
-        init_colors = self.datas.iloc[0, 1:289].values.reshape(self.num_cells, 3)
-
-        distance_idx = 96 * 3 + 1
-        for i, row in enumerate(self.datas.index[1:]):
-            current_colors = self.datas.iloc[i + 1, 1:289].values.reshape(self.num_cells, 3)
-            for idx in range(self.num_cells):
-                init_color = init_colors[idx]
-                current_color = current_colors[idx]
-                distance = self.get_color_distance(init_color, current_color)
-                self.datas.loc[row, f"ColorDistance{idx + 1}"] = distance
-
-            if i > 0:
-                prev_distances = self.datas.iloc[i, distance_idx: distance_idx + self.num_cells].astype(np.float32)
-                current_distances = self.datas.iloc[i + 1, distance_idx:distance_idx + self.num_cells].astype(
-                    np.float32)
-                color_velocities = (current_distances - prev_distances) / prev_distances
-                for idx, velocity in enumerate(color_velocities):
-                    self.datas.loc[row, f"ColorVelocity{idx + 1}"] = velocity
-
+        self.datas = datas
         self.info_saved = True
-        return True
 
     @property
     def rounds(self) -> RoundModel:

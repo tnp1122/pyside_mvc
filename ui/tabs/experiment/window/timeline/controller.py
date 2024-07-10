@@ -3,6 +3,7 @@ from PySide6.QtCore import QTimer
 from models.snapshot import Snapshot, Timeline
 from ui.common import BaseController
 from ui.common.image_viewer import ImageViewerController
+from ui.common.loading_spinner import LoadingSpinner
 from ui.tabs.experiment.window.snapshot.difference.excel_manager import TimelineExcelManager
 from ui.tabs.experiment.window.timeline import PlateTimelineModel, PlateTimelineView
 from ui.tabs.experiment.window.timeline.widgets.color_graph import ColorGraphController
@@ -44,12 +45,26 @@ class PlateTimelineController(BaseController):
         TimelineExcelManager().save_timeline_datas(elapsed_times, rgb_datas, distance_datas, self.timeline_path)
 
     def load_timeline(self):
-        view: PlateTimelineView = self.view
         model: PlateTimelineModel = self.model
         timeline: Timeline = model.timeline
-        if timeline.load_timeline(model.snapshot_instance):
-            self.update_graph()
-            view.update_lb_interval_info()
+
+        LoadingSpinner().start_loading()
+        worker = timeline.load_timeline(model.snapshot_instance)
+        if worker is not None:
+            worker.finished.connect(lambda: self.on_timeline_loaded(worker))
+            worker.start()
+        else:
+            LoadingSpinner().end_loading()
+
+    def on_timeline_loaded(self, worker):
+        worker.quit()
+        worker.deleteLater()
+
+        view: PlateTimelineView = self.view
+        self.update_graph()
+        view.update_lb_interval_info()
+
+        LoadingSpinner().end_loading()
 
     def on_associations_changed(self, association_indexes: list):
         color_graph: ColorGraphController = self.view.graph
