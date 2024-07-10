@@ -1,4 +1,5 @@
 import sys
+from functools import wraps
 
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QPixmap, QTransform
@@ -60,6 +61,22 @@ class LoadingSpinner(QWidget):
         transform = QTransform().rotate(self.angle)
         rotated_pixmap = self.pixmap.transformed(transform, Qt.SmoothTransformation)
         self.label.setPixmap(rotated_pixmap)
+
+
+def with_loading_spinner(method):
+    @wraps(method)
+    def wrapper(*args, **kwargs):
+        LoadingSpinner().start_loading()
+        try:
+            result = method(*args, **kwargs)
+            return result
+        finally:
+            if hasattr(result, 'finished'):
+                result.finished.connect(LoadingSpinner().end_loading)
+            else:
+                LoadingSpinner().end_loading()
+
+    return wrapper
 
 
 if __name__ == "__main__":
