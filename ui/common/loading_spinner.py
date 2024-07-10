@@ -22,7 +22,8 @@ class LoadingSpinner(QWidget):
             return
         super().__init__(parent)
 
-        self.label = QLabel("dd")
+        self.current_loading = 0
+        self.label = QLabel()
         self.label.setAlignment(Qt.AlignCenter)
         image_path = lsm.get_static_image_path("loading_spinner.png")
 
@@ -40,13 +41,16 @@ class LoadingSpinner(QWidget):
         self.setVisible(False)
 
     def start_loading(self):
+        self.current_loading += 1
         self.setVisible(True)
         self.timer.start(100)
 
     def end_loading(self):
-        self.timer.stop()
-        self.setVisible(False)
-        self.angle = 0
+        self.current_loading -= 1
+        if self.current_loading < 1:
+            self.timer.stop()
+            self.setVisible(False)
+            self.angle = 0
 
     def rotate_image(self):
         self.angle += self.rotate_velocity
