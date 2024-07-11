@@ -6,7 +6,7 @@ from PySide6.QtCore import QByteArray, QUrl, QThread, Signal
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from dotenv import load_dotenv
 
-from ui.common.loading_spinner import LoadingSpinner
+from ui.common.loading_spinner import with_loading_spinner
 from ui.common.toast import Toast
 from util.setting_manager import SettingManager
 
@@ -21,7 +21,7 @@ POST = "POST"
 
 
 class APIWorker(QThread):
-    finished = Signal(tuple)
+    finished = Signal(object, object)
 
     def __init__(self, origin, setting_manager, method, endpoint, callback, body=None, parent=None):
         super().__init__(parent)
@@ -70,7 +70,7 @@ class APIWorker(QThread):
             return
 
         logging.warning(f"{METHOD} No Callback function, origin_api: {origin_api}")
-        self.finished.emit((callback, reply))
+        self.finished.emit(callback, reply)
 
     def _reply_intercept(self, reply, method, endpoint, callback, body=None):
         status_code = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
@@ -94,12 +94,12 @@ class APIWorker(QThread):
             self.on_auth_failed(reply, method, endpoint, callback, body)
             return
 
-        self.finished.emit((callback, reply))
+        self.finished.emit(callback, reply)
 
     def on_auth_failed(self, reply, method, endpoint, callback, body=None):
         self.retry_count -= 1
         if self.retry_count < 0:
-            self.finished.emit((callback, reply))
+            self.finished.emit(callback, reply)
             return
 
         endpoint = REFRESH_TOKEN_END_POINT
@@ -130,31 +130,19 @@ class APIManager:
             self.initialized = True
             self.manager = QNetworkAccessManager()
             self.setting_manager = SettingManager()
-            self.spinner = LoadingSpinner()
 
+    @with_loading_spinner
     def _call_api(self, method, endpoint, callback, body=None, origin_api=None):
-        self.start_loading()
-
         log = f"API Call [{method}] {endpoint} || callback: {callback} == body:{body} || origin: {origin_api}"
         logging.info(log)
         worker = APIWorker(self, self.setting_manager, method, endpoint, callback, body)
-        worker.finished.connect(lambda args: self.end_loading(args, worker))
+        worker.finished.connect(self.on_response)
         worker.start()
 
-    def start_loading(self):
-        if not self.spinner:
-            self.spinner = LoadingSpinner()
-        self.spinner.start_loading()
+        return worker
 
-    def end_loading(self, args, worker):
-        if self.spinner:
-            self.spinner.end_loading()
-        worker.quit()
-        worker.deleteLater()
-
+    def on_response(self, callback, reply):
         try:
-            callback = args[0]
-            reply = args[1]
             callback(reply)
             reply.deleteLater()
         except:
