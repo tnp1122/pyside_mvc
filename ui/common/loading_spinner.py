@@ -64,17 +64,25 @@ class LoadingSpinner(QWidget):
 
 
 def with_loading_spinner(method):
+    def handler(worker, spinner):
+        worker.quit()
+        worker.deleteLater()
+        spinner.end_loading()
+
     @wraps(method)
     def wrapper(*args, **kwargs):
-        LoadingSpinner().start_loading()
+        spinner = LoadingSpinner()
+        spinner.start_loading()
         try:
-            result = method(*args, **kwargs)
-            return result
-        finally:
-            if hasattr(result, 'finished'):
-                result.finished.connect(LoadingSpinner().end_loading)
+            worker = method(*args, **kwargs)
+            if hasattr(worker, 'finished'):
+                worker.finished.connect(lambda: handler(worker, spinner))
             else:
-                LoadingSpinner().end_loading()
+                spinner.end_loading()
+            return worker
+        except Exception as e:
+            spinner.end_loading()
+            raise e
 
     return wrapper
 

@@ -1,8 +1,8 @@
 import os
 
+from PySide6.QtCore import QThread, Signal
 from openpyxl.workbook import Workbook
 
-from ui.common.toast import Toast
 from ui.tabs.experiment.window.snapshot.difference import ColorDifferenceModel
 from util import local_storage_manager as lsm
 
@@ -97,6 +97,26 @@ class ExcelManager:
             sheet.cell(i + 2, 2, color_difference)
 
 
+class TimelineExcelWorker(QThread):
+    finished = Signal(object, bool)
+
+    def __init__(self, elapsed_times, rgb_datas, distance_datas, timeline_path, parent=None):
+        super().__init__(parent)
+        self.elapsed_times = elapsed_times
+        self.rgb_datas = rgb_datas
+        self.distance_datas = distance_datas
+        self.timeline_path = timeline_path
+
+    def run(self):
+        try:
+            TimelineExcelManager().save_timeline_datas(
+                self.elapsed_times, self.rgb_datas, self.distance_datas, self.timeline_path
+            )
+            self.finished.emit(self, True)
+        except:
+            self.finished.emit(self, False)
+
+
 class TimelineExcelManager:
     def save_timeline_datas(self, elapsed_times, rgb_datas, distance_datas, timeline_path):
         wb = Workbook()
@@ -108,8 +128,6 @@ class TimelineExcelManager:
         output_path = os.getenv("LOCAL_OUTPUT_PATH")
         timeline_path = lsm.get_absolute_path(output_path, timeline_path)
         wb.save(f"{timeline_path}.xlsx")
-
-        Toast().toast(f"저장 완료: {timeline_path}.xlsx", duration=6000)
 
     def _save_rgb_colors(self, wb, elapsed_times, datas):
         rgb_sheet = wb.create_sheet("RGB Color")

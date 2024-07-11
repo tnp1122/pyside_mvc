@@ -4,7 +4,8 @@ from models.snapshot import Snapshot, Timeline
 from ui.common import BaseController
 from ui.common.image_viewer import ImageViewerController
 from ui.common.loading_spinner import with_loading_spinner
-from ui.tabs.experiment.window.snapshot.difference.excel_manager import TimelineExcelManager
+from ui.common.toast import Toast
+from ui.tabs.experiment.window.snapshot.difference.excel_manager import TimelineExcelWorker
 from ui.tabs.experiment.window.timeline import PlateTimelineModel, PlateTimelineView
 from ui.tabs.experiment.window.timeline.widgets.color_graph import ColorGraphController
 from ui.tabs.experiment.window.timeline.widgets.select_combination_table import SelectCombinationTableController
@@ -39,10 +40,22 @@ class PlateTimelineController(BaseController):
         image_viewer: ImageViewerController = self.view.image_viewer
         image_viewer.run_timeline_clicked.connect(self.on_run_timeline_clicked)
 
+    @with_loading_spinner
     def export_to_excel(self):
         timeline: Timeline = self.model.timeline
         elapsed_times, rgb_datas, distance_datas = timeline.get_timeline_datas(self.association_indexes)
-        TimelineExcelManager().save_timeline_datas(elapsed_times, rgb_datas, distance_datas, self.timeline_path)
+
+        worker = TimelineExcelWorker(elapsed_times, rgb_datas, distance_datas, self.timeline_path, self)
+        worker.finished.connect(self.on_excel_saved)
+        worker.start()
+        return worker
+
+    def on_excel_saved(self, _, success):
+        if success:
+            message = f"저장 완료: {self.timeline_path}.xlsx"
+        else:
+            message = "저장 실패"
+        Toast().toast(message, duration=6000)
 
     @with_loading_spinner
     def load_timeline(self):
@@ -51,13 +64,11 @@ class PlateTimelineController(BaseController):
 
         worker = timeline.load_timeline(model.snapshot_instance)
         if worker is not None:
-            worker.finished.connect(lambda: self.on_timeline_loaded(worker))
+            worker.finished.connect(self.on_timeline_loaded)
             worker.start()
+        return worker
 
-    def on_timeline_loaded(self, worker):
-        worker.quit()
-        worker.deleteLater()
-
+    def on_timeline_loaded(self):
         view: PlateTimelineView = self.view
         self.update_graph()
         view.update_lb_interval_info()
