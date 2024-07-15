@@ -179,28 +179,33 @@ class TimeLineLoadWorker(QThread):
 class TimelineDataManager(QObject):
     timeline_loaded = Signal
 
-    def __init__(self, timeline_name: str, target_name: str):
+    def __init__(self):
+        super().__init__()
+
+    def get_file_name(self, timeline_name, target_name):
         storage_path = os.getenv("LOCAL_STORAGE_PATH")
         directory_path = get_absolute_path(storage_path, timeline_name)
-        timeline_name = os.path.join(directory_path, target_name)
+        file_name = os.path.join(directory_path, target_name)
 
-        self.ti_file_name = f"{timeline_name}.tigz"
-        self.mc_file_name = f"{timeline_name}.mcgz"
+        ti_file_name = f"{file_name}.tigz"
+        mc_file_name = f"{file_name}.mcgz"
 
-    def save_timeline_info(self, timeline_info: dict):
+        return ti_file_name, mc_file_name
+
+    def save_timeline_info(self, timeline_info: dict, ti_file_name: str):
         timeline_info_data = {"timeline_info": timeline_info}
-        save_with_compress(timeline_info_data, self.ti_file_name)
+        save_with_compress(timeline_info_data, ti_file_name)
 
-    def save_timeline(self, mean_colors: pd.DataFrame):
+    def save_timeline(self, mean_colors: pd.DataFrame, mc_file_name: str):
         mean_colors_data = {"mean_colors": mean_colors}
-        save_with_compress(mean_colors_data, self.mc_file_name)
+        save_with_compress(mean_colors_data, mc_file_name)
 
-    def load_timeline(self, timeline, snapshot_instance) -> (dict, pd.DataFrame):
-        if not os.path.exists(self.mc_file_name):
+    def load_timeline(self, timeline, snapshot_instance, ti_file_name: str, mc_file_name: str) -> (dict, pd.DataFrame):
+        if not os.path.exists(mc_file_name):
             return None
 
-        timeline_info = load_with_decompress(self.ti_file_name)["timeline_info"]
-        mean_colors = load_with_decompress(self.mc_file_name)["mean_colors"]
+        timeline_info = load_with_decompress(ti_file_name)["timeline_info"]
+        mean_colors = load_with_decompress(mc_file_name)["mean_colors"]
         worker = TimeLineLoadWorker(timeline, snapshot_instance, timeline_info, mean_colors)
 
         return worker

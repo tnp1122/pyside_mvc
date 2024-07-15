@@ -524,7 +524,7 @@ class Timeline(dict):
     def __init__(self, timeline_name: str, target_name: str, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.timeline_data_manager = TimelineDataManager(timeline_name, target_name)
+        self.ti_file_name, self.mc_file_name = TimelineDataManager().get_file_name(timeline_name, target_name)
 
         self["rounds"] = RoundModel(need_init=True)
         self.num_cells = 96
@@ -561,7 +561,7 @@ class Timeline(dict):
 
         elapsed_time = self.elapsed_time
         mean_colors = np.array(snapshot.mean_colors[::-1]).reshape(-1, 3)
-        new_row = np.zeros(self.num_cells * 5 + 1, dtype=np.float32)
+        new_row = np.full(self.num_cells * 5 + 1, np.nan, dtype=np.float32)
         new_row[0] = elapsed_time
         new_row[1:1 + mean_colors.size] = mean_colors.flatten()
 
@@ -618,14 +618,14 @@ class Timeline(dict):
 
     def save_timeline(self):
         if not self.info_saved:
-            self.timeline_data_manager.save_timeline_info(self)
+            TimelineDataManager().save_timeline_info(self, self.ti_file_name)
             self.info_saved = True
 
         mean_colors = self.datas.iloc[:, :288]
-        self.timeline_data_manager.save_timeline(mean_colors)
+        TimelineDataManager().save_timeline(mean_colors, self.mc_file_name)
 
     def load_timeline(self, snapshot_instance: Snapshot):
-        worker = self.timeline_data_manager.load_timeline(timeline=self, snapshot_instance=snapshot_instance)
+        worker = TimelineDataManager().load_timeline(self, snapshot_instance, self.ti_file_name, self.mc_file_name)
         if worker is not None:
             worker.finished.connect(lambda i, d: self.on_timeline_data_loaded(snapshot_instance, i, d))
         return worker
