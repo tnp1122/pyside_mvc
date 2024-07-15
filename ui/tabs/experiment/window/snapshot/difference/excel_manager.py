@@ -1,5 +1,7 @@
 import os
+from datetime import datetime
 
+import pandas as pd
 from PySide6.QtCore import QThread, Signal
 from openpyxl.workbook import Workbook
 
@@ -131,22 +133,16 @@ class TimelineExcelManager:
 
     def _save_rgb_colors(self, wb, elapsed_times, datas):
         rgb_sheet = wb.create_sheet("RGB Color")
-        rgb_sheet.cell(1, 1, "경과시간")
-        for i, elapsed_time in enumerate(elapsed_times, start=2):
-            rgb_sheet.cell(i, 1, elapsed_time)
+        rgb_sheet.append(["경과시간"] + list(datas.columns))
 
-        for col_num, column_name in enumerate(datas.columns, start=2):
-            rgb_sheet.cell(1, col_num, column_name)
-            for row_num, value in enumerate(datas[column_name], start=2):
-                rgb_sheet.cell(row_num, col_num, value)
+        for i, elapsed_time in enumerate(elapsed_times, start=2):
+            row_data = [elapsed_time] + datas.iloc[i - 2].tolist()
+            rgb_sheet.append(row_data)
 
     def _save_distance_datas(self, wb, elapsed_times, datas):
         distance_sheet = wb.create_sheet("Distance Data")
-        distance_sheet.cell(1, 1, "경과시간")
-        for i, elapsed_time in enumerate(elapsed_times, start=2):
-            distance_sheet.cell(i, 1, elapsed_time)
+        distance_sheet.append(["경과시간"] + list(datas.columns))
 
-        for col_num, column_name in enumerate(datas.columns, start=2):
-            distance_sheet.cell(1, col_num, column_name)
-            for row_num, value in enumerate(datas[column_name], start=2):
-                distance_sheet.cell(row_num, col_num, value)
+        for i, elapsed_time in enumerate(elapsed_times, start=2):
+            row_data = [elapsed_time] + datas.iloc[i - 2].tolist()
+            distance_sheet.append(row_data)
