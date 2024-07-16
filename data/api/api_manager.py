@@ -35,6 +35,7 @@ class APIWorker(QThread):
         self.body = body
 
     def run(self):
+        self.retry_count = 1
         self.manager = QNetworkAccessManager()
         self._call_api(self.method, self.endpoint, self.callback, self.body)
         self.exec()
@@ -75,6 +76,10 @@ class APIWorker(QThread):
     def _reply_intercept(self, reply, method, endpoint, callback, body=None):
         status_code = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
         if endpoint == REFRESH_TOKEN_END_POINT:
+            if status_code == 401:
+                self.on_auth_failed(reply, method, endpoint, callback, body)
+                return
+
             if status_code == 204:
                 headers = reply.rawHeaderPairs()
                 for header, value in headers:
@@ -186,10 +191,6 @@ class APIManager:
     def login(self, callback, login_info):
         endpoint = "user/login/"
         self._call_api(POST, endpoint, callback, login_info)
-
-    def refresh_token(self, callback, body, origin_api):
-        endpoint = REFRESH_TOKEN_END_POINT
-        self._call_api(POST, endpoint, callback, body, origin_api)
 
     def get_user_info(self, callback):
         endpoint = "user/info/"

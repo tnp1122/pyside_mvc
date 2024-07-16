@@ -43,9 +43,6 @@ class AppController(BaseController):
                 self.model.first_tab_index = FirstTabIndex.HOME
                 self.setting_manager.set_experimenter_name(self.model.name)
             else:
-                print(reply)
-                print(reply.error)
-                print(reply.readAll().data().decode("utf-8"))
                 self.model.username = ""
                 self.model.name = "사용자"
                 self.model.role = ""
