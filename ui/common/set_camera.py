@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 from PySide6.QtCore import Qt, QSignalBlocker
 from PySide6.QtWidgets import QScrollArea, QHBoxLayout, QVBoxLayout, QComboBox, QCheckBox, QLabel, QSlider, \
@@ -474,7 +476,8 @@ class SetCamera(QScrollArea):
             self.camera_unit.cam.put_HZ(hz_index)
 
             """ 카메라 회전 """
-            self.camera_unit.set_rotate(1)
+            camera_rotation = int(os.getenv("CAMERA_ROTATION"))
+            self.camera_unit.set_rotate(camera_rotation)
 
     """ 플랫 필드 보정 """
 
