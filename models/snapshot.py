@@ -569,22 +569,21 @@ class Timeline(dict):
 
         if self.current_count > 1:
             init_colors = self.datas.iloc[0, 1:289].values.reshape(self.num_cells, 3)
-            current_colors = self.datas.iloc[self.current_count - 1, 1:289].values.reshape(self.num_cells, 3)
-            for idx in range(self.num_cells):
-                init_color = init_colors[idx]
-                current_color = current_colors[idx]
-                distance = self.get_color_distance(init_color, current_color)
-                self.datas.loc[current_time, f"ColorDistance{idx + 1}"] = distance
+            current_colors = mean_colors
+            distances = np.linalg.norm(init_colors - current_colors, axis=1)
+            self.datas.iloc[self.current_count - 1, self.num_cells * 3 + 1:self.num_cells * 4 + 1] = distances
 
         if self.current_count > 2:
-            distance_idx = 96 * 3 + 1
+            distance_idx = self.num_cells * 3 + 1
             prev_distances = self.datas.iloc[
                              self.current_count - 2, distance_idx:distance_idx + self.num_cells].astype(np.float32)
             current_distances = self.datas.iloc[
                                 self.current_count - 1, distance_idx:distance_idx + self.num_cells].astype(np.float32)
-            color_velocities = (current_distances - prev_distances) / prev_distances
-            for idx, velocity in enumerate(color_velocities):
-                self.datas.loc[current_time, f"ColorVelocity{idx + 1}"] = velocity
+
+            with np.errstate(divide='ignore', invalid='ignore'):
+                color_velocities = np.true_divide(current_distances - prev_distances, prev_distances)
+                color_velocities[~np.isfinite(color_velocities)] = 0
+            self.datas.iloc[self.current_count - 1, self.num_cells * 4 + 1:self.num_cells * 5 + 1] = color_velocities
 
         self.save_timeline()
 
