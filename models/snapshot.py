@@ -621,7 +621,7 @@ class Timeline(dict):
             TimelineDataManager().save_timeline_info(self, self.ti_file_name)
             self.info_saved = True
 
-        mean_colors = self.datas.iloc[:, :288]
+        mean_colors = self.datas.iloc[:, :289]
         TimelineDataManager().save_timeline(mean_colors, self.mc_file_name)
 
     def load_timeline(self, snapshot_instance: Snapshot):
