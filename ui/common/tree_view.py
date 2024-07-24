@@ -306,9 +306,9 @@ class TreeRow(QWidget):
             self.remove_signal.emit(TreeSignalData(indexes, "snapshot"))
 
     def show_snapshot_context_menu(self, pos):
-        menu = QMenu(self)
+        if self.level == 3 and self.title == timeline_title:
+            return
 
-        act_remove = menu.addAction("삭제")
         if self.level == 4:
             if self.parent.title == timeline_title:
                 signal = "_timeline"
@@ -316,6 +316,9 @@ class TreeRow(QWidget):
                 signal = "_snapshot"
         else:
             signal = ""
+
+        menu = QMenu(self)
+        act_remove = menu.addAction("삭제")
         act_remove.triggered.connect(lambda: self.bubble_event("remove" + signal))
         menu.exec(self.lb_title.mapToGlobal(pos))
 
