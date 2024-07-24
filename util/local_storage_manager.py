@@ -51,11 +51,14 @@ def save_with_compress(data, file_name):
 
 
 def load_with_decompress(file_name):
-    with gzip.open(file_name, "rb") as f:
-        compressed_data = f.read()
-        serialized_data = gzip.decompress(compressed_data)
-        # return pickle.loads(serialized_data)
-        return loads_with_pickle(serialized_data)
+    try:
+        with gzip.open(file_name, "rb") as f:
+            compressed_data = f.read()
+            serialized_data = gzip.decompress(compressed_data)
+            # return pickle.loads(serialized_data)
+            return loads_with_pickle(serialized_data)
+    except Exception as e:
+        return None
 
 
 class SnapshotDataManager:
@@ -187,25 +190,33 @@ class TimelineDataManager(QObject):
         directory_path = get_absolute_path(storage_path, timeline_name)
         file_name = os.path.join(directory_path, target_name)
 
+        camera_setting_file_name = f"{file_name}.csgz"
         ti_file_name = f"{file_name}.tigz"
         mc_file_name = f"{file_name}.mcgz"
 
-        return ti_file_name, mc_file_name
+        return camera_setting_file_name, ti_file_name, mc_file_name
 
-    def save_timeline_info(self, timeline_info: dict, ti_file_name: str):
+    def save_timeline_info(self, camera_settings: dict, cs_file_name: str, timeline_info: dict, ti_file_name: str):
+        camera_settings_data = {"camera_settings": camera_settings}
         timeline_info_data = {"timeline_info": timeline_info}
+        save_with_compress(camera_settings_data, cs_file_name)
         save_with_compress(timeline_info_data, ti_file_name)
 
     def save_timeline(self, mean_colors: pd.DataFrame, mc_file_name: str):
         mean_colors_data = {"mean_colors": mean_colors}
         save_with_compress(mean_colors_data, mc_file_name)
 
-    def load_timeline(self, timeline, snapshot_instance, ti_file_name: str, mc_file_name: str) -> (dict, pd.DataFrame):
+    def load_timeline(self, timeline, snapshot_instance, cs_file_name, ti_file_name: str, mc_file_name: str) -> (
+    dict, pd.DataFrame):
         if not os.path.exists(mc_file_name):
-            return None
+            return None, None
 
+        try:
+            camera_settings = load_with_decompress(cs_file_name).get["camera_settings"]
+        except:
+            camera_settings = None
         timeline_info = load_with_decompress(ti_file_name)["timeline_info"]
         mean_colors = load_with_decompress(mc_file_name)["mean_colors"]
         worker = TimeLineLoadWorker(timeline, snapshot_instance, timeline_info, mean_colors)
 
-        return worker
+        return worker, camera_settings

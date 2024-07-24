@@ -47,11 +47,15 @@ class PlateTimelineView(BaseWidgetView):
         lyt_interval_info.addWidget(self.lb_interval_info, 0, alignment=Qt.AlignLeft)
         lyt_interval_info.addWidget(self.btn_interval_config, 0, alignment=Qt.AlignRight)
 
+        self.lb_camera_setting = QLabel()
+        self.lb_camera_setting.setTextInteractionFlags(Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard)
+
         lyt_main_content = QVBoxLayout()
         lyt_main_content.setContentsMargins(10, 0, 10, 0)
         lyt_main_content.addStretch()
         lyt_main_content.addWidget(self.image_viewer.view)
         lyt_main_content.addLayout(lyt_interval_info)
+        lyt_main_content.addWidget(self.lb_camera_setting)
         lyt_main_content.addStretch()
 
         # 그래프
@@ -111,3 +115,24 @@ class PlateTimelineView(BaseWidgetView):
         widget_config.closed.connect(self.update_lb_interval_info)
 
         widget_config.exec()
+
+    def update_lb_camera_settings(self):
+        model: PlateTimelineModel = self.model
+        settings = model.camera_settings
+        str_auto_expo = "수동 노출" if settings["auto_expo"] == 0 else "자동 노출"
+        af_index = settings["anti_flicker_index"]
+        if af_index == 0:
+            str_anti_flicker = "교류 전류(60Hz)"
+        elif af_index == 1:
+            str_anti_flicker = "교류 전류(50Hz)"
+        else:
+            str_anti_flicker = "직류(DC)"
+
+        lb_contents = f"""[해상도] {settings["resolution"]}
+[{str_auto_expo}] 타겟: {settings["expo_target"]}, 노출 시간: {round(settings["expo_time"], 3)}ms, 게인: {settings["expo_gain"]}%
+[화이트 밸런스] 색 온도: {settings["wb_temp"]}, 색조: {settings["wb_tint"]}
+[블랙 밸런스] 빨강: {settings["bb_r"]}, 녹색: {settings["bb_g"]}, 파랑: {settings["bb_b"]}  
+[색 조정] 색상: {settings["saturation"]}, 채도: {settings["brightness"]}, 밝기: {settings["brightness"]}, 명암: {settings["contrast"]}, 감마: {settings["gamma"]}
+[광원 주파수] {str_anti_flicker}
+        """
+        self.lb_camera_setting.setText(lb_contents)

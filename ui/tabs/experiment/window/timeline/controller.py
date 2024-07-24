@@ -62,12 +62,17 @@ class PlateTimelineController(BaseController):
     @with_loading_spinner
     def load_timeline(self):
         model: PlateTimelineModel = self.model
+        view: PlateTimelineView = self.view
         timeline: Timeline = model.timeline
 
-        worker = timeline.load_timeline(model.snapshot_instance)
+        worker, camera_settings = timeline.load_timeline(model.snapshot_instance)
         if worker is not None:
             worker.finished.connect(self.on_timeline_loaded)
             worker.start()
+        if camera_settings is not None:
+            model.camera_settings.update(camera_settings)
+            view.update_lb_camera_settings()
+
         return worker
 
     def update_graph(self):
@@ -95,9 +100,13 @@ class PlateTimelineController(BaseController):
         self.update_graph()
 
     def on_run_timeline_clicked(self, run_timeline: bool):
+        view: PlateTimelineView = self.view
         model: PlateTimelineModel = self.model
         model.is_running = run_timeline
         if run_timeline:
+            model.get_camera_setting()
+            view.update_lb_camera_settings()
+
             timeline: Timeline = model.timeline
             timeline.init_plate_info(model.snapshot_instance)
             QTimer.singleShot(0, self.take_snapshot)

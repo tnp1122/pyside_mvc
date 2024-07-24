@@ -521,10 +521,12 @@ class RoundModel(list):
 
 
 class Timeline(dict):
-    def __init__(self, timeline_name: str, target_name: str, *args, **kwargs):
+    def __init__(self, timeline_name: str, target_name: str, camera_settings: dict, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.ti_file_name, self.mc_file_name = TimelineDataManager().get_file_name(timeline_name, target_name)
+        self.cs_file_name, self.ti_file_name, self.mc_file_name = TimelineDataManager().get_file_name(timeline_name,
+                                                                                                      target_name)
+        self.camera_settings = camera_settings
 
         self["rounds"] = RoundModel(need_init=True)
         self.num_cells = 96
@@ -617,17 +619,23 @@ class Timeline(dict):
 
     def save_timeline(self):
         if not self.info_saved:
-            TimelineDataManager().save_timeline_info(self, self.ti_file_name)
+            TimelineDataManager().save_timeline_info(self.camera_settings, self.cs_file_name, self, self.ti_file_name)
             self.info_saved = True
 
         mean_colors = self.datas.iloc[:, :289]
         TimelineDataManager().save_timeline(mean_colors, self.mc_file_name)
 
     def load_timeline(self, snapshot_instance: Snapshot):
-        worker = TimelineDataManager().load_timeline(self, snapshot_instance, self.ti_file_name, self.mc_file_name)
+        worker, camera_settings = TimelineDataManager().load_timeline(
+            timeline=self,
+            snapshot_instance=snapshot_instance,
+            cs_file_name=self.cs_file_name,
+            ti_file_name=self.ti_file_name,
+            mc_file_name=self.mc_file_name
+        )
         if worker is not None:
             worker.finished.connect(lambda i, d: self.on_timeline_data_loaded(snapshot_instance, i, d))
-        return worker
+        return worker, camera_settings
 
     def on_timeline_data_loaded(self, snapshot_instance, timeline_info, datas):
         for key, value in timeline_info.items():
