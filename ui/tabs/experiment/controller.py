@@ -199,18 +199,18 @@ class ExperimentController(BaseController):
             combination = experiment["sensor_combinations"][indexes[1]]
             combination_id = combination["id"]
 
-        if depth > 2:
-            plate = combination["plates"][(indexes[2] - 1)]
+        if depth > 2 and (signal_type == "plate" or signal_type == "snapshot"):
+            plate = combination["plates"][(indexes[2])]
             plate_id = plate["id"]
 
         if depth > 3:
-            if signal_type == "timeline":
+            if signal_type == "snapshot":
+                snapshot = plate["plate_snapshots"][indexes[3]]
+                snapshot_id = snapshot["id"]
+            else:
                 timelines = combination["timelines"]
                 timeline = timelines[indexes[3]]
                 timeline_id = timeline["id"]
-            else:
-                snapshot = plate["plate_snapshots"][indexes[3]]
-                snapshot_id = snapshot["id"]
 
         if depth == 1:
             experiment_name = experiment["name"]
@@ -227,6 +227,7 @@ class ExperimentController(BaseController):
         elif depth == 2:
             combination_name = combination["name"]
             plates = combination["plates"]
+            timelines = combination["timelines"]
 
             title = "조합 삭제"
             content = f"[조합] {combination_name}을(를) 삭제하시겠습니까?"
@@ -234,6 +235,9 @@ class ExperimentController(BaseController):
             if plates:
                 has_refer = True
                 content = "하위 플레이트를 삭제한 뒤에 센서 조합을 삭제할 수 있습니다."
+            elif timelines:
+                has_refer = True
+                content = "하위 연속촬영을 삭제한 뒤에 센서 조합을 삭제할 수 있습니다."
 
         elif depth == 3:
             plate_name = plate["name"]

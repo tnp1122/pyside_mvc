@@ -5,10 +5,8 @@ from PySide6.QtGui import QFont, QMouseEvent, QTransform
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSizePolicy, QMenu
 
 from ui.common import ImageButton, BaseScrollAreaView
-
-from util import local_storage_manager as lsm
 from util import image_converter as ic
-
+from util import local_storage_manager as lsm
 
 timeline_title = "연속촬영"
 
@@ -235,7 +233,10 @@ class TreeRow(QWidget):
         is_directory = isinstance(child_value, dict)
         if is_directory:
             for index, (title, child_dict) in enumerate(child_value.items()):
-                self.make_child(title, index, child_dict)
+                if self.level == 2 and len(self.children) > 0 and self.children[0].title == timeline_title:
+                    self.make_child(title, index - 1, child_dict)
+                else:
+                    self.make_child(title, index, child_dict)
             return
 
         for index, title in enumerate(child_value):
@@ -300,16 +301,21 @@ class TreeRow(QWidget):
             self.double_clicked_signal.emit(TreeSignalData(indexes, signal))
         elif signal == "remove":
             self.remove_signal.emit(TreeSignalData(indexes))
+        elif signal == "remove_plate":
+            self.remove_signal.emit(TreeSignalData(indexes, "plate"))
         elif signal == "remove_timeline":
             self.remove_signal.emit(TreeSignalData(indexes, "timeline"))
         elif signal == "remove_snapshot":
             self.remove_signal.emit(TreeSignalData(indexes, "snapshot"))
 
     def show_snapshot_context_menu(self, pos):
-        if self.level == 3 and self.title == timeline_title:
-            return
+        if self.level == 3:
+            if self.title == timeline_title:
+                return
+            else:
+                signal = "_plate"
 
-        if self.level == 4:
+        elif self.level == 4:
             if self.parent.title == timeline_title:
                 signal = "_timeline"
             else:
