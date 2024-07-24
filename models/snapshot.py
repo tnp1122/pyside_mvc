@@ -157,7 +157,7 @@ class Mask(QObject):
         self.columns = plate.columns
         self.rows = plate.rows
         self.radius = mask_info.get("radius") or 35
-        self.flare_threshold = mask_info.get("flare_threshold") or 200
+        self.flare_threshold = mask_info.get("flare_threshold") or 255
 
         if set:
             self.set_mask()
@@ -368,7 +368,7 @@ class Snapshot(QObject):
     def init_plate_mask_info(self):
         self.init_property_reference()
         plate_info = {"x": 0, "y": 0, "width": 500, "height": 400, "direction": 1, "rotation": 0}
-        mask_info = {"radius": 20, "flare_threshold": 200}
+        mask_info = {"radius": 20, "flare_threshold": 255}
         init_shape = (500, 400, 3)
         new_mask = np.full(init_shape, 0, np.uint8)
         self.set_plate_mask_info(plate_info, mask_info, new_mask)

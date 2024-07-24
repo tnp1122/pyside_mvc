@@ -162,6 +162,7 @@ class ImageViewerView(BaseWidgetView):
             manager_view: MaskManagerView = mask_manager.view
             manager_view.on_select_changed(1)
             manager_view.view_radio.set_visibility(0, False)
+            manager_view.view_radio.set_visibility(2, False)
             mask_manager.view.exec()
 
     def take_snapshot(self):
