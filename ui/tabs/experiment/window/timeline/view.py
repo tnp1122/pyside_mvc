@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame, QCheckBox
 
 from models.snapshot import Snapshot, Timeline
 from ui.common import BaseWidgetView, ImageButton, SetCamera, ColoredButton
@@ -59,9 +59,11 @@ class PlateTimelineView(BaseWidgetView):
 
         # 조합 선택
         self.btn_export_to_excel = ColoredButton("엑셀로 저장", background_color=EXCEL_GREEN)
+        self.cb_hide_velocity = QCheckBox("Velocity 숨기기")
         self.combination_table = SelectCombinationTableController(combination_id=self.combination_id)
         lyt_combination = QVBoxLayout()
         lyt_combination.setContentsMargins(0, 0, 0, 0)
+        lyt_combination.addWidget(self.cb_hide_velocity)
         lyt_combination.addWidget(self.btn_export_to_excel)
         lyt_combination.addWidget(self.combination_table.view)
 

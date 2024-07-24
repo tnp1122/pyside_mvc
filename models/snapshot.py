@@ -590,11 +590,11 @@ class Timeline(dict):
     def get_color_distance(self, color1, color2) -> np.float32:
         return np.float32(round(np.linalg.norm(color1 - color2), 3))
 
-    def get_datas(self, indexes: list) -> (list, list[pd.DataFrame]):
+    def get_datas(self, indexes: list, include_velocity=True) -> (list, pd.DataFrame, pd.DataFrame):
         elapsed_times = self.datas["elapsed_time"].tolist()
         distance_datas = [f"ColorDistance{idx + 1}" for idx in indexes]
         velocity_datas = ([f"ColorVelocity{idx + 1}" for idx in indexes])
-        return elapsed_times, [self.datas[distance_datas], self.datas[velocity_datas]]
+        return elapsed_times, self.datas[distance_datas], self.datas[velocity_datas] if include_velocity else None
 
     def get_timeline_datas(self, indexes: list) -> (list, pd.DataFrame, pd.DataFrame):
         rgb_columns = []

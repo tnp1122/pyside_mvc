@@ -19,6 +19,7 @@ class PlateTimelineController(BaseController):
         self.target = args["target"]
         self.timeline_path = args["timeline_path"]
         self.association_indexes = []
+        self.velocity_visibility = True
 
         model: PlateTimelineModel = self.model
         model.init_timeline_instance(self.timeline_path, self.target.name)
@@ -26,6 +27,7 @@ class PlateTimelineController(BaseController):
         view: PlateTimelineView = self.view
         view.update_lb_interval_info()
         view.image_viewer.instance_initialized.connect(self.load_timeline)
+        view.cb_hide_velocity.clicked.connect(self.on_velocity_visibility_changed)
         view.btn_export_to_excel.clicked.connect(self.export_to_excel)
 
         combination_table: SelectCombinationTableController = view.combination_table
@@ -68,6 +70,12 @@ class PlateTimelineController(BaseController):
             worker.start()
         return worker
 
+    def update_graph(self):
+        color_graph: ColorGraphController = self.view.graph
+        timeline: Timeline = self.model.timeline
+
+        color_graph.update_graph(*timeline.get_datas(self.association_indexes, self.velocity_visibility))
+
     def on_timeline_loaded(self):
         view: PlateTimelineView = self.view
         self.update_graph()
@@ -82,11 +90,9 @@ class PlateTimelineController(BaseController):
         self.association_indexes = association_indexes
         self.update_graph()
 
-    def update_graph(self):
-        color_graph: ColorGraphController = self.view.graph
-        timeline: Timeline = self.model.timeline
-
-        color_graph.update_graph(*timeline.get_datas(self.association_indexes))
+    def on_velocity_visibility_changed(self, state):
+        self.velocity_visibility = not state
+        self.update_graph()
 
     def on_run_timeline_clicked(self, run_timeline: bool):
         model: PlateTimelineModel = self.model
