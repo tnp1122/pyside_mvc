@@ -1,4 +1,6 @@
+from dataclasses import dataclass
 from datetime import datetime
+from typing import Optional, Dict, List
 
 from PySide6.QtCore import Signal
 from PySide6.QtNetwork import QNetworkReply
@@ -14,6 +16,65 @@ from ui.tabs.experiment.window.add_experiment import AddExperimentController
 from ui.tabs.experiment.window.add_plate import AddPlateController, AddPlateView
 from ui.tabs.experiment.window.snapshot import PlateSnapshotController
 from ui.tabs.experiment.window.timeline import PlateTimelineController
+
+
+@dataclass
+class TreeBranches:
+    depth: Optional[int] = None
+    experiment_id: Optional[int] = None
+    combination_id: Optional[int] = None
+    timeline_id: Optional[int] = None
+    plate_id: Optional[int] = None
+    snapshot_id: Optional[int] = None
+    experiment_name: Optional[str] = None
+    combination_name: Optional[str] = None
+    timeline_name: Optional[str] = None
+    plate_name: Optional[str] = None
+    snapshot_name: Optional[str] = None
+    combinations: Optional[List[Dict]] = None
+    timelines: Optional[List[Dict]] = None
+    plates: Optional[List[Dict]] = None
+    snapshots: Optional[List[Dict]] = None
+
+    @classmethod
+    def from_tree_data(cls, experiment_tree: Dict, tree_signal_data: 'TreeSignalData') -> 'TreeBranches':
+        indexes = tree_signal_data.indexes
+        signal_type = tree_signal_data.type
+
+        instance = cls()
+        instance.depth = len(indexes)
+
+        if instance.depth > 0:
+            experiment = experiment_tree[indexes[0]]
+            instance.experiment_id = experiment["id"]
+            instance.experiment_name = experiment["name"]
+            instance.combinations = experiment["sensor_combinations"]
+
+        if instance.depth > 1:
+            combination = instance.combinations[indexes[1]]
+            instance.combination_id = combination["id"]
+            instance.combination_name = combination["name"]
+            instance.plates = combination["plates"]
+            instance.timelines = combination["timelines"]
+
+        if instance.depth > 2 and (signal_type == "plate" or signal_type == "snapshot"):
+            plate = instance.plates[indexes[2]]
+            instance.plate_id = plate["id"]
+            instance.plate_name = plate["name"]
+            instance.snapshots = plate["plate_snapshots"]
+
+        if instance.depth > 3:
+            if signal_type == "snapshot":
+                snapshot = instance.snapshots[indexes[3]]
+                snapshot_age = snapshot["age"]
+                instance.snapshot_id = snapshot["id"]
+                instance.snapshot_name = f"{instance.plate_name}_{snapshot_age}H"
+            else:
+                timeline = instance.timelines[indexes[3]]
+                instance.timeline_id = timeline["id"]
+                instance.timeline_name = timeline["name"]
+
+        return instance
 
 
 class ExperimentController(BaseController):
@@ -178,90 +239,52 @@ class ExperimentController(BaseController):
         self.add_tab(plate_snapshot, 1, tab_name, truncated_name)
 
     def on_tree_remove_clicked(self, tree_signal_data: TreeSignalData):
-        indexes = tree_signal_data.indexes
-
         experiment_tree = self.view.explorer.experiment_tree
-        experiment, combination, plate, snapshot, timeline = None, None, None, None, None
-        experiment_id, combination_id, plate_id, snapshot_id, timeline_id = None, None, None, None, None
+        signal_type = tree_signal_data.type
+        tree_branches = TreeBranches.from_tree_data(experiment_tree, tree_signal_data)
+        depth = tree_branches.depth
 
         title, content = "", ""
         cancel_text = "취소"
         has_refer = False
         use_confirm = True
 
-        depth = len(indexes)
-        signal_type = tree_signal_data.type
-        if depth > 0:
-            experiment = experiment_tree[indexes[0]]
-            experiment_id = experiment["id"]
-
-        if depth > 1:
-            combination = experiment["sensor_combinations"][indexes[1]]
-            combination_id = combination["id"]
-
-        if depth > 2 and (signal_type == "plate" or signal_type == "snapshot"):
-            plate = combination["plates"][(indexes[2])]
-            plate_id = plate["id"]
-
-        if depth > 3:
-            if signal_type == "snapshot":
-                snapshot = plate["plate_snapshots"][indexes[3]]
-                snapshot_id = snapshot["id"]
-            else:
-                timelines = combination["timelines"]
-                timeline = timelines[indexes[3]]
-                timeline_id = timeline["id"]
-
         if depth == 1:
-            experiment_name = experiment["name"]
-            combinations = experiment["sensor_combinations"]
-
             title = "실험 삭제"
-            content = f"[실험] {experiment_name}을(를) 삭제하시겠습니까?"
-            for combination in combinations:
+            content = f"[실험] {tree_branches.experiment_name}을(를) 삭제하시겠습니까?"
+            for combination in tree_branches.combinations:
                 if combination["plates"]:
                     has_refer = True
                     content = "하위 플레이트를 삭제한 뒤에 실험을 삭제할 수 있습니다."
                     break
 
         elif depth == 2:
-            combination_name = combination["name"]
-            plates = combination["plates"]
-            timelines = combination["timelines"]
-
             title = "조합 삭제"
-            content = f"[조합] {combination_name}을(를) 삭제하시겠습니까?"
+            content = f"[조합] {tree_branches.combination_name}을(를) 삭제하시겠습니까?"
 
-            if plates:
+            if tree_branches.plates:
                 has_refer = True
                 content = "하위 플레이트를 삭제한 뒤에 센서 조합을 삭제할 수 있습니다."
-            elif timelines:
+            elif tree_branches.timelines:
                 has_refer = True
                 content = "하위 연속촬영을 삭제한 뒤에 센서 조합을 삭제할 수 있습니다."
 
         elif depth == 3:
-            plate_name = plate["name"]
-            snapshots = plate["plate_snapshots"]
-
             title = "플레이트 삭제"
-            content = f"[플레이트] {plate_name}을(를) 삭제하시겠습니까?"
+            content = f"[플레이트] {tree_branches.plate_name}을(를) 삭제하시겠습니까?"
 
-            if snapshots:
+            if tree_branches.snapshots:
                 has_refer = True
                 content = "하위 스냅샷을 삭제한 뒤에 플레이트를 삭제할 수 있습니다."
 
         elif depth == 4:
             if signal_type == "timeline":
-                timeline_name = f"{timeline['name']}"
                 title = "연속촬영 삭제"
-                content = f"[연속촬영] {timeline_name}을(를) 삭제하시겠습니까?"
+                content = f"[연속촬영] {tree_branches.timeline_name}을(를) 삭제하시겠습니까?"
 
             else:
-                snapshot_age = snapshot["age"]
-                snapshot_name = f"{plate['name']}_{snapshot_age}H"
-
                 title = "스냅샷 삭제"
-                content = f"[스냅샷] {snapshot_name}을(를) 삭제하시겠습니까?"
+                content = f"[스냅샷] {tree_branches.snapshot_name}을(를) 삭제하시겠습니까?"
 
         if has_refer:
             cancel_text = "확인"
@@ -270,16 +293,23 @@ class ExperimentController(BaseController):
         dlg_confirm = ConfirmationDialog(
             title, content, cancel_text=cancel_text, use_confirm=use_confirm, parent=self.view)
 
-        dlg_confirm.confirmed.connect(
-            lambda: self.remove_tree_item(depth, experiment_id, combination_id, plate_id, snapshot_id, timeline_id))
+        dlg_confirm.confirmed.connect(lambda: self.remove_tree_item(tree_branches))
         dlg_confirm.exec()
 
-    def remove_tree_item(self, depth, experiment_id, combination_id, plate_id, snapshot_id, timeline_id):
+    # def remove_tree_item(self, depth, experiment_id, combination_id, plate_id, snapshot_id, timeline_id, indexes):
+    def remove_tree_item(self, tree_branches: TreeBranches):
         def api_handler(reply):
             if reply.error() == QNetworkReply.NoError:
                 self.view.explorer.update_tree_view()
             else:
                 self.api_manager.on_failure(reply)
+
+        depth = tree_branches.depth
+        experiment_id = tree_branches.experiment_id
+        combination_id = tree_branches.combination_id
+        timeline_id = tree_branches.timeline_id
+        plate_id = tree_branches.plate_id
+        snapshot_id = tree_branches.snapshot_id
 
         if depth == 1:
             self.api_manager.remove_experiment(api_handler, experiment_id)
