@@ -1,3 +1,6 @@
+import json
+import logging
+import os
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Dict, List
@@ -16,6 +19,7 @@ from ui.tabs.experiment.window.add_experiment import AddExperimentController
 from ui.tabs.experiment.window.add_plate import AddPlateController, AddPlateView
 from ui.tabs.experiment.window.snapshot import PlateSnapshotController
 from ui.tabs.experiment.window.timeline import PlateTimelineController
+from util.local_storage_manager import get_absolute_path, SnapshotDataManager
 
 
 @dataclass
@@ -296,20 +300,55 @@ class ExperimentController(BaseController):
         dlg_confirm.confirmed.connect(lambda: self.remove_tree_item(tree_branches))
         dlg_confirm.exec()
 
-    # def remove_tree_item(self, depth, experiment_id, combination_id, plate_id, snapshot_id, timeline_id, indexes):
     def remove_tree_item(self, tree_branches: TreeBranches):
+        depth = tree_branches.depth
+
+        experiment_id = tree_branches.experiment_id
+        combination_id = tree_branches.combination_id
+        timeline_id = tree_branches.timeline_id
+        plate_id = tree_branches.plate_id
+        snapshot_id = tree_branches.snapshot_id
+        experiment_name = tree_branches.experiment_name
+        combination_name = tree_branches.combination_name
+        timeline_name = tree_branches.timeline_name
+        plate_name = tree_branches.plate_name
+
+        storage_path = os.getenv("LOCAL_STORAGE_PATH")
+
         def api_handler(reply):
             if reply.error() == QNetworkReply.NoError:
                 self.view.explorer.update_tree_view()
             else:
                 self.api_manager.on_failure(reply)
 
-        depth = tree_branches.depth
-        experiment_id = tree_branches.experiment_id
-        combination_id = tree_branches.combination_id
-        timeline_id = tree_branches.timeline_id
-        plate_id = tree_branches.plate_id
-        snapshot_id = tree_branches.snapshot_id
+        def on_timeline_removed(reply):
+            if reply.error() == QNetworkReply.NoError:
+                timeline_path = "\\".join([experiment_name, combination_name, 'timelines', timeline_name])
+                directory_path = get_absolute_path(storage_path, timeline_path)
+                try:
+                    os.rename(directory_path, f"{directory_path}.old")
+                except FileNotFoundError:
+                    pass
+                except Exception as e:
+                    logging.error(f"연속촬영 삭제중 에러가 발생했습니다: {e}")
+
+                self.view.explorer.update_tree_view()
+            else:
+                self.api_manager.on_failure(reply)
+
+        def on_snapshot_removed(reply):
+            if reply.error() == QNetworkReply.NoError:
+                json_str = reply.readAll().data().decode("utf-8")
+                snapshot_path = "\\".join([experiment_name, combination_name, plate_name])
+                snapshot_age = json.loads(json_str)["snapshot_age"]
+                targets = json.loads(json_str)["targets"]
+                for target in targets:
+                    sdm = SnapshotDataManager(snapshot_path, snapshot_age, target)
+                    sdm.remove_datas()
+
+                self.view.explorer.update_tree_view()
+            else:
+                self.api_manager.on_failure(reply)
 
         if depth == 1:
             self.api_manager.remove_experiment(api_handler, experiment_id)
@@ -319,9 +358,9 @@ class ExperimentController(BaseController):
             self.api_manager.remove_plate(api_handler, plate_id)
         elif depth == 4:
             if timeline_id is not None:
-                self.api_manager.remove_timeline(api_handler, timeline_id)
+                self.api_manager.remove_timeline(on_timeline_removed, timeline_id)
             else:
-                self.api_manager.remove_snapshot(api_handler, plate_id, snapshot_id)
+                self.api_manager.remove_snapshot(on_snapshot_removed, plate_id, snapshot_id)
 
     def on_experiment_added(self, controller: AddExperimentController):
         self.view.explorer.update_tree_view()

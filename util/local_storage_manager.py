@@ -1,6 +1,7 @@
 import gzip
 import io
 import json
+import logging
 import os
 import pickle
 
@@ -134,6 +135,24 @@ class SnapshotDataManager:
         mask = np.load(self.path_mask)["data"]
         return plate_image, mean_colors_data, snapshot_info_data, mask
 
+    def remove_datas(self):
+        def handle_file_operation(operation, src, dest=None):
+            try:
+                if operation == "rename" and dest:
+                    os.rename(src, dest)
+                elif operation == "remove":
+                    os.remove(src)
+            except FileNotFoundError:
+                pass
+            except Exception as e:
+                logging.error(f"Error during {operation} operation on {src}: {e}")
+
+        handle_file_operation("rename", self.path_mean_colors_gz, f"{self.path_mean_colors_gz}.old")
+        handle_file_operation("rename", self.path_snapshot_info, f"{self.path_snapshot_info}.old")
+        handle_file_operation("rename", self.path_mask, f"{self.path_mask}.old")
+        handle_file_operation("rename", self.path_mcmi, f"{self.path_mcmi}.old")
+        handle_file_operation("remove", self.path_image_jpg)
+
 
 class TimeLineLoadWorker(QThread):
     finished = Signal(dict, pd.DataFrame)
@@ -206,8 +225,8 @@ class TimelineDataManager(QObject):
         mean_colors_data = {"mean_colors": mean_colors}
         save_with_compress(mean_colors_data, mc_file_name)
 
-    def load_timeline(self, timeline, snapshot_instance, cs_file_name, ti_file_name: str, mc_file_name: str) -> (
-    dict, pd.DataFrame):
+    def load_timeline(self, timeline, snapshot_instance, cs_file_name, ti_file_name: str, mc_file_name: str) \
+            -> (dict, pd.DataFrame):
         if not os.path.exists(mc_file_name):
             return None, None
 
