@@ -106,6 +106,7 @@ class ImageViewerView(BaseWidgetView):
             if self.need_init:
                 snapshot: Snapshot = self.snapshot_instance
                 snapshot.init_origin_image(Image(image))
+                snapshot.mask.set_flare_threshold(255)
                 self.need_init = False
                 self.instance_initialized.emit()
 

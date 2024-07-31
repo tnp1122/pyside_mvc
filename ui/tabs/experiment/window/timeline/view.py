@@ -128,11 +128,12 @@ class PlateTimelineView(BaseWidgetView):
         else:
             str_anti_flicker = "직류(DC)"
 
-        lb_contents = f"""[해상도] {settings["resolution"]}
+        lb_contents = f"""[마스크 Threshold] {model.snapshot_instance.mask.flare_threshold}
+[해상도] {settings["resolution"]}
 [{str_auto_expo}] 타겟: {settings["expo_target"]}, 노출 시간: {round(settings["expo_time"], 3)}ms, 게인: {settings["expo_gain"]}%
 [화이트 밸런스] 색 온도: {settings["wb_temp"]}, 색조: {settings["wb_tint"]}
 [블랙 밸런스] 빨강: {settings["bb_r"]}, 녹색: {settings["bb_g"]}, 파랑: {settings["bb_b"]}  
-[색 조정] 색상: {settings["saturation"]}, 채도: {settings["brightness"]}, 밝기: {settings["brightness"]}, 명암: {settings["contrast"]}, 감마: {settings["gamma"]}
+[색 조정] 색상 {settings["saturation"]}, 채도: {settings["brightness"]}, 밝기: {settings["brightness"]}, 명암: {settings["contrast"]}, 감마: {settings["gamma"]}
 [광원 주파수] {str_anti_flicker}
         """
         self.lb_camera_setting.setText(lb_contents)
