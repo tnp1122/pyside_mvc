@@ -139,6 +139,8 @@ class SnapshotDataManager:
         def handle_file_operation(operation, src, dest=None):
             try:
                 if operation == "rename" and dest:
+                    if os.path.exists(dest):
+                        os.remove(dest)
                     os.rename(src, dest)
                 elif operation == "remove":
                     os.remove(src)

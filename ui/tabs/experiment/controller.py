@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import shutil
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, Dict, List
@@ -325,8 +326,11 @@ class ExperimentController(BaseController):
             if reply.error() == QNetworkReply.NoError:
                 timeline_path = "\\".join([experiment_name, combination_name, 'timelines', timeline_name])
                 directory_path = get_absolute_path(storage_path, timeline_path)
+                dest = f"{directory_path}.old"
                 try:
-                    os.rename(directory_path, f"{directory_path}.old")
+                    if os.path.exists(dest):
+                        shutil.rmtree(dest)
+                    os.rename(directory_path, dest)
                 except FileNotFoundError:
                     pass
                 except Exception as e:
