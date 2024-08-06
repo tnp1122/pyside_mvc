@@ -54,7 +54,7 @@ class PlateTimelineController(BaseController):
 
     def on_excel_saved(self, _, success):
         if success:
-            message = f"저장 완료: {self.timeline_path}.xlsx"
+            message = f"저장 완료: {self.timeline_path}_distance_datas.csv"
         else:
             message = "저장 실패"
         Toast().toast(message, duration=6000)

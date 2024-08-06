@@ -1,5 +1,5 @@
+import logging
 import os
-from datetime import datetime
 
 import pandas as pd
 from PySide6.QtCore import QThread, Signal
@@ -115,34 +115,30 @@ class TimelineExcelWorker(QThread):
                 self.elapsed_times, self.rgb_datas, self.distance_datas, self.timeline_path
             )
             self.finished.emit(self, True)
-        except:
+        except Exception as e:
+            logging.error(e)
             self.finished.emit(self, False)
 
 
 class TimelineExcelManager:
     def save_timeline_datas(self, elapsed_times, rgb_datas, distance_datas, timeline_path):
-        wb = Workbook()
-        wb.remove(wb.active)
+        self.save_rgb_colors(elapsed_times, rgb_datas, timeline_path)
+        self.save_distances(elapsed_times, distance_datas, timeline_path)
 
-        self._save_rgb_colors(wb, elapsed_times, rgb_datas)
-        self._save_distance_datas(wb, elapsed_times, distance_datas)
-
+    def save_rgb_colors(self, elapsed_times, datas, timeline_path):
         output_path = os.getenv("LOCAL_OUTPUT_PATH")
-        timeline_path = lsm.get_absolute_path(output_path, timeline_path)
-        wb.save(f"{timeline_path}.xlsx")
+        csv_path = lsm.get_absolute_path(output_path, f"{timeline_path}_rgb_colors.csv")
 
-    def _save_rgb_colors(self, wb, elapsed_times, datas):
-        rgb_sheet = wb.create_sheet("RGB Color")
-        rgb_sheet.append(["경과시간"] + list(datas.columns))
+        datas.insert(0, "경과시간", elapsed_times)
+        datas.to_csv(csv_path, index=False, encoding='utf-8-sig')
 
-        for i, elapsed_time in enumerate(elapsed_times, start=2):
-            row_data = [elapsed_time] + datas.iloc[i - 2].tolist()
-            rgb_sheet.append(row_data)
+    def save_distances(self, elapsed_times, datas, timeline_path):
+        output_path = os.getenv("LOCAL_OUTPUT_PATH")
+        csv_path = lsm.get_absolute_path(output_path, f"{timeline_path}_distance_datas.csv")
 
-    def _save_distance_datas(self, wb, elapsed_times, datas):
-        distance_sheet = wb.create_sheet("Distance Data")
-        distance_sheet.append(["경과시간"] + list(datas.columns))
+        combined_data = []
+        for col in datas.columns:
+            combined_data.extend(zip(elapsed_times[1:], datas[col].iloc[1:]))
 
-        for i, elapsed_time in enumerate(elapsed_times, start=2):
-            row_data = [elapsed_time] + datas.iloc[i - 2].tolist()
-            distance_sheet.append(row_data)
+        df_combined = pd.DataFrame(combined_data, columns=["경과시간", "ColorDistance"])
+        df_combined.to_csv(csv_path, index=False, encoding='utf-8-sig')

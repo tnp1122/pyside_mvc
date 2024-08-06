@@ -37,10 +37,18 @@ def get_absolute_path(main_path="", sub_path="", make_directory=True) -> str:
     absolute_path = os.getcwd()
     if main_path:
         absolute_path = os.path.join(absolute_path, main_path)
+
     if sub_path:
         absolute_path = os.path.join(absolute_path, sub_path)
-    if make_directory and not os.path.exists(absolute_path):
-        os.makedirs(absolute_path)
+
+    if os.path.splitext(absolute_path)[1]:
+        dir_path = os.path.dirname(absolute_path)
+        if make_directory and not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+    else:
+        if make_directory and not os.path.exists(absolute_path):
+            os.makedirs(absolute_path)
+
     return absolute_path
 
 
