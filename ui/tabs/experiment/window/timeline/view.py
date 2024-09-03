@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame, QCheckBo
 
 from models.snapshot import Snapshot, Timeline
 from ui.common import BaseWidgetView, ImageButton, SetCamera, ColoredButton
-from ui.common.image_viewer import ImageViewerController
+from ui.common.image_viewer import ImageViewerController, ImageViewerView
 from ui.tabs.experiment.window.timeline import PlateTimelineModel
 from ui.tabs.experiment.window.timeline.widgets.color_graph import ColorGraphController
 from ui.tabs.experiment.window.timeline.widgets.interval_config import IntervalConfig
@@ -38,6 +38,7 @@ class PlateTimelineView(BaseWidgetView):
         # 카메라 뷰
         image_viewer_args = {"mode": 1, "snapshot_instance": self.snapshot_instance}
         self.image_viewer = ImageViewerController(args=image_viewer_args)
+        image_viewer_view: ImageViewerView = self.image_viewer.view
         image_path = lsm.get_static_image_path("cogwheel.png")
         cogwheel = QPixmap(image_path)
         self.lb_interval_info = QLabel()
@@ -57,6 +58,9 @@ class PlateTimelineView(BaseWidgetView):
         lyt_main_content.addLayout(lyt_interval_info)
         lyt_main_content.addWidget(self.lb_camera_setting)
         lyt_main_content.addStretch()
+
+        set_camera.wb_roi_changed.connect(image_viewer_view.set_wb_roi)
+        set_camera.on_wb_roi_changed()
 
         # 그래프
         self.graph = ColorGraphController()

@@ -34,6 +34,8 @@ class ImageViewerView(BaseWidgetView):
             self.snapshot_instance = None
             self.need_init = False
 
+        self.wb_x, self.wb_y, self.wb_width, self.wb_height = None, None, None, None
+
         super().__init__(parent)
 
         self.view_mask = True
@@ -110,10 +112,25 @@ class ImageViewerView(BaseWidgetView):
                 self.need_init = False
                 self.instance_initialized.emit()
 
+            self.paint_wb_roi(pixmap)
             if self.mode != 0 and self.view_mask:
                 pixmap = self.paint_plate(pixmap)
 
             self.lb.setPixmap(pixmap.scaled(self.lb.size(), Qt.KeepAspectRatio))
+
+    def set_wb_roi(self, x, y, width, height):
+        self.wb_x, self.wb_y, self.wb_width, self.wb_height = x, y, width, height
+        self.update_image(self.image)
+
+    def paint_wb_roi(self, pixmap: QPixmap) -> QPixmap:
+        if self.wb_x is None:
+            return pixmap
+        painter = QPainter(pixmap)
+        painter.setPen(QPen(Qt.green, 5))
+        painter.drawRect(self.wb_x, self.wb_y, self.wb_width, self.wb_height)
+        painter.end()
+
+        return pixmap
 
     def paint_plate(self, pixmap: QPixmap) -> QPixmap:
         snapshot: Snapshot = self.snapshot_instance

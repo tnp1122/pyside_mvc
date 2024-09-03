@@ -1,13 +1,13 @@
 import os
 
 import numpy as np
-from PySide6.QtCore import Qt, QSignalBlocker
+from PySide6.QtCore import Qt, QSignalBlocker, Signal
 from PySide6.QtWidgets import QScrollArea, QHBoxLayout, QVBoxLayout, QComboBox, QCheckBox, QLabel, QSlider, \
-    QPushButton, QWidget, QSizePolicy, QLayout, QButtonGroup, QRadioButton
+    QPushButton, QWidget, QSizePolicy, QLayout, QButtonGroup, QRadioButton, QLineEdit
 
 from ui.common import ImageButton
-from util.camera_manager import CameraUnit, toupcam
 from util import local_storage_manager as lsm
+from util.camera_manager import CameraUnit, toupcam
 from util.setting_manager import SettingManager
 
 
@@ -122,6 +122,7 @@ class GroupBox(QWidget):
 class SetCamera(QScrollArea):
     camera_unit = CameraUnit()
     setting_manager = SettingManager()
+    wb_roi_changed = Signal(int, int, int, int)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -180,6 +181,28 @@ class SetCamera(QScrollArea):
 
         """ 화이트 밸런스 """
         ## 온도 색조 모드
+        lb_wb_roi_x = QLabel("x")
+        lb_wb_roi_y = QLabel("y")
+        lb_wb_roi_w = QLabel("w")
+        lb_wb_roi_h = QLabel("h")
+        self.et_lb_wb_roi_x = QLineEdit()
+        self.et_lb_wb_roi_y = QLineEdit()
+        self.et_lb_wb_roi_w = QLineEdit()
+        self.et_lb_wb_roi_h = QLineEdit()
+        self.et_lb_wb_roi_x.textChanged.connect(self.on_wb_roi_changed)
+        self.et_lb_wb_roi_y.textChanged.connect(self.on_wb_roi_changed)
+        self.et_lb_wb_roi_w.textChanged.connect(self.on_wb_roi_changed)
+        self.et_lb_wb_roi_h.textChanged.connect(self.on_wb_roi_changed)
+        lyt_wb_roi1 = QHBoxLayout()
+        lyt_wb_roi2 = QHBoxLayout()
+        lyt_wb_roi1.addWidget(lb_wb_roi_x)
+        lyt_wb_roi1.addWidget(self.et_lb_wb_roi_x)
+        lyt_wb_roi1.addWidget(lb_wb_roi_y)
+        lyt_wb_roi1.addWidget(self.et_lb_wb_roi_y)
+        lyt_wb_roi2.addWidget(lb_wb_roi_w)
+        lyt_wb_roi2.addWidget(self.et_lb_wb_roi_w)
+        lyt_wb_roi2.addWidget(lb_wb_roi_h)
+        lyt_wb_roi2.addWidget(self.et_lb_wb_roi_h)
         self.lb_temp = QLabel(str(toupcam.TOUPCAM_TEMP_DEF))
         self.lb_tint = QLabel(str(toupcam.TOUPCAM_TINT_DEF))
         self.slider_temp = QSlider(Qt.Horizontal)
@@ -237,12 +260,14 @@ class SetCamera(QScrollArea):
         # lyt_rb_wb_mode.addWidget(self.rb_wb_gain)
         self.btn_auto_wb = QPushButton("화이트 밸런스")
         self.btn_auto_wb.setEnabled(self.camera_started)
-        self.btn_auto_wb.clicked.connect(self.camera_unit.auto_white_balance_once)
+        self.btn_auto_wb.clicked.connect(self.auto_white_balance_once)
         self.btn_init_wb = QPushButton("기본값")
         self.btn_init_wb.setEnabled(self.camera_started)
         self.btn_init_wb.clicked.connect(self.init_white_balance)
         lyt_wb = QVBoxLayout()
         # lyt_wb.addLayout(lyt_rb_wb_mode)
+        lyt_wb.addLayout(lyt_wb_roi1)
+        lyt_wb.addLayout(lyt_wb_roi2)
         lyt_wb.addWidget(self.wig_wb_temp_tint)
         # lyt_wb.addWidget(self.wig_wb_gain)
         lyt_wb.addLayout(get_twin_button_layout(self.btn_auto_wb, self.btn_init_wb))
@@ -416,6 +441,23 @@ class SetCamera(QScrollArea):
                 self.handle_temp_tint_event()
 
             """ 화이트 밸런스 """
+            wb_roi = self.setting_manager.get_camera_wb_roi()
+            if wb_roi is None:
+                wb_x, wb_y, wb_w, wb_h = self.camera_unit.get_white_balance_roi_rect()
+            else:
+                wb_x, wb_y, wb_w, wb_h = wb_roi
+
+            if wb_x is not None:
+                with QSignalBlocker(self.et_lb_wb_roi_x):
+                    self.et_lb_wb_roi_x.setText(str(wb_x))
+                with QSignalBlocker(self.et_lb_wb_roi_y):
+                    self.et_lb_wb_roi_y.setText(str(wb_y))
+                with QSignalBlocker(self.et_lb_wb_roi_w):
+                    self.et_lb_wb_roi_w.setText(str(wb_w))
+                with QSignalBlocker(self.et_lb_wb_roi_h):
+                    self.et_lb_wb_roi_h.setText(str(wb_h))
+            self.on_wb_roi_changed()
+
             temp, tint = self.setting_manager.get_camera_wb_temp_tint()
             if temp:
                 self.lb_temp.setText(str(temp))
@@ -533,6 +575,14 @@ class SetCamera(QScrollArea):
 
     """ 화이트 밸런스 """
 
+    def on_wb_roi_changed(self):
+        x = int(self.et_lb_wb_roi_x.text())
+        y = int(self.et_lb_wb_roi_y.text())
+        w = int(self.et_lb_wb_roi_w.text())
+        h = int(self.et_lb_wb_roi_h.text())
+        self.setting_manager.set_camera_wb_roi([x, y, w, h])
+        self.wb_roi_changed.emit(x, y, w, h)
+
     def on_wb_temp_changed(self, value):
         if self.camera_unit.set_white_balance_temp(value):
             self.setting_manager.set_camera_wb_temp_tint(temp=value)
@@ -566,6 +616,14 @@ class SetCamera(QScrollArea):
     #     self.slider_r_wb.setValue(gain[0])
     #     self.slider_g_wb.setValue(gain[1])
     #     self.slider_b_wb.setValue(gain[2])
+
+    def auto_white_balance_once(self):
+        x = int(self.et_lb_wb_roi_x.text())
+        y = int(self.et_lb_wb_roi_y.text())
+        w = int(self.et_lb_wb_roi_w.text())
+        h = int(self.et_lb_wb_roi_h.text())
+        if self.camera_unit.set_white_balance_roi_rect(x, y, w, h):
+            self.camera_unit.auto_white_balance_once()
 
     def init_white_balance(self):
         if self.camera_unit.init_white_balance():

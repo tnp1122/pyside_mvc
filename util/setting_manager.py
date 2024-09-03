@@ -21,6 +21,7 @@ CAMERA_AUTO_EXPO = "camera_auto_expo"
 CAMERA_EXPO_TARGET = "camera_expo_target"
 CAMERA_EXPO_TIME = "camera_expo_time"
 CAMERA_EXPO_GAIN = "camera_expo_gain"
+CAMERA_WB_ROI = "camera_wb_roi"
 CAMERA_WB_TEMP = "camera_wb_temp"
 CAMERA_WB_TINT = "camera_wb_tint"
 CAMERA_BB_R = "camera_bb_r"
@@ -168,6 +169,12 @@ class SettingManager:
 
     def get_camera_expo_gain(self):
         return self._get_value(CAMERA_EXPO_GAIN)
+
+    def set_camera_wb_roi(self, roi_rect: list):
+        self._set_value(CAMERA_WB_ROI, roi_rect)
+
+    def get_camera_wb_roi(self):
+        return self._get_value(CAMERA_WB_ROI)
 
     def set_camera_wb_temp_tint(self, temp=None, tint=None):
         if temp is not None:

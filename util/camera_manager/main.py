@@ -1,5 +1,4 @@
 import logging
-import sys
 
 import numpy as np
 from PySide6.QtCore import Signal, QObject
@@ -209,7 +208,6 @@ class CameraUnit(QObject):
             return min_expo_time, max_expo_time
         return None, None
 
-
     def set_auto_expo(self, state):
         return self._execute_if_cam(self.cam.put_AutoExpoEnable, 1 if state else 0)
 
@@ -244,6 +242,15 @@ class CameraUnit(QObject):
 
     def auto_white_balance_once(self):
         return self._execute_if_cam(self.cam.AwbOnce)
+
+    def set_white_balance_roi_rect(self, x, y, width, height):
+        return self._execute_if_cam(self.cam.put_AWBAuxRect, x, y, width, height)
+
+    def get_white_balance_roi_rect(self):
+        """ return (left, top, width, height) """
+        if self.cam:
+            return self.cam.get_AWBAuxRect()
+        return None, None, None, None
 
     def set_white_balance_temp(self, value):
         self.temp = value
