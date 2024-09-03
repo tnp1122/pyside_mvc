@@ -157,8 +157,8 @@ class SettingManager:
     def get_camera_expo_target(self):
         return self._get_value(CAMERA_EXPO_TARGET)
 
-    def set_camera_expo_time(self, slider_value):
-        self._set_value(CAMERA_EXPO_TIME, slider_value)
+    def set_camera_expo_time(self, exposure_time):
+        self._set_value(CAMERA_EXPO_TIME, exposure_time)
 
     def get_camera_expo_time(self):
         return self._get_value(CAMERA_EXPO_TIME)

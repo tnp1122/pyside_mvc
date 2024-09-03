@@ -127,7 +127,7 @@ class SetCamera(QScrollArea):
         super().__init__(parent)
 
         camera_unit: CameraUnit = self.camera_unit
-        time_min, time_max, _ = camera_unit.get_exp_time_range()
+        time_min, time_max = camera_unit.get_expo_time_range()
         self.exponential_function = ExponentialFunction(0, time_min, 100, time_max)
         self.camera_started = camera_unit.pData is not None
 
@@ -376,7 +376,6 @@ class SetCamera(QScrollArea):
     def init_view(self):
         if self.camera_started:
             camera_unit: CameraUnit = self.camera_unit
-            camera_unit.evtCallback.connect(self.on_event_callback)
 
             """ 해상도 """
 
@@ -393,8 +392,7 @@ class SetCamera(QScrollArea):
                 self.on_auto_expo_changed(auto_expo)
 
             target_min, target_max, _ = toupcam.TOUPCAM_AETARGET_MIN, toupcam.TOUPCAM_AETARGET_MAX, toupcam.TOUPCAM_AETARGET_DEF
-            time_min, time_max, _ = camera_unit.cam.get_ExpTimeRange()
-            gain_min, gain_max, _ = camera_unit.cam.get_ExpoAGainRange()
+            gain_min, gain_max = camera_unit.get_expo_gain_range()
             saved_target = self.setting_manager.get_camera_expo_target()
             saved_time = self.setting_manager.get_camera_expo_time()
             saved_gain = self.setting_manager.get_camera_expo_gain()
@@ -405,9 +403,10 @@ class SetCamera(QScrollArea):
             if saved_target is not None:
                 self.slider_expo_target.setValue(saved_target)
                 self.on_expo_target_changed(saved_target)
-            if saved_time:
-                self.slider_expo_time.setValue(saved_time)
-                self.on_expo_time_changed(saved_time)
+            if saved_time is not None:
+                slider_value = self.exponential_function.calculate_x(saved_time)
+                self.slider_expo_time.setValue(slider_value)
+                self.on_expo_time_changed(slider_value)
             if saved_gain is not None:
                 self.slider_expo_gain.setValue(saved_gain)
                 self.on_expo_gain_changed(saved_gain)
@@ -479,6 +478,8 @@ class SetCamera(QScrollArea):
             camera_rotation = int(os.getenv("CAMERA_ROTATION"))
             self.camera_unit.set_rotate(camera_rotation)
 
+            camera_unit.evtCallback.connect(self.on_event_callback)
+
     """ 플랫 필드 보정 """
 
     def on_cb_ffc_changed(self):
@@ -522,7 +523,7 @@ class SetCamera(QScrollArea):
     def on_expo_time_changed(self, slider_value):
         exposure_time = self.exponential_function.calculate_y(slider_value)
         if self.camera_unit.set_expo_time(exposure_time):
-            self.setting_manager.set_camera_expo_time(slider_value)
+            self.setting_manager.set_camera_expo_time(exposure_time)
             self.lb_expo_time.setText(f"{round(exposure_time / 1000, 3)}ms")
 
     def on_expo_gain_changed(self, value):

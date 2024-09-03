@@ -185,10 +185,30 @@ class CameraUnit(QObject):
 
     """ 노출 및 게인"""
 
-    def get_exp_time_range(self):
+    def _get_min_auto_expo_time_a_gain(self):
         if self.cam:
-            return self.cam.get_ExpTimeRange()
-        return 100, 1500000, 0
+            return self.cam.get_MinAutoExpoTimeAGain()
+        return [None, None]
+
+    def _get_max_auto_expo_time_a_gain(self):
+        if self.cam:
+            return self.cam.get_MaxAutoExpoTimeAGain()
+        return [None, None]
+
+    def get_expo_time_range(self):
+        if self.cam:
+            min_expo_time = self._get_min_auto_expo_time_a_gain()[0]
+            max_expo_time = self._get_max_auto_expo_time_a_gain()[0]
+            return min_expo_time, max_expo_time
+        return None, None
+
+    def get_expo_gain_range(self):
+        if self.cam:
+            min_expo_time = self._get_min_auto_expo_time_a_gain()[1]
+            max_expo_time = self._get_max_auto_expo_time_a_gain()[1]
+            return min_expo_time, max_expo_time
+        return None, None
+
 
     def set_auto_expo(self, state):
         return self._execute_if_cam(self.cam.put_AutoExpoEnable, 1 if state else 0)
