@@ -131,6 +131,7 @@ class SetCamera(QScrollArea):
         time_min, time_max = camera_unit.get_expo_time_range()
         self.exponential_function = ExponentialFunction(0, time_min, 100, time_max)
         self.camera_started = camera_unit.pData is not None
+        self.view_initialized = False
 
         """ 플랫 필드 보정 """
         self.cb_ffc = QCheckBox("활성화")
@@ -401,6 +402,7 @@ class SetCamera(QScrollArea):
     def init_view(self):
         if self.camera_started:
             camera_unit: CameraUnit = self.camera_unit
+            camera_unit.evtCallback.connect(self.on_event_callback)
 
             """ 해상도 """
 
@@ -437,8 +439,6 @@ class SetCamera(QScrollArea):
                 self.on_expo_gain_changed(saved_gain)
 
             self.handle_expo_event()
-            if camera_unit.cur.model.flag & toupcam.TOUPCAM_FLAG_MONO == 0:
-                self.handle_temp_tint_event()
 
             """ 화이트 밸런스 """
             wb_roi = self.setting_manager.get_camera_wb_roi()
@@ -520,7 +520,7 @@ class SetCamera(QScrollArea):
             camera_rotation = int(os.getenv("CAMERA_ROTATION"))
             self.camera_unit.set_rotate(camera_rotation)
 
-            camera_unit.evtCallback.connect(self.on_event_callback)
+            self.view_initialized = True
 
     """ 플랫 필드 보정 """
 
@@ -704,7 +704,7 @@ class SetCamera(QScrollArea):
     """ 이벤트 핸들러 """
 
     def on_event_callback(self, nEvent):
-        if self.camera_unit.cam:
+        if self.camera_unit.cam and self.view_initialized:
             if nEvent == toupcam.TOUPCAM_EVENT_EXPOSURE:
                 self.handle_expo_event()
             elif nEvent == toupcam.TOUPCAM_EVENT_TEMPTINT:
