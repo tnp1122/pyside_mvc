@@ -39,19 +39,18 @@ class CameraViewer(QWidget):
 
         self.lb_image = QLabel("No Image")
         self.lb_image.setStyleSheet("border: 1px solid black")
-        self.lb_image.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.lb_image.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-        # self.wig_bottom = QWidget()
-        # lyt_bottom = QVBoxLayout(self.wig_bottom)
-        # lyt_bottom.setContentsMargins(0, 0, 0, 0)
-        # lyt_bottom.addWidget(QPushButton("btn"))
+        self.wig_bottom = QWidget()
+        self.lyt_bottom = QVBoxLayout(self.wig_bottom)
+        self.lyt_bottom.setContentsMargins(0, 0, 0, 0)
 
         lyt = QVBoxLayout(self)
         lyt.setContentsMargins(0, 0, 0, 0)
         lyt.setSpacing(4)
         lyt.addLayout(lyt_btn)
         lyt.addWidget(self.lb_image)
-        # lyt.addWidget(self.wig_bottom)
+        lyt.addWidget(self.wig_bottom)
 
         self.init_view()
 
@@ -125,5 +124,5 @@ class CameraViewer(QWidget):
         else:
             self.btn_switch_setting_visible.setText("카메라 설정 열기")
 
-    # def set_bottom_widget(self, widget: QWidget):
-    #     self.wig_bottom = widget
+    def set_bottom_widget(self, widget: QWidget):
+        self.lyt_bottom.addWidget(widget)

@@ -1,11 +1,11 @@
 from datetime import datetime
 
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QWidget, QSizePolicy, QFrame
+from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QWidget, QSizePolicy, QFrame, QPushButton
 
 from ui.common import BaseWidgetView, ColoredButton
+from ui.common.camera_widget import CameraWidget
 from ui.common.date_picker import DateWidget, HourWidget
-from ui.common.image_viewer import ImageViewerController
 from ui.tabs.experiment.window.snapshot.process.capture_list import CaptureListController
 
 
@@ -83,7 +83,9 @@ class SnapshotProcessView(BaseWidgetView):
         lyt_top.addWidget(self.btn_apply_mask)
         lyt_top.addWidget(self.btn_save)
 
-        self.image_viewer = ImageViewerController()
+        self.btn_capture = QPushButton("촬영")
+        self.camera_widget = CameraWidget(setting_visible=False)
+        self.camera_widget.set_viewer_bottom_widget(self.btn_capture)
 
         self.capture_list = CaptureListController()
         self.capture_list.set_unit_size(300, 500)
@@ -91,14 +93,12 @@ class SnapshotProcessView(BaseWidgetView):
         self.btn_apply_mask.clicked.connect(self.capture_list.apply_plate_mask_info)
 
         lyt_content = QHBoxLayout()
-        lyt_content.addWidget(self.image_viewer.view)
+        lyt_content.addWidget(self.camera_widget)
         lyt_content.addWidget(self.capture_list.view)
 
         lyt = QVBoxLayout(self)
         lyt.addLayout(lyt_top)
-        lyt.addStretch()
         lyt.addLayout(lyt_content)
-        lyt.addStretch()
 
         self.set_snapshot_age()
 
