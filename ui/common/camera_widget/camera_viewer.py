@@ -89,7 +89,7 @@ class CameraViewer(QWidget):
         self.setFixedWidth(self.lb_image.width())
 
     def paint_wb_roi(self, pixmap: QPixmap):
-        if self.wb_x is None:
+        if self.wb_x is None or not self.setting_visible:
             return
         rect = QRect(self.wb_x, self.wb_y, self.wb_width, self.wb_height)
         text = "화이트 밸런스"
