@@ -83,8 +83,8 @@ class SnapshotProcessView(BaseWidgetView):
         lyt_top.addWidget(self.btn_apply_mask)
         lyt_top.addWidget(self.btn_save)
 
-        self.btn_capture = QPushButton("촬영")
-        self.camera_widget = CameraWidget(setting_visible=False)
+        self.btn_capture = ColoredButton("촬영")
+        self.camera_widget = CameraWidget(use_mask=False, setting_visible=False, mask_area_visible=False)
         self.camera_widget.set_viewer_bottom_widget(self.btn_capture)
 
         self.capture_list = CaptureListController()
