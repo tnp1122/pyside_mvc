@@ -2,7 +2,7 @@ from PySide6.QtCore import QTimer
 
 from models.snapshot import Snapshot, Timeline
 from ui.common import BaseController
-from ui.common.image_viewer import ImageViewerController
+from ui.common.camera_widget.camera_viewer import CameraViewer
 from ui.common.loading_spinner import with_loading_spinner
 from ui.common.toast import Toast
 from ui.tabs.experiment.window.snapshot.difference.excel_manager import TimelineExcelWorker
@@ -26,7 +26,7 @@ class PlateTimelineController(BaseController):
 
         view: PlateTimelineView = self.view
         view.update_lb_interval_info()
-        view.image_viewer.instance_initialized.connect(self.load_timeline)
+        view.camera_widget.camera_viewer.snapshot_initialized_signal.connect(self.load_timeline)
         view.cb_hide_velocity.clicked.connect(self.on_velocity_visibility_changed)
         view.btn_export_to_excel.clicked.connect(self.export_to_excel)
 
@@ -35,12 +35,12 @@ class PlateTimelineController(BaseController):
 
     def init_controller(self):
         model: PlateTimelineModel = self.model
-        self.view.set_model(model)
+        view: PlateTimelineView = self.view
+        view.set_model(model)
 
         super().init_controller()
 
-        image_viewer: ImageViewerController = self.view.image_viewer
-        image_viewer.run_timeline_clicked.connect(self.on_run_timeline_clicked)
+        view.btn_run_timeline.clicked.connect(self.on_run_timeline_clicked)
 
     @with_loading_spinner
     def export_to_excel(self):
@@ -64,8 +64,9 @@ class PlateTimelineController(BaseController):
         model: PlateTimelineModel = self.model
         view: PlateTimelineView = self.view
         timeline: Timeline = model.timeline
+        snapshot_instance: Snapshot = view.camera_widget.camera_viewer.snapshot_instance
 
-        worker, camera_settings = timeline.load_timeline(model.snapshot_instance)
+        worker, camera_settings = timeline.load_timeline(snapshot_instance)
         if worker is not None:
             worker.finished.connect(self.on_timeline_loaded)
             worker.start()
@@ -90,8 +91,8 @@ class PlateTimelineController(BaseController):
         color_graph: ColorGraphController = self.view.graph
         graph_colors = color_graph.set_colors(len(association_indexes))
 
-        image_viewer: ImageViewerController = self.view.image_viewer
-        image_viewer.set_sensor_indexes(association_indexes, graph_colors)
+        camera_viewer: CameraViewer = self.view.camera_widget.camera_viewer
+        camera_viewer.set_sensor_indexes(association_indexes, graph_colors)
         self.association_indexes = association_indexes
         self.update_graph()
 
@@ -99,16 +100,18 @@ class PlateTimelineController(BaseController):
         self.velocity_visibility = not state
         self.update_graph()
 
-    def on_run_timeline_clicked(self, run_timeline: bool):
+    def on_run_timeline_clicked(self):
         view: PlateTimelineView = self.view
         model: PlateTimelineModel = self.model
-        model.is_running = run_timeline
-        if run_timeline:
+        model.is_running = not model.is_running
+        view.switch_btn_run_timeline(model.is_running)
+
+        if model.is_running:
             model.get_camera_setting()
             view.update_lb_camera_settings()
 
             timeline: Timeline = model.timeline
-            timeline.init_plate_info(model.snapshot_instance)
+            timeline.init_plate_info(view.camera_widget.camera_viewer.snapshot_instance)
             QTimer.singleShot(0, self.take_snapshot)
 
     def take_snapshot(self):
@@ -116,21 +119,21 @@ class PlateTimelineController(BaseController):
             return
 
         view: PlateTimelineView = self.view
-        image_viewer: ImageViewerController = view.image_viewer
+        camera_viewer: CameraViewer = view.camera_widget.camera_viewer
 
         model: PlateTimelineModel = self.model
         timeline: Timeline = model.timeline
-        snapshot_instance: Snapshot = model.snapshot_instance
+        snapshot_instance: Snapshot = camera_viewer.snapshot_instance
 
         if timeline.current_count >= timeline.end_count:
             model.is_running = False
-            image_viewer.switch_running_timeline(False)
+            view.switch_btn_run_timeline(False)
             view.update_lb_interval_info()
             return
 
         QTimer.singleShot(timeline.current_interval * 1000, self.take_snapshot)
 
-        image_viewer.take_snapshot()
+        camera_viewer.take_snapshot()
         view.update_lb_interval_info()
         timeline.append_snapshot(snapshot_instance)
 

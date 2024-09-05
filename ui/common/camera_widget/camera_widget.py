@@ -1,18 +1,22 @@
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QSizePolicy
 
-from ui.common import SetCamera
 from ui.common.camera_widget.camera_viewer import CameraViewer
+from ui.common.camera_widget.set_camera import SetCamera
 
 
 class CameraWidget(QWidget):
-    def __init__(self, parent=None, setting_visible=True):
+    def __init__(self, parent=None, use_mask=True, setting_visible=True, mask_area_visible=True):
         super().__init__(parent)
 
         self.setting_visible = setting_visible
 
         self.set_camera = SetCamera()
         self.set_camera.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
-        self.camera_viewer = CameraViewer(setting_visible=self.setting_visible)
+        self.camera_viewer = CameraViewer(
+            use_mask=use_mask,
+            setting_visible=setting_visible,
+            mask_area_visible=mask_area_visible
+        )
 
         lyt = QHBoxLayout(self)
         lyt.setContentsMargins(0, 0, 0, 0)

@@ -1,6 +1,6 @@
 from PySide6.QtCore import QObject, Signal
 
-from models.snapshot import Snapshot, Timeline
+from models.snapshot import Timeline
 from util.camera_manager import CameraUnit
 from util.setting_manager import SettingManager
 
@@ -12,7 +12,6 @@ class PlateTimelineModel(QObject):
         super().__init__(parent)
         self.selected_associations = []
 
-        self.snapshot_instance = Snapshot()  # 마스킹 영역 설정용 스냅샷 객체
         self.timeline = []
         self.is_running = False
 

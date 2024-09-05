@@ -1,10 +1,10 @@
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QFrame, QCheckBox
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QVBoxLayout, QCheckBox, QWidget
 
-from models.snapshot import Snapshot, Timeline
-from ui.common import BaseWidgetView, ImageButton, SetCamera, ColoredButton
-from ui.common.image_viewer import ImageViewerController, ImageViewerView
+from models.snapshot import Timeline
+from ui.common import BaseWidgetView, ImageButton, ColoredButton
+from ui.common.camera_widget import CameraWidget
 from ui.tabs.experiment.window.timeline import PlateTimelineModel
 from ui.tabs.experiment.window.timeline.widgets.color_graph import ColorGraphController
 from ui.tabs.experiment.window.timeline.widgets.interval_config import IntervalConfig
@@ -19,26 +19,11 @@ class PlateTimelineView(BaseWidgetView):
     height_et = 24
 
     def __init__(self, parent=None, combination_id=None):
+        super().__init__(parent)
         self.combination_id = combination_id
         self.model: PlateTimelineModel = None
-        self.snapshot_instance: Snapshot = None
 
-        super().__init__(parent)
-
-    def set_model(self, model: PlateTimelineModel):
-        self.model = model
-        self.snapshot_instance: Snapshot = model.snapshot_instance
-
-    def init_view(self):
-        super().init_view()
-
-        # 카메라 설정
-        set_camera = SetCamera()
-        """ 컨텐츠 """
-        # 카메라 뷰
-        image_viewer_args = {"mode": 1, "snapshot_instance": self.snapshot_instance}
-        self.image_viewer = ImageViewerController(args=image_viewer_args)
-        image_viewer_view: ImageViewerView = self.image_viewer.view
+        self.btn_run_timeline = ColoredButton("연속 촬영 시작")
         image_path = lsm.get_static_image_path("cogwheel.png")
         cogwheel = QPixmap(image_path)
         self.lb_interval_info = QLabel()
@@ -51,16 +36,15 @@ class PlateTimelineView(BaseWidgetView):
         self.lb_camera_setting = QLabel()
         self.lb_camera_setting.setTextInteractionFlags(Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard)
 
-        lyt_main_content = QVBoxLayout()
-        lyt_main_content.setContentsMargins(10, 0, 10, 0)
-        lyt_main_content.addStretch()
-        lyt_main_content.addWidget(self.image_viewer.view)
-        lyt_main_content.addLayout(lyt_interval_info)
-        lyt_main_content.addWidget(self.lb_camera_setting)
-        lyt_main_content.addStretch()
+        wig_timeline_content = QWidget()
+        lyt_timeline_content = QVBoxLayout(wig_timeline_content)
+        lyt_timeline_content.setContentsMargins(0, 0, 0, 0)
+        lyt_timeline_content.addWidget(self.btn_run_timeline)
+        lyt_timeline_content.addLayout(lyt_interval_info)
+        lyt_timeline_content.addWidget(self.lb_camera_setting)
 
-        set_camera.wb_roi_changed.connect(image_viewer_view.set_wb_roi)
-        set_camera.on_wb_roi_changed()
+        self.camera_widget = CameraWidget()
+        self.camera_widget.camera_viewer.set_bottom_widget(wig_timeline_content)
 
         # 그래프
         self.graph = ColorGraphController()
@@ -78,23 +62,28 @@ class PlateTimelineView(BaseWidgetView):
         # 컨텐츠 컨테이너
         lyt_content = QHBoxLayout()
         lyt_content.setContentsMargins(0, 0, 0, 0)
-        lyt_content.addWidget(set_camera)
-        lyt_content.addLayout(lyt_main_content)
+        lyt_content.addWidget(self.camera_widget)
         lyt_content.addWidget(self.graph.view)
         lyt_content.addLayout(lyt_combination)
-
-        divider1 = QFrame()
-        divider1.setFrameShape(QFrame.HLine)
-        divider1.setFrameShadow(QFrame.Sunken)
-        divider2 = QFrame()
-        divider2.setFrameShape(QFrame.HLine)
-        divider2.setFrameShadow(QFrame.Sunken)
 
         """ 전체 컨테이너 """
         lyt = QVBoxLayout(self)
         lyt.setContentsMargins(1, 1, 1, 1)
         lyt.setSpacing(5)
         lyt.addLayout(lyt_content)
+
+    def set_model(self, model: PlateTimelineModel):
+        self.model = model
+
+    def init_view(self):
+        super().init_view()
+
+    def switch_btn_run_timeline(self, is_running):
+        if is_running:
+            btn_text = "연속 촬영 중단"
+        else:
+            btn_text = "연속 촬영 시작"
+        self.btn_run_timeline.setText(btn_text)
 
     def update_lb_interval_info(self):
         timeline: Timeline = self.model.timeline
@@ -132,8 +121,9 @@ class PlateTimelineView(BaseWidgetView):
         else:
             str_anti_flicker = "직류(DC)"
 
-        lb_contents = f"""[마스크 Threshold] {model.snapshot_instance.mask.flare_threshold}
-[해상도] {settings["resolution"]}
+        #         lb_contents = f"""[마스크 Threshold] {model.snapshot_instance.mask.flare_threshold}
+        # [해상도] {settings["resolution"]}
+        lb_contents = f"""[해상도] {settings["resolution"]}
 [{str_auto_expo}] 타겟: {settings["expo_target"]}, 노출 시간: {round(settings["expo_time"], 3)}ms, 게인: {settings["expo_gain"]}%
 [화이트 밸런스] 색 온도: {settings["wb_temp"]}, 색조: {settings["wb_tint"]}
 [블랙 밸런스] 빨강: {settings["bb_r"]}, 녹색: {settings["bb_g"]}, 파랑: {settings["bb_b"]}  
