@@ -84,7 +84,7 @@ class SnapshotProcessView(BaseWidgetView):
         lyt_top.addWidget(self.btn_save)
 
         self.btn_capture = ColoredButton("촬영")
-        self.camera_widget = CameraWidget(use_mask=False, setting_visible=False, mask_border_visible=False)
+        self.camera_widget = CameraWidget(use_mask=False, setting_visible=False, plate_border_visible=False)
         self.camera_widget.set_viewer_bottom_widget(self.btn_capture)
 
         self.capture_list = CaptureListController()

@@ -44,7 +44,7 @@ class PlateTimelineView(BaseWidgetView):
         lyt_timeline_content.addWidget(self.lb_camera_setting)
 
         self.camera_widget = CameraWidget()
-        self.camera_widget.camera_viewer.set_bottom_widget(wig_timeline_content)
+        self.camera_widget.camera_display.set_bottom_widget(wig_timeline_content)
 
         # 그래프
         self.graph = ColorGraphController()

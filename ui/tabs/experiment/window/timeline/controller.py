@@ -26,7 +26,7 @@ class PlateTimelineController(BaseController):
 
         view: PlateTimelineView = self.view
         view.update_lb_interval_info()
-        view.camera_widget.camera_viewer.snapshot_initialized_signal.connect(self.load_timeline)
+        view.camera_widget.camera_display.lb_camera.snapshot_initialized_signal.connect(self.load_timeline)
         view.cb_hide_velocity.clicked.connect(self.on_velocity_visibility_changed)
         view.btn_export_to_excel.clicked.connect(self.export_to_excel)
 
@@ -64,7 +64,7 @@ class PlateTimelineController(BaseController):
         model: PlateTimelineModel = self.model
         view: PlateTimelineView = self.view
         timeline: Timeline = model.timeline
-        snapshot_instance: Snapshot = view.camera_widget.camera_viewer.snapshot_instance
+        snapshot_instance: Snapshot = view.camera_widget.snapshot_instance
 
         worker, camera_settings = timeline.load_timeline(snapshot_instance)
         if worker is not None:
@@ -91,7 +91,7 @@ class PlateTimelineController(BaseController):
         color_graph: ColorGraphController = self.view.graph
         graph_colors = color_graph.set_colors(len(association_indexes))
 
-        camera_display: SectionCameraDisplay = self.view.camera_widget.camera_viewer
+        camera_display: SectionCameraDisplay = self.view.camera_widget.camera_display
         camera_display.set_sensor_indexes(association_indexes, graph_colors)
         self.association_indexes = association_indexes
         self.update_graph()
@@ -111,7 +111,7 @@ class PlateTimelineController(BaseController):
             view.update_lb_camera_settings()
 
             timeline: Timeline = model.timeline
-            timeline.init_plate_info(view.camera_widget.camera_viewer.snapshot_instance)
+            timeline.init_plate_info(view.camera_widget.snapshot_instance)
             QTimer.singleShot(0, self.take_snapshot)
 
     def take_snapshot(self):
@@ -119,7 +119,7 @@ class PlateTimelineController(BaseController):
             return
 
         view: PlateTimelineView = self.view
-        camera_display: SectionCameraDisplay = view.camera_widget.camera_viewer
+        camera_display: SectionCameraDisplay = view.camera_widget.camera_display
 
         model: PlateTimelineModel = self.model
         timeline: Timeline = model.timeline
