@@ -119,7 +119,7 @@ class GroupBox(QWidget):
         self.wig_title.rotate_arrow(content.isVisible())
 
 
-class SetCamera(QScrollArea):
+class SectionSetCamera(QScrollArea):
     camera_unit = CameraUnit()
     setting_manager = SettingManager()
     wb_roi_changed = Signal(int, int, int, int)

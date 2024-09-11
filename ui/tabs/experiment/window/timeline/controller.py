@@ -2,7 +2,7 @@ from PySide6.QtCore import QTimer
 
 from models.snapshot import Snapshot, Timeline
 from ui.common import BaseController
-from ui.common.camera_widget.camera_viewer import CameraViewer
+from ui.common.camera_widget.section_camera_display import SectionCameraDisplay
 from ui.common.loading_spinner import with_loading_spinner
 from ui.common.toast import Toast
 from ui.tabs.experiment.window.snapshot.difference.excel_manager import TimelineExcelWorker
@@ -91,8 +91,8 @@ class PlateTimelineController(BaseController):
         color_graph: ColorGraphController = self.view.graph
         graph_colors = color_graph.set_colors(len(association_indexes))
 
-        camera_viewer: CameraViewer = self.view.camera_widget.camera_viewer
-        camera_viewer.set_sensor_indexes(association_indexes, graph_colors)
+        camera_display: SectionCameraDisplay = self.view.camera_widget.camera_viewer
+        camera_display.set_sensor_indexes(association_indexes, graph_colors)
         self.association_indexes = association_indexes
         self.update_graph()
 
@@ -119,11 +119,11 @@ class PlateTimelineController(BaseController):
             return
 
         view: PlateTimelineView = self.view
-        camera_viewer: CameraViewer = view.camera_widget.camera_viewer
+        camera_display: SectionCameraDisplay = view.camera_widget.camera_viewer
 
         model: PlateTimelineModel = self.model
         timeline: Timeline = model.timeline
-        snapshot_instance: Snapshot = camera_viewer.snapshot_instance
+        snapshot_instance: Snapshot = camera_display.snapshot_instance
 
         if timeline.current_count >= timeline.end_count:
             model.is_running = False
@@ -133,7 +133,7 @@ class PlateTimelineController(BaseController):
 
         QTimer.singleShot(timeline.current_interval * 1000, self.take_snapshot)
 
-        camera_viewer.take_snapshot()
+        camera_display.take_snapshot()
         view.update_lb_interval_info()
         timeline.append_snapshot(snapshot_instance)
 

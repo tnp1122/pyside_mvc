@@ -12,7 +12,7 @@ from util import image_converter as ic
 from util.camera_manager import CameraUnit, toupcam
 
 
-class CameraViewer(QWidget):
+class SectionCameraDisplay(QWidget):
     camera_unit = CameraUnit()
     snapshot_initialized_signal = Signal()
 
@@ -207,4 +207,3 @@ class CameraViewer(QWidget):
         self.sensor_indexes = indexes
         self.sensor_colors = colors
         self.update_image(self.image)
-
