@@ -204,7 +204,7 @@ class ExperimentController(BaseController):
 
         experiment_index = indexes[0]
         combination_index = indexes[1]
-        plate_index = indexes[2] - 1
+        plate_index = indexes[2]
 
         explorer: ExplorerController = view.explorer
         experiment = explorer.experiment_tree[experiment_index]

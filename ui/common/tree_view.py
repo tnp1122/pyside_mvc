@@ -69,7 +69,6 @@ class TreeView(BaseScrollAreaView):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        self.show_timeline = True
         self.data = OrderedDict()
         self.root = TreeRow()
 
@@ -91,11 +90,6 @@ class TreeView(BaseScrollAreaView):
         lyt.addStretch()
         lyt.setAlignment(Qt.AlignTop)
         self.setWidget(tree)
-        self.switch_visibility(self.show_timeline)
-
-    def switch_visibility(self, show_timeline=True):
-        self.show_timeline = show_timeline
-        self.root.switch_visibility(show_timeline)
 
 
 class TreeRow(QWidget):
@@ -155,7 +149,7 @@ class TreeRow(QWidget):
         self.icon = ImageButton(image=img_icon, size=icon_size, padding=(2, 2, 2, 2))
         self.lb_title = QLabel(self.title)
         self.btn_add = ButtonAdd(image=img_add, size=(13, 13))
-        if (self.level != 1 and self.level != 2 and self.level != 3) or (self.level == 3 and self.index == 0):
+        if (self.level != 1 and self.level != 2 and self.level != 3) or (self.title == timeline_title):
             self.btn_add.setVisible(False)
 
         font = QFont()
@@ -188,27 +182,6 @@ class TreeRow(QWidget):
                 widget = lyt_child.takeAt(0).widget()
                 widget.deleteLater()
                 widget.close()
-
-    def set_branch_visible(self, visible: bool) -> None:
-        self.is_visible = visible
-        super().setVisible(visible)
-
-    def switch_visibility(self, show_timeline=True):
-        if self.level == 3:
-            if show_timeline:
-                if self.title == timeline_title:
-                    self.set_branch_visible(True)
-                else:
-                    self.set_branch_visible(False)
-            else:
-                if self.title == timeline_title:
-                    self.set_branch_visible(False)
-                else:
-                    self.set_branch_visible(True)
-
-        for child in self.children:
-            child: TreeRow
-            child.switch_visibility(show_timeline)
 
     def set_signal(self):
         self.icon.installEventFilter(self)

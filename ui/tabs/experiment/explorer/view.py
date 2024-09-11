@@ -4,7 +4,6 @@ from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QSizePolicy
 
 from ui.common import BaseWidgetView, ImageButton, Logo, ColoredButton, RefreshButton, Toggle
 from ui.common.tree_view import TreeView
-
 from util import local_storage_manager as lsm
 
 
@@ -34,8 +33,6 @@ class ExplorerView(BaseWidgetView):
         lyt_top.addWidget(self.btn_toggle)
 
         self.tree = TreeView()
-
-        self.btn_toggle.switched.connect(self.tree.switch_visibility)
 
         logo = Logo(size=(200, 200))
 

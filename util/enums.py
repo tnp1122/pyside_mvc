@@ -12,6 +12,11 @@ class SettingViewIndex(Enum):
     CAMERA = 1
 
 
+class ExperimentTreeIndex(Enum):
+    TIMELINE = 0
+    SNAPSHOT = 1
+
+
 class MaskViewIndex(Enum):
     ORIGIN = 0
     DISTRICT = 1
