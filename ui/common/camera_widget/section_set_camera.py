@@ -90,7 +90,8 @@ class GroupBox(QWidget):
 
         self.pane = QWidget()
         self.lyt = QVBoxLayout(self.pane)
-        self.lyt.setContentsMargins(0, 0, 0, 0)
+        self.lyt.setSpacing(0)
+        self.lyt.setContentsMargins(1, 1, 1, 1)
         self.lyt.addWidget(self.wig_title)
         self.lyt.addWidget(self.wig_content)
 
@@ -101,14 +102,14 @@ class GroupBox(QWidget):
         self.set_style_sheet()
 
     def set_style_sheet(self):
-        self.pane.setObjectName("Group")
-        style = f"""
-            QWidget#Group {{
+        style_pane = f"""
+            QWidget#GroupPane {{
                 background-color: white;
-                border: none;
+                border: 1px solid gray;
             }}
         """
-        self.pane.setStyleSheet(style)
+        self.pane.setObjectName("GroupPane")
+        self.pane.setStyleSheet(style_pane)
 
     def set_content(self, content: QLayout):
         self.wig_content.setLayout(content)
