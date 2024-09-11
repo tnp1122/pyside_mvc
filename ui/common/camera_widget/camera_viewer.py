@@ -33,8 +33,8 @@ class CameraViewer(QWidget):
 
         self.btn_switch_setting_visible = QPushButton("카메라 설정 열기")
         self.btn_set_mask_area = QPushButton("마스크 설정")
-        self.btn_init_mask_area = QPushButton("마스크 영역 초기화")
-        self.btn_switch_mask_area_visible = QPushButton("마스크 영역 숨기기")
+        self.btn_init_mask_area = QPushButton("플레이트 영역 초기화")
+        self.btn_switch_mask_area_visible = QPushButton("플레이트 영역 숨기기")
         if not self.use_mask:
             self.btn_set_mask_area.setEnabled(False)
             self.btn_init_mask_area.setEnabled(False)
@@ -92,7 +92,7 @@ class CameraViewer(QWidget):
             pixmap = ic.array_to_q_pixmap(image, True)
 
             self.paint_wb_roi(pixmap)
-            self.paint_mask_area(pixmap)
+            self.paint_plate_border(pixmap)
 
             self.lb_image.setPixmap(pixmap.scaled(self.lb_image.size(), Qt.KeepAspectRatio))
 
@@ -138,7 +138,7 @@ class CameraViewer(QWidget):
         painter.drawText(text_rect, Qt.AlignLeft, text)
         painter.end()
 
-    def paint_mask_area(self, pixmap: QPixmap):
+    def paint_plate_border(self, pixmap: QPixmap):
         if not self.mask_area_visible:
             return
 
