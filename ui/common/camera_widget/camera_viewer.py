@@ -16,12 +16,12 @@ class CameraViewer(QWidget):
     camera_unit = CameraUnit()
     snapshot_initialized_signal = Signal()
 
-    def __init__(self, parent=None, use_mask=True, setting_visible=True, mask_area_visible=True):
+    def __init__(self, parent=None, use_mask=True, setting_visible=True, mask_border_visible=True):
         super().__init__(parent)
 
         self.use_mask = use_mask
         self.setting_visible = setting_visible
-        self.mask_area_visible = mask_area_visible
+        self.mask_border_visible = mask_border_visible
         self.lb_initialized = False
         self.snapshot_initialized = False
 
@@ -33,21 +33,21 @@ class CameraViewer(QWidget):
 
         self.btn_switch_setting_visible = QPushButton("카메라 설정 열기")
         self.btn_set_mask_area = QPushButton("마스크 설정")
-        self.btn_init_mask_area = QPushButton("플레이트 영역 초기화")
-        self.btn_switch_mask_area_visible = QPushButton("플레이트 영역 숨기기")
+        self.btn_init_mask_area = QPushButton("마스크 영역 초기화")
+        self.btn_switch_mask_border_visible = QPushButton("플레이트 영역 숨기기")
         if not self.use_mask:
             self.btn_set_mask_area.setEnabled(False)
             self.btn_init_mask_area.setEnabled(False)
-            self.btn_switch_mask_area_visible.setEnabled(False)
+            self.btn_switch_mask_border_visible.setEnabled(False)
         lyt_btn1 = QHBoxLayout()
         lyt_btn2 = QHBoxLayout()
         lyt_btn1.addWidget(self.btn_switch_setting_visible)
         lyt_btn1.addWidget(self.btn_set_mask_area)
         lyt_btn2.addWidget(self.btn_init_mask_area)
-        lyt_btn2.addWidget(self.btn_switch_mask_area_visible)
         lyt_btn = QVBoxLayout()
         lyt_btn.addLayout(lyt_btn1)
         lyt_btn.addLayout(lyt_btn2)
+        lyt_btn2.addWidget(self.btn_switch_mask_border_visible)
 
         self.lb_image = QLabel("No Image")
         self.lb_image.setStyleSheet("border: 1px solid black")
@@ -74,7 +74,7 @@ class CameraViewer(QWidget):
 
         self.btn_set_mask_area.clicked.connect(self.open_mask_manager)
         self.btn_init_mask_area.clicked.connect(self.snapshot_instance.init_plate_mask_info)
-        self.btn_switch_mask_area_visible.clicked.connect(self.switch_mask_area_visible)
+        self.btn_switch_mask_border_visible.clicked.connect(self.switch_mask_border_visible)
 
     def on_event_callback(self, nEvent):
         if self.camera_unit.cam:
@@ -139,7 +139,7 @@ class CameraViewer(QWidget):
         painter.end()
 
     def paint_plate_border(self, pixmap: QPixmap):
-        if not self.mask_area_visible:
+        if not self.mask_border_visible:
             return
 
         snapshot: Snapshot = self.snapshot_instance
@@ -190,13 +190,13 @@ class CameraViewer(QWidget):
             manager_view.view_radio.set_visibility(2, False)
             mask_manager.view.exec()
 
-    def switch_mask_area_visible(self):
-        self.mask_area_visible = not self.mask_area_visible
+    def switch_mask_border_visible(self):
+        self.mask_border_visible = not self.mask_border_visible
 
-        if self.mask_area_visible:
-            self.btn_switch_mask_area_visible.setText("마스크 영역 숨기기")
+        if self.mask_border_visible:
+            self.btn_switch_mask_border_visible.setText("플레이트 영역 숨기기")
         else:
-            self.btn_switch_mask_area_visible.setText("마스크 영역 보기")
+            self.btn_switch_mask_border_visible.setText("플레이트 영역 보기")
 
     def take_snapshot(self):
         if self.image is not None:

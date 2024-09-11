@@ -5,7 +5,7 @@ from ui.common.camera_widget.set_camera import SetCamera
 
 
 class CameraWidget(QWidget):
-    def __init__(self, parent=None, use_mask=True, setting_visible=True, mask_area_visible=True):
+    def __init__(self, parent=None, use_mask=True, setting_visible=True, mask_border_visible=True):
         super().__init__(parent)
 
         self.setting_visible = setting_visible
@@ -15,7 +15,7 @@ class CameraWidget(QWidget):
         self.camera_viewer = CameraViewer(
             use_mask=use_mask,
             setting_visible=setting_visible,
-            mask_area_visible=mask_area_visible
+            mask_border_visible=mask_border_visible
         )
 
         lyt = QHBoxLayout(self)
