@@ -199,7 +199,7 @@ class CameraUnit(QObject):
             min_expo_time = self._get_min_auto_expo_time_a_gain()[0]
             max_expo_time = self._get_max_auto_expo_time_a_gain()[0]
             return min_expo_time, max_expo_time
-        return None, None
+        return 100, 500000
 
     def get_expo_gain_range(self):
         if self.cam:
