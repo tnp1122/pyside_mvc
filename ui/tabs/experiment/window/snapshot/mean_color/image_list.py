@@ -83,6 +83,13 @@ class ImageListController(BaseController):
         view: ImageListView = self.view
         view.add_new_shell(snapshot)
 
+    def set_use_lab_corrected_pixmap(self, use_lab_corrected_pixmap: bool):
+        for image_shell in self.view.image_shells:
+            image_shell: ImageShell
+            snapshot: Snapshot = image_shell.snapshot
+            snapshot.set_use_lab_corrected_pixmap(use_lab_corrected_pixmap)
+            image_shell.set_image()
+
     def set_image_type(self, index):
         view: ImageListView = self.view
         view.set_image_type(index)

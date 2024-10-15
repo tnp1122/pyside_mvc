@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QScrollArea, QHBoxLayout, QVBoxLayout, QComboBox, 
     QPushButton, QWidget, QSizePolicy, QLayout, QButtonGroup, QRadioButton, QLineEdit
 
 from ui.common import ImageButton
+from ui.common.camera_widget.camera_widget_status import CameraWidgetStatus
 from util import local_storage_manager as lsm
 from util.camera_manager import CameraUnit, toupcam
 from util.setting_manager import SettingManager
@@ -44,6 +45,8 @@ def get_twin_button_layout(btn1, btn2):
 
 
 class ButtonTitle(QPushButton):
+    toggled = Signal(bool)
+
     def __init__(self, title="", *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -77,9 +80,12 @@ class ButtonTitle(QPushButton):
             self.btn_expand.rotate_icon(0)
         else:
             self.btn_expand.rotate_icon(180)
+        self.toggled.emit(upper)
 
 
 class GroupBox(QWidget):
+    toggled = Signal(bool)
+
     def __init__(self, title="", parent=None):
         super().__init__(parent)
 
@@ -100,6 +106,7 @@ class GroupBox(QWidget):
         lyt_main.addWidget(self.pane)
 
         self.set_style_sheet()
+        self.init_view()
 
     def set_style_sheet(self):
         style_pane = f"""
@@ -110,6 +117,9 @@ class GroupBox(QWidget):
         """
         self.pane.setObjectName("GroupPane")
         self.pane.setStyleSheet(style_pane)
+
+    def init_view(self):
+        self.wig_title.toggled.connect(self.toggled.emit)
 
     def set_content(self, content: QLayout):
         self.wig_content.setLayout(content)
@@ -125,7 +135,7 @@ class SectionSetCamera(QScrollArea):
     setting_manager = SettingManager()
     wb_roi_changed = Signal(int, int, int, int)
 
-    def __init__(self, parent=None):
+    def __init__(self, status: CameraWidgetStatus, parent=None):
         super().__init__(parent)
 
         camera_unit: CameraUnit = self.camera_unit
@@ -133,6 +143,7 @@ class SectionSetCamera(QScrollArea):
         self.exponential_function = ExponentialFunction(0, time_min, 100, time_max)
         self.camera_started = camera_unit.pData is not None
         self.view_initialized = False
+        self.status = status
 
         """ 플랫 필드 보정 """
         self.cb_ffc = QCheckBox("활성화")
@@ -273,8 +284,8 @@ class SectionSetCamera(QScrollArea):
         lyt_wb.addWidget(self.wig_wb_temp_tint)
         # lyt_wb.addWidget(self.wig_wb_gain)
         lyt_wb.addLayout(get_twin_button_layout(self.btn_auto_wb, self.btn_init_wb))
-        gbox_wb = GroupBox("화이트 밸런스")
-        gbox_wb.set_content(lyt_wb)
+        self.gbox_wb = GroupBox("화이트 밸런스")
+        self.gbox_wb.set_content(lyt_wb)
 
         """ 블랙 밸런스 """
         rgb = camera_unit.rgb
@@ -385,7 +396,7 @@ class SectionSetCamera(QScrollArea):
         lyt_content.addWidget(gbox_ffc)
         lyt_content.addWidget(gbox_res)
         lyt_content.addWidget(gbox_expo)
-        lyt_content.addWidget(gbox_wb)
+        lyt_content.addWidget(self.gbox_wb)
         lyt_content.addWidget(gbox_bb)
         lyt_content.addWidget(gbox_color)
         lyt_content.addWidget(gbox_hz)

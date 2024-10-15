@@ -50,11 +50,14 @@ class PlateTimelineView(BaseWidgetView):
         self.graph = ColorGraphController()
 
         # 조합 선택
-        self.btn_export_to_excel = ColoredButton("엑셀로 저장", background_color=EXCEL_GREEN)
+        self.cb_apply_lab_correction = QCheckBox("Lab 보정 적용")
+        self.cb_apply_lab_correction.setEnabled(False)
         self.cb_hide_velocity = QCheckBox("Velocity 숨기기")
+        self.btn_export_to_excel = ColoredButton("엑셀로 저장", background_color=EXCEL_GREEN)
         self.combination_table = SelectCombinationTableController(combination_id=self.combination_id)
         lyt_combination = QVBoxLayout()
         lyt_combination.setContentsMargins(0, 0, 0, 0)
+        lyt_combination.addWidget(self.cb_apply_lab_correction)
         lyt_combination.addWidget(self.cb_hide_velocity)
         lyt_combination.addWidget(self.btn_export_to_excel)
         lyt_combination.addWidget(self.combination_table.view)

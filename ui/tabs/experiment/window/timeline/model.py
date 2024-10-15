@@ -14,6 +14,7 @@ class PlateTimelineModel(QObject):
 
         self.timeline = []
         self.is_running = False
+        self.use_lab_correction = False
 
         self.camera_settings = {}
 

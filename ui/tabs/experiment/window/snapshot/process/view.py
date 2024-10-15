@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from PySide6.QtCore import Signal
-from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QWidget, QSizePolicy, QFrame, QPushButton
+from PySide6.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QWidget, QSizePolicy, QFrame
 
 from ui.common import BaseWidgetView, ColoredButton
 from ui.common.camera_widget import CameraWidget
@@ -84,7 +84,7 @@ class SnapshotProcessView(BaseWidgetView):
         lyt_top.addWidget(self.btn_save)
 
         self.btn_capture = ColoredButton("촬영")
-        self.camera_widget = CameraWidget(use_mask=False, setting_visible=False, plate_border_visible=False)
+        self.camera_widget = CameraWidget()
         self.camera_widget.set_viewer_bottom_widget(self.btn_capture)
 
         self.capture_list = CaptureListController()

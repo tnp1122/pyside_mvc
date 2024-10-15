@@ -21,3 +21,9 @@ class MaskViewIndex(Enum):
     ORIGIN = 0
     DISTRICT = 1
     MASK = 2
+
+
+class LabCorrectionType(Enum):
+    WHOLE_HALL_ROI = 0
+    SINGLE_HALL_ROI = 1
+    MANUAL_COLOR = 2

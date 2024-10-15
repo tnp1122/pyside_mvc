@@ -1,3 +1,4 @@
+import numpy as np
 from PySide6.QtCore import QTimer
 
 from models.snapshot import Snapshot, Timeline
@@ -27,6 +28,7 @@ class PlateTimelineController(BaseController):
         view: PlateTimelineView = self.view
         view.update_lb_interval_info()
         view.camera_widget.camera_display.lb_camera.snapshot_initialized_signal.connect(self.load_timeline)
+        view.cb_apply_lab_correction.stateChanged.connect(self.update_graph)
         view.cb_hide_velocity.clicked.connect(self.on_velocity_visibility_changed)
         view.btn_export_to_excel.clicked.connect(self.export_to_excel)
 
@@ -36,11 +38,14 @@ class PlateTimelineController(BaseController):
     def init_controller(self):
         model: PlateTimelineModel = self.model
         view: PlateTimelineView = self.view
+        section_camera_display = view.camera_widget.camera_display
         view.set_model(model)
 
         super().init_controller()
 
         view.btn_run_timeline.clicked.connect(self.on_run_timeline_clicked)
+
+        section_camera_display.lab_correction_factors_set_signal.connect(self.on_lab_correction_factors_set)
 
     @with_loading_spinner
     def export_to_excel(self):
@@ -64,7 +69,7 @@ class PlateTimelineController(BaseController):
         model: PlateTimelineModel = self.model
         view: PlateTimelineView = self.view
         timeline: Timeline = model.timeline
-        snapshot_instance: Snapshot = view.camera_widget.snapshot_instance
+        snapshot_instance: Snapshot = view.camera_widget.status.snapshot_instance
 
         worker, camera_settings = timeline.load_timeline(snapshot_instance)
         if worker is not None:
@@ -77,15 +82,33 @@ class PlateTimelineController(BaseController):
         return worker
 
     def update_graph(self):
-        color_graph: ColorGraphController = self.view.graph
+        view: PlateTimelineView = self.view
+        color_graph: ColorGraphController = view.graph
         timeline: Timeline = self.model.timeline
+        apply_lab_correct = view.cb_apply_lab_correction.isChecked()
 
-        color_graph.update_graph(*timeline.get_datas(self.association_indexes, self.velocity_visibility))
+        color_graph.update_graph(
+            *timeline.get_datas(self.association_indexes, apply_lab_correct, self.velocity_visibility))
 
     def on_timeline_loaded(self):
         view: PlateTimelineView = self.view
         self.update_graph()
         view.update_lb_interval_info()
+
+    def set_enabled_cb_apply_lab_correction(self, enabled):
+        view: PlateTimelineView = self.view
+        view.cb_apply_lab_correction.setEnabled(enabled)
+        view.cb_apply_lab_correction.setChecked(enabled)
+
+    def on_lab_correction_factors_set(self, lab_correction_factors: np.ndarray):
+        view: PlateTimelineView = self.view
+        snapshot_instance: Snapshot = view.camera_widget.status.snapshot_instance
+        timeline: Timeline = self.model.timeline
+
+        # if snapshot_instance.lab_correction_factors is not None:
+        self.set_enabled_cb_apply_lab_correction(True)
+        timeline.update_lab_correction_factors(lab_correction_factors)
+        self.update_graph()
 
     def on_associations_changed(self, association_indexes: list):
         color_graph: ColorGraphController = self.view.graph
@@ -104,6 +127,8 @@ class PlateTimelineController(BaseController):
         view: PlateTimelineView = self.view
         model: PlateTimelineModel = self.model
         model.is_running = not model.is_running
+
+        view.cb_apply_lab_correction.setEnabled(not model.is_running)
         view.switch_btn_run_timeline(model.is_running)
 
         if model.is_running:
@@ -123,7 +148,7 @@ class PlateTimelineController(BaseController):
 
         model: PlateTimelineModel = self.model
         timeline: Timeline = model.timeline
-        snapshot_instance: Snapshot = camera_display.snapshot_instance
+        # snapshot_instance: Snapshot = camera_display.status.snapshot_instance
 
         if timeline.current_count >= timeline.end_count:
             model.is_running = False
@@ -133,7 +158,7 @@ class PlateTimelineController(BaseController):
 
         QTimer.singleShot(timeline.current_interval * 1000, self.take_snapshot)
 
-        camera_display.take_snapshot()
+        snapshot_instance = camera_display.take_snapshot()
         view.update_lb_interval_info()
         timeline.append_snapshot(snapshot_instance)
 
