@@ -202,6 +202,10 @@ class SectionSetCamera(QScrollArea):
         self.et_lb_wb_roi_y = QLineEdit()
         self.et_lb_wb_roi_w = QLineEdit()
         self.et_lb_wb_roi_h = QLineEdit()
+        self.et_lb_wb_roi_x.setEnabled(self.camera_started)
+        self.et_lb_wb_roi_y.setEnabled(self.camera_started)
+        self.et_lb_wb_roi_w.setEnabled(self.camera_started)
+        self.et_lb_wb_roi_h.setEnabled(self.camera_started)
         self.et_lb_wb_roi_x.textChanged.connect(self.on_wb_roi_changed)
         self.et_lb_wb_roi_y.textChanged.connect(self.on_wb_roi_changed)
         self.et_lb_wb_roi_w.textChanged.connect(self.on_wb_roi_changed)
@@ -588,10 +592,10 @@ class SectionSetCamera(QScrollArea):
     """ 화이트 밸런스 """
 
     def on_wb_roi_changed(self):
-        x = int(self.et_lb_wb_roi_x.text())
-        y = int(self.et_lb_wb_roi_y.text())
-        w = int(self.et_lb_wb_roi_w.text())
-        h = int(self.et_lb_wb_roi_h.text())
+        x = int(self.et_lb_wb_roi_x.text()) if self.et_lb_wb_roi_x.text() != "" else 0
+        y = int(self.et_lb_wb_roi_y.text()) if self.et_lb_wb_roi_y.text() != "" else 0
+        w = int(self.et_lb_wb_roi_w.text()) if self.et_lb_wb_roi_w.text() != "" else 0
+        h = int(self.et_lb_wb_roi_h.text()) if self.et_lb_wb_roi_h.text() != "" else 0
         self.setting_manager.set_camera_wb_roi([x, y, w, h])
         self.wb_roi_changed.emit(x, y, w, h)
 
