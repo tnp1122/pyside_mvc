@@ -5,7 +5,7 @@ from ui.common import BaseController
 from ui.common.toast import Toast
 from ui.tabs.experiment.window.snapshot.process import SnapshotProcessModel, SnapshotProcessView
 from ui.tabs.experiment.window.snapshot.process.capture_list import CaptureListView, CaptureListController
-from ui.common.image_viewer import ImageViewerView
+from util.camera_manager import CameraManager
 
 
 class SnapshotProcessController(BaseController):
@@ -19,16 +19,16 @@ class SnapshotProcessController(BaseController):
         super().init_controller()
 
         view: SnapshotProcessView = self.view
-        view.image_viewer.capture_clicked.connect(self.on_capture_clicked)
+        view.btn_capture.clicked.connect(self.on_capture_clicked)
 
     def on_capture_clicked(self):
         capture_list_view: CaptureListView = self.view.capture_list.view
         capture_list: CaptureListController = self.view.capture_list
-        image_view: ImageViewerView = self.view.image_viewer.view
+        camera_manager = CameraManager()
 
         if capture_list_view.units:
             try:
-                image = image_view.camera_manager.get_current_image()
+                image = camera_manager.get_current_image()
             except Exception:
                 image = None
 

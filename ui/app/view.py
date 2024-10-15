@@ -1,12 +1,12 @@
 from PySide6.QtGui import QIcon
 
-from ui.app.main_tab import MainTabController
 from ui.app.info_bar import InfoBarController
-from ui.common.toast import Toast
+from ui.app.main_tab import MainTabController
 from ui.common import BaseWidgetView
-
-from util.camera_manager import CameraManager
+from ui.common.loading_spinner import LoadingSpinner
+from ui.common.toast import Toast
 from util import local_storage_manager as lsm
+from util.camera_manager import CameraManager
 
 
 class AppView(BaseWidgetView):
@@ -31,13 +31,16 @@ class AppView(BaseWidgetView):
         self.setWindowTitle("JEN-LiFE Pioneer kIT")
         self.setWindowIcon(QIcon(icon_path))
 
-        self.toast = Toast(self)
-        CameraManager(self)
         self.tabs = MainTabController(self)
         self.info_bar = InfoBarController(self)
 
         self.setMinimumSize(self.tabs.view.minimumSize())
 
+        self.toast = Toast(self)
+        CameraManager(self)
+
+        self.loading_spinner = LoadingSpinner(self)
+        self.loading_spinner.raise_()
         self.toast.raise_()
         self.toast.toasted_signal.connect(self.update_toast_position)
 
@@ -60,9 +63,15 @@ class AppView(BaseWidgetView):
         self.info_bar.view.move(info_x, info_y)
 
         self.update_toast_position()
+        self.update_loading_spinner_position(window_width, window_height)
 
     def update_toast_position(self):
         window_width, window_height = self.width(), self.height()
         toast_x = int((window_width - self.toast.width()) / 2)
         toast_y = window_height - self.toast_margin - self.toast.height()
         self.toast.move(toast_x, toast_y)
+
+    def update_loading_spinner_position(self, window_width, window_height):
+        self.loading_spinner.setFixedWidth(window_width)
+        self.loading_spinner.setFixedSize(window_width, window_height)
+        self.loading_spinner.move(0, 30)

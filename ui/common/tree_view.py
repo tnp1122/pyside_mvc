@@ -5,10 +5,8 @@ from PySide6.QtGui import QFont, QMouseEvent, QTransform
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QSizePolicy, QMenu
 
 from ui.common import ImageButton, BaseScrollAreaView
-
-from util import local_storage_manager as lsm
 from util import image_converter as ic
-
+from util import local_storage_manager as lsm
 
 timeline_title = "연속촬영"
 
@@ -71,7 +69,6 @@ class TreeView(BaseScrollAreaView):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        self.show_timeline = True
         self.data = OrderedDict()
         self.root = TreeRow()
 
@@ -93,11 +90,6 @@ class TreeView(BaseScrollAreaView):
         lyt.addStretch()
         lyt.setAlignment(Qt.AlignTop)
         self.setWidget(tree)
-        self.switch_visibility(self.show_timeline)
-
-    def switch_visibility(self, show_timeline=True):
-        self.show_timeline = show_timeline
-        self.root.switch_visibility(show_timeline)
 
 
 class TreeRow(QWidget):
@@ -157,7 +149,7 @@ class TreeRow(QWidget):
         self.icon = ImageButton(image=img_icon, size=icon_size, padding=(2, 2, 2, 2))
         self.lb_title = QLabel(self.title)
         self.btn_add = ButtonAdd(image=img_add, size=(13, 13))
-        if (self.level != 1 and self.level != 2 and self.level != 3) or (self.level == 3 and self.index == 0):
+        if (self.level != 1 and self.level != 2 and self.level != 3) or (self.title == timeline_title):
             self.btn_add.setVisible(False)
 
         font = QFont()
@@ -191,27 +183,6 @@ class TreeRow(QWidget):
                 widget.deleteLater()
                 widget.close()
 
-    def set_branch_visible(self, visible: bool) -> None:
-        self.is_visible = visible
-        super().setVisible(visible)
-
-    def switch_visibility(self, show_timeline=True):
-        if self.level == 3:
-            if show_timeline:
-                if self.title == timeline_title:
-                    self.set_branch_visible(True)
-                else:
-                    self.set_branch_visible(False)
-            else:
-                if self.title == timeline_title:
-                    self.set_branch_visible(False)
-                else:
-                    self.set_branch_visible(True)
-
-        for child in self.children:
-            child: TreeRow
-            child.switch_visibility(show_timeline)
-
     def set_signal(self):
         self.icon.installEventFilter(self)
         self.lb_title.installEventFilter(self)
@@ -235,7 +206,10 @@ class TreeRow(QWidget):
         is_directory = isinstance(child_value, dict)
         if is_directory:
             for index, (title, child_dict) in enumerate(child_value.items()):
-                self.make_child(title, index, child_dict)
+                if self.level == 2 and len(self.children) > 0 and self.children[0].title == timeline_title:
+                    self.make_child(title, index - 1, child_dict)
+                else:
+                    self.make_child(title, index, child_dict)
             return
 
         for index, title in enumerate(child_value):
@@ -300,22 +274,30 @@ class TreeRow(QWidget):
             self.double_clicked_signal.emit(TreeSignalData(indexes, signal))
         elif signal == "remove":
             self.remove_signal.emit(TreeSignalData(indexes))
+        elif signal == "remove_plate":
+            self.remove_signal.emit(TreeSignalData(indexes, "plate"))
         elif signal == "remove_timeline":
             self.remove_signal.emit(TreeSignalData(indexes, "timeline"))
         elif signal == "remove_snapshot":
             self.remove_signal.emit(TreeSignalData(indexes, "snapshot"))
 
     def show_snapshot_context_menu(self, pos):
-        menu = QMenu(self)
+        if self.level == 3:
+            if self.title == timeline_title:
+                return
+            else:
+                signal = "_plate"
 
-        act_remove = menu.addAction("삭제")
-        if self.level == 4:
+        elif self.level == 4:
             if self.parent.title == timeline_title:
                 signal = "_timeline"
             else:
                 signal = "_snapshot"
         else:
             signal = ""
+
+        menu = QMenu(self)
+        act_remove = menu.addAction("삭제")
         act_remove.triggered.connect(lambda: self.bubble_event("remove" + signal))
         menu.exec(self.lb_title.mapToGlobal(pos))
 

@@ -30,7 +30,7 @@ class ColorDifferenceModel:
 
     def get_origin_rgb_colors(self, index):
         snapshot: Snapshot = self.snapshots[index]
-        return snapshot.mean_colors
+        return snapshot.mean_rgb_colors
 
     def get_headers(self, color_type="rgb"):
         if color_type == "xyy":

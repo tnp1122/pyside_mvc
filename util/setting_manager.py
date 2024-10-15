@@ -16,6 +16,24 @@ USE_TARGET_MATERIAL = "use_target_material"
 PATH_TO_LOAD_IMAGE = "path_to_load_image"
 MASK_AREA_INFO = "mask_area_info"
 
+CAMERA_RESOLUTION = "camera_resolution"
+CAMERA_AUTO_EXPO = "camera_auto_expo"
+CAMERA_EXPO_TARGET = "camera_expo_target"
+CAMERA_EXPO_TIME = "camera_expo_time"
+CAMERA_EXPO_GAIN = "camera_expo_gain"
+CAMERA_WB_ROI = "camera_wb_roi"
+CAMERA_WB_TEMP = "camera_wb_temp"
+CAMERA_WB_TINT = "camera_wb_tint"
+CAMERA_BB_R = "camera_bb_r"
+CAMERA_BB_G = "camera_bb_g"
+CAMERA_BB_B = "camera_bb_b"
+CAMERA_HUE = "camera_hue"
+CAMERA_SATURATION = "camera_saturation"
+CAMERA_BRIGHTNESS = "camera_brightness"
+CAMERA_CONTRAST = "camera_contrast"
+CAMERA_GAMMA = "camera_gamma"
+CAMERA_ANTI_FLICKER = "camera_anti_flicker"
+
 
 class SettingManager:
     _instance = None
@@ -118,16 +136,106 @@ class SettingManager:
         self._set_json_value(MASK_AREA_INFO, area_info)
 
     def get_mask_area_info(self):
-        # 초기값 임시 고정
-        mask_area_info = self._get_json_data(MASK_AREA_INFO)
-        mask_area_info["x"] = 2002
-        mask_area_info["y"] = 704
-        mask_area_info["width"] = 2145
-        mask_area_info["height"] = 1439
-        mask_area_info["radius"] = 30
-        mask_area_info["flare_threshold"] = 185
-        self.set_mask_area_info(mask_area_info)
-        return mask_area_info
+        return self._get_json_data(MASK_AREA_INFO)
+
+    # 카메라 관련
+
+    def set_camera_resolution_index(self, index):
+        self._set_value(CAMERA_RESOLUTION, index)
+
+    def get_camera_resolution_index(self):
+        return self._get_value(CAMERA_RESOLUTION)
+
+    def set_camera_auto_expo(self, value):
+        self._set_value(CAMERA_AUTO_EXPO, value)
+
+    def get_camera_auto_expo(self):
+        return self._get_value(CAMERA_AUTO_EXPO)
+
+    def set_camera_expo_target(self, value):
+        self._set_value(CAMERA_EXPO_TARGET, value)
+
+    def get_camera_expo_target(self):
+        return self._get_value(CAMERA_EXPO_TARGET)
+
+    def set_camera_expo_time(self, exposure_time):
+        self._set_value(CAMERA_EXPO_TIME, exposure_time)
+
+    def get_camera_expo_time(self):
+        return self._get_value(CAMERA_EXPO_TIME)
+
+    def set_camera_expo_gain(self, value):
+        self._set_value(CAMERA_EXPO_GAIN, value)
+
+    def get_camera_expo_gain(self):
+        return self._get_value(CAMERA_EXPO_GAIN)
+
+    def set_camera_wb_roi(self, roi_rect: list):
+        self._set_value(CAMERA_WB_ROI, roi_rect)
+
+    def get_camera_wb_roi(self):
+        return self._get_value(CAMERA_WB_ROI)
+
+    def set_camera_wb_temp_tint(self, temp=None, tint=None):
+        if temp is not None:
+            self._set_value(CAMERA_WB_TEMP, temp)
+        if tint is not None:
+            self._set_value(CAMERA_WB_TINT, tint)
+
+    def get_camera_wb_temp_tint(self):
+        temp = self._get_value(CAMERA_WB_TEMP)
+        tint = self._get_value(CAMERA_WB_TINT)
+        return temp, tint
+
+    def set_camera_bb_rgb(self, r=None, g=None, b=None):
+        if r is not None:
+            self._set_value(CAMERA_BB_R, r)
+        if g is not None:
+            self._set_value(CAMERA_BB_G, g)
+        if b is not None:
+            self._set_value(CAMERA_BB_B, b)
+
+    def get_camera_bb_rgb(self):
+        r = self._get_value(CAMERA_BB_R)
+        g = self._get_value(CAMERA_BB_G)
+        b = self._get_value(CAMERA_BB_B)
+        return r, g, b
+
+    def set_camera_hue(self, value):
+        self._set_value(CAMERA_HUE, value)
+
+    def get_camera_hue(self):
+        return self._get_value(CAMERA_HUE)
+
+    def set_camera_saturation(self, value):
+        self._set_value(CAMERA_SATURATION, value)
+
+    def get_camera_saturation(self):
+        return self._get_value(CAMERA_SATURATION)
+
+    def set_camera_brightness(self, value):
+        self._set_value(CAMERA_BRIGHTNESS, value)
+
+    def get_camera_brightness(self):
+        return self._get_value(CAMERA_BRIGHTNESS)
+
+    def set_camera_contrast(self, value):
+        self._set_value(CAMERA_CONTRAST, value)
+
+    def get_camera_contrast(self):
+        return self._get_value(CAMERA_CONTRAST)
+
+    def set_camera_gamma(self, value):
+        self._set_value(CAMERA_GAMMA, value)
+
+    def get_camera_gamma(self):
+        return self._get_value(CAMERA_GAMMA)
+
+    def set_camera_anti_flicker(self, index):
+        self._set_value(CAMERA_ANTI_FLICKER, index)
+
+    def get_camera_anti_flicker(self):
+        return self._get_value(CAMERA_ANTI_FLICKER, 2)
 
 
 def main():

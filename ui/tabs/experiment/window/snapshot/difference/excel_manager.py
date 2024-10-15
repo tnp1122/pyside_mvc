@@ -1,5 +1,8 @@
+import logging
 import os
 
+import pandas as pd
+from PySide6.QtCore import QThread, Signal
 from openpyxl.workbook import Workbook
 
 from ui.tabs.experiment.window.snapshot.difference import ColorDifferenceModel
@@ -27,13 +30,13 @@ class ExcelManager:
             return
 
         wb = Workbook()
-        self.save_rgb_colors(wb, target_index)
-        self.save_color_differences(wb, target_index, "xyy")
-        self.save_color_differences(wb, target_index, "lab")
+        self._save_rgb_colors(wb, target_index)
+        self._save_color_differences(wb, target_index, "xyy")
+        self._save_color_differences(wb, target_index, "lab")
         wb.remove(wb["Sheet"])
         wb.save(self.get_path_to_save(target_index))
 
-    def save_rgb_colors(self, wb, target_index):
+    def _save_rgb_colors(self, wb, target_index):
         target_rgb_colors, control_rgb_colors, rgb_differences = self.model.get_color_datas("rgb", target_index)
         target_name = self.targets.item_name(target_index)
         control_name = self.control_name
@@ -68,7 +71,7 @@ class ExcelManager:
             rgb_difference_sheet.cell(i + 2, 1, cell_name)
             rgb_difference_sheet.cell(i + 2, 2, diff)
 
-    def save_color_differences(self, wb, target_index, color_type):
+    def _save_color_differences(self, wb, target_index, color_type):
         model: ColorDifferenceModel = self.model
 
         if color_type == "xyy":
@@ -94,3 +97,48 @@ class ExcelManager:
             cell_name = f"{chr(ord('A') + additive_i)}-{solvent_i + 1}"
             sheet.cell(i + 2, 1, cell_name)
             sheet.cell(i + 2, 2, color_difference)
+
+
+class TimelineExcelWorker(QThread):
+    finished = Signal(object, bool)
+
+    def __init__(self, elapsed_times, rgb_datas, distance_datas, timeline_path, parent=None):
+        super().__init__(parent)
+        self.elapsed_times = elapsed_times
+        self.rgb_datas = rgb_datas
+        self.distance_datas = distance_datas
+        self.timeline_path = timeline_path
+
+    def run(self):
+        try:
+            TimelineExcelManager().save_timeline_datas(
+                self.elapsed_times, self.rgb_datas, self.distance_datas, self.timeline_path
+            )
+            self.finished.emit(self, True)
+        except Exception as e:
+            logging.error(e)
+            self.finished.emit(self, False)
+
+
+class TimelineExcelManager:
+    def save_timeline_datas(self, elapsed_times, rgb_datas, distance_datas, timeline_path):
+        self.save_rgb_colors(elapsed_times, rgb_datas, timeline_path)
+        self.save_distances(elapsed_times, distance_datas, timeline_path)
+
+    def save_rgb_colors(self, elapsed_times, datas, timeline_path):
+        output_path = os.getenv("LOCAL_OUTPUT_PATH")
+        csv_path = lsm.get_absolute_path(output_path, f"{timeline_path}_rgb_colors.csv")
+
+        datas.insert(0, "경과시간", elapsed_times)
+        datas.to_csv(csv_path, index=False, encoding='utf-8-sig')
+
+    def save_distances(self, elapsed_times, datas, timeline_path):
+        output_path = os.getenv("LOCAL_OUTPUT_PATH")
+        csv_path = lsm.get_absolute_path(output_path, f"{timeline_path}_distance_datas.csv")
+
+        combined_data = []
+        for col in datas.columns:
+            combined_data.extend(zip(elapsed_times[1:], datas[col].iloc[1:]))
+
+        df_combined = pd.DataFrame(combined_data, columns=["경과시간", "ColorDistance"])
+        df_combined.to_csv(csv_path, index=False, encoding='utf-8-sig')

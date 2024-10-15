@@ -2,16 +2,19 @@ import json
 import logging
 from datetime import datetime
 
+import numpy as np
 from PySide6.QtCore import Signal
 from PySide6.QtNetwork import QNetworkReply
 
 from models import Targets
 from models.snapshot import Snapshot
 from ui.common import TabWidgetController
+from ui.common.camera_widget.section_camera_display import SectionCameraDisplay
 from ui.common.confirmation_dialog import ConfirmationDialog
 from ui.common.toast import Toast
 from ui.tabs.experiment.window.snapshot import PlateSnapshotModel, PlateSnapshotView
 from ui.tabs.experiment.window.snapshot.difference import ColorDifferenceController
+from ui.tabs.experiment.window.snapshot.mean_color import MeanColorView
 from ui.tabs.experiment.window.snapshot.mean_color.image_list import ImageListController
 from ui.tabs.experiment.window.snapshot.process import SnapshotProcessView
 from ui.tabs.experiment.window.snapshot.process.capture_list import CaptureListView, CaptureListController
@@ -39,11 +42,13 @@ class PlateSnapshotController(TabWidgetController):
         super().init_controller()
 
         view: PlateSnapshotView = self.view
-
         plate_process_view: SnapshotProcessView = view.plate_process.view
+        section_camera_display: SectionCameraDisplay = plate_process_view.camera_widget.camera_display
+
         view.color_difference.set_snapshot_age(plate_process_view.snapshot_age)
         plate_process_view.snapshot_age_changed.connect(view.color_difference.set_snapshot_age)
         plate_process_view.btn_save.clicked.connect(self.on_save_button_clicked)
+        section_camera_display.lab_correction_factors_set_signal.connect(self.on_lab_correction_factors_set)
 
         capture_list_view: CaptureListView = view.plate_process.view.capture_list.view
         capture_list_view.btn_plus.clicked.connect(self.add_new_snapshot)
@@ -167,13 +172,34 @@ class PlateSnapshotController(TabWidgetController):
 
             self.api_manager.add_snapshot(api_handler, self.plate_id, {"plate_snapshot": plate_snapshot_data})
 
+    def on_lab_correction_factors_set(self, lab_correction_factors: np.ndarray):
+        for snapshot in self.snapshots:
+            snapshot: Snapshot
+            snapshot.update_lab_correction_factors(lab_correction_factors)
+
+        view: PlateSnapshotView = self.view
+        mean_color_view: MeanColorView = view.mean_color.view
+        mean_color_view.cb_apply_lab_correct.setEnabled(True)
+        mean_color_view.cb_apply_lab_correct.setChecked(True)
+        mean_color_view.on_cb_apply_lab_correct_changed()
+
+        # image_list: ImageListController = mean_color_view.image_list
+        # image_list
+
     def add_new_snapshot(self, target_index=None) -> Snapshot:
+        view: PlateSnapshotView = self.view
+        snapshot_instance: Snapshot = view.plate_process.view.camera_widget.status.snapshot_instance
+        lab_correction_factors: np.ndarray = snapshot_instance.lab_correction_factors
+        use_lab_corrected_pixmap = view.mean_color.view.cb_apply_lab_correct.isChecked()
+
         new_snapshot = Snapshot()
         if target_index is not None:
             new_snapshot.set_target(self.targets[target_index])
+        if lab_correction_factors is not None:
+            new_snapshot.update_lab_correction_factors(lab_correction_factors)
+            new_snapshot.set_use_lab_corrected_pixmap(use_lab_corrected_pixmap)
         self.snapshots.append(new_snapshot)
 
-        view: PlateSnapshotView = self.view
         capture_list: CaptureListController = view.plate_process.view.capture_list
         image_list: ImageListController = view.mean_color.view.image_list
         color_difference: ColorDifferenceController = view.color_difference

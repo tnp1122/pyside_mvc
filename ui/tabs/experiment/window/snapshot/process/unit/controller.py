@@ -1,5 +1,5 @@
 from models import Image
-from models.snapshot import Snapshot
+from models.snapshot import Snapshot, Mask
 from ui.common import BaseController
 from ui.tabs.experiment.window.snapshot.process.unit import ProcessUnitModel, ProcessUnitView
 
@@ -24,6 +24,15 @@ class ProcessUnitController(BaseController):
 
     def set_snapshot_image(self, image: Image):
         self.snapshot.init_origin_image(image)
+
+    def set_plate_mask_info(self, plate_info, mask_info, mask):
+        snapshot: Snapshot = self.snapshot
+        snapshot.init_property_reference()
+        snapshot.set_plate_mask_info(plate_info, mask_info, mask)
+
+    def get_custom_mask(self):
+        mask: Mask = self.snapshot.mask
+        return mask.custom_mask
 
 
 def main():

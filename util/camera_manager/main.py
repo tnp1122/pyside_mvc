@@ -1,5 +1,4 @@
 import logging
-import sys
 
 import numpy as np
 from PySide6.QtCore import Signal, QObject
@@ -91,7 +90,11 @@ class CameraUnit(QObject):
         logging.info("open Camera Unit")
         arr = toupcam.Toupcam.EnumV2()
         if len(arr) == 0:
-            raise CameraUnitError("카메라를 인식하지 못했습니다.")
+            # raise CameraUnitError("카메라를 인식하지 못했습니다.")
+            msg = "카메라를 인식하지 못했습니다."
+            logging.error(msg)
+            Toast().toast(msg)
+            return
 
         self.cur = arr[0]
         self.cam = toupcam.Toupcam.Open(self.cur.id)
@@ -134,9 +137,11 @@ class CameraUnit(QObject):
 
     @property
     def current_image(self):
-        img = np.frombuffer(self.pData, dtype=np.uint8).reshape((self.imgHeight, self.imgWidth, 3))
-        img = np.rot90(img, k=-self.direction)
-        return np.ascontiguousarray(img)
+        if self.direction % 2 == 0:
+            img = np.frombuffer(self.pData, dtype=np.uint8).reshape((self.imgHeight, self.imgWidth, 3))
+        else:
+            img = np.frombuffer(self.pData, dtype=np.uint8).reshape((self.imgWidth, self.imgHeight, 3))
+        return img
 
     @property
     def resolutions(self):
@@ -150,9 +155,14 @@ class CameraUnit(QObject):
     def rgb(self):
         if self.cam:
             return self.cam.get_BlackBalance()
+        return [0, 0, 0]
 
     def rotate_direction(self):
         self.direction = (self.direction + 1) % 4
+
+    def set_rotate(self, index):
+        self.direction = index % 4
+        self.cam.put_Option(toupcam.TOUPCAM_OPTION_ROTATE, index % 4 * 90)
 
     def set_resolution(self, index):
         if self.cam:
@@ -173,6 +183,30 @@ class CameraUnit(QObject):
         return False
 
     """ 노출 및 게인"""
+
+    def _get_min_auto_expo_time_a_gain(self):
+        if self.cam:
+            return self.cam.get_MinAutoExpoTimeAGain()
+        return [None, None]
+
+    def _get_max_auto_expo_time_a_gain(self):
+        if self.cam:
+            return self.cam.get_MaxAutoExpoTimeAGain()
+        return [None, None]
+
+    def get_expo_time_range(self):
+        if self.cam:
+            min_expo_time = self._get_min_auto_expo_time_a_gain()[0]
+            max_expo_time = self._get_max_auto_expo_time_a_gain()[0]
+            return min_expo_time, max_expo_time
+        return 100, 500000
+
+    def get_expo_gain_range(self):
+        if self.cam:
+            min_expo_time = self._get_min_auto_expo_time_a_gain()[1]
+            max_expo_time = self._get_max_auto_expo_time_a_gain()[1]
+            return min_expo_time, max_expo_time
+        return None, None
 
     def set_auto_expo(self, state):
         return self._execute_if_cam(self.cam.put_AutoExpoEnable, 1 if state else 0)
@@ -208,6 +242,15 @@ class CameraUnit(QObject):
 
     def auto_white_balance_once(self):
         return self._execute_if_cam(self.cam.AwbOnce)
+
+    def set_white_balance_roi_rect(self, x, y, width, height):
+        return self._execute_if_cam(self.cam.put_AWBAuxRect, x, y, width, height)
+
+    def get_white_balance_roi_rect(self):
+        """ return (left, top, width, height) """
+        if self.cam:
+            return self.cam.get_AWBAuxRect()
+        return None, None, None, None
 
     def set_white_balance_temp(self, value):
         self.temp = value

@@ -7,7 +7,7 @@ from ui.tabs.combination.widgets import LabelTitle, Cell, SelectSensorWidget, La
 
 class CombinationView(BaseWidgetView):
     cell_clicked_signal = Signal(str)
-    box_width = 140
+    box_width = 160
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -23,6 +23,7 @@ class CombinationView(BaseWidgetView):
         self.et_combination_name = QLineEdit("새 조합")
         self.et_combination_name.setFixedWidth(self.box_width)
         self.btn_new_combination = ColoredButton("새 조합 만들기")
+        self.btn_init_censor = ColoredButton("초기화", color="black", background_color="white")
         self.btn_cancel = ColoredButton("취소", background_color="gray")
         self.btn_save = ColoredButton("저장", background_color="red")
 
@@ -34,6 +35,7 @@ class CombinationView(BaseWidgetView):
         lyt_tob_bar.addWidget(self.btn_refresh)
         lyt_tob_bar.addWidget(self.et_combination_name)
         lyt_tob_bar.addStretch()
+        lyt_tob_bar.addWidget(self.btn_init_censor)
         lyt_tob_bar.addWidget(self.btn_cancel)
         lyt_tob_bar.addWidget(self.btn_save)
         lyt_tob_bar.addWidget(self.btn_new_combination)

@@ -1,12 +1,12 @@
-import inspect
 import json
 import logging
 import os
 
-from PySide6.QtCore import QByteArray, QUrl
+from PySide6.QtCore import QByteArray, QUrl, QThread, Signal
 from PySide6.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from dotenv import load_dotenv
 
+from ui.common.loading_spinner import with_loading_spinner
 from ui.common.toast import Toast
 from util.setting_manager import SettingManager
 
@@ -20,27 +20,29 @@ GET = "GET"
 POST = "POST"
 
 
-class APIManager:
-    _instance = None
+class APIWorker(QThread):
+    finished = Signal(object, object)
 
-    def __new__(cls):
-        if not cls._instance:
-            cls._instance = super(APIManager, cls).__new__(cls)
-        return cls._instance
+    def __init__(self, origin, setting_manager, method, endpoint, callback, body=None, parent=None):
+        super().__init__(parent)
+        self.origin = origin
+        self.setting_manager = setting_manager
+        self.retry_count = 1
 
-    def __init__(self):
-        if not hasattr(self, "initialized"):
-            self.initialized = True
-            self.manager = QNetworkAccessManager()
-            self.setting_manager = SettingManager()
+        self.method = method
+        self.endpoint = endpoint
+        self.callback = callback
+        self.body = body
+
+    def run(self):
+        self.retry_count = 1
+        self.manager = QNetworkAccessManager()
+        self._call_api(self.method, self.endpoint, self.callback, self.body)
+        self.exec()
 
     def _call_api(self, method, endpoint, callback, body=None, origin_api=None):
-        log = f"API Call [{method}] {endpoint} || callback: {callback} == body:{body} || origin: {origin_api}"
-        logging.info(log)
-
         url = QUrl(f"{BASE_URL}{endpoint}")
         request = QNetworkRequest(url)
-
         request.setHeader(QNetworkRequest.ContentTypeHeader, "application/json")
 
         if endpoint == REFRESH_TOKEN_END_POINT:
@@ -64,20 +66,20 @@ class APIManager:
         else:
             raise ValueError("Unsupported HTTP method")
 
-        if endpoint == REFRESH_TOKEN_END_POINT:
-            reply.finished.connect(lambda: self._reply_intercept(origin_api, reply, endpoint, callback, body))
-            return
-
         if callback and callable(callback):
-            origin_api = inspect.currentframe().f_back.f_code.co_name
-            reply.finished.connect(lambda: self._reply_intercept(origin_api, reply, endpoint, callback, body))
+            reply.finished.connect(lambda: self._reply_intercept(reply, method, endpoint, callback, body))
             return
 
         logging.warning(f"{METHOD} No Callback function, origin_api: {origin_api}")
+        self.finished.emit(callback, reply)
 
-    def _reply_intercept(self, origin_api, reply, endpoint, callback, body=None):
+    def _reply_intercept(self, reply, method, endpoint, callback, body=None):
         status_code = reply.attribute(QNetworkRequest.HttpStatusCodeAttribute)
         if endpoint == REFRESH_TOKEN_END_POINT:
+            if status_code == 401:
+                self.on_auth_failed(reply, method, endpoint, callback, body)
+                return
+
             if status_code == 204:
                 headers = reply.rawHeaderPairs()
                 for header, value in headers:
@@ -85,11 +87,7 @@ class APIManager:
                         auth = value.data().decode("utf-8")
                         access_token = auth.split(" ")[1]
                         self.setting_manager.set_access_token(access_token)
-                        origin = getattr(self, origin_api)
-                        if body:
-                            origin(callback, body)
-                        else:
-                            origin(callback)
+                        self._call_api(self.method, self.endpoint, self.callback, self.body)
                         return
                 logging.error(f"{METHOD} Failed to refresh token for unexpected reason")
                 return
@@ -98,10 +96,62 @@ class APIManager:
             return
 
         if status_code == 401:
-            self.refresh_token(callback, body, origin_api)
+            self.on_auth_failed(reply, method, endpoint, callback, body)
             return
 
-        callback(reply)
+        self.finished.emit(callback, reply)
+
+    def on_auth_failed(self, reply, method, endpoint, callback, body=None):
+        self.retry_count -= 1
+        if self.retry_count < 0:
+            self.finished.emit(callback, reply)
+            return
+
+        endpoint = REFRESH_TOKEN_END_POINT
+        url = QUrl(f"{BASE_URL}{endpoint}")
+        auth = f"Bearer {self.setting_manager.get_refresh_token()}"
+
+        request = QNetworkRequest(url)
+        request.setHeader(QNetworkRequest.ContentTypeHeader, "application/json")
+        request.setRawHeader(b"Authorization", auth.encode())
+
+        json_data = json.dumps({}, indent=None, separators=(",", ":"))
+        byte_array = QByteArray(json_data.encode())
+        reply = self.manager.post(request, byte_array)
+
+        reply.finished.connect(lambda: self._reply_intercept(reply, method, endpoint, callback, body))
+
+
+class APIManager:
+    _instance = None
+
+    def __new__(cls):
+        if not cls._instance:
+            cls._instance = super(APIManager, cls).__new__(cls)
+        return cls._instance
+
+    def __init__(self):
+        if not hasattr(self, "initialized"):
+            self.initialized = True
+            self.manager = QNetworkAccessManager()
+            self.setting_manager = SettingManager()
+
+    @with_loading_spinner
+    def _call_api(self, method, endpoint, callback, body=None, origin_api=None):
+        log = f"API Call [{method}] {endpoint} || callback: {callback} == body:{body} || origin: {origin_api}"
+        logging.info(log)
+        worker = APIWorker(self, self.setting_manager, method, endpoint, callback, body)
+        worker.finished.connect(self.on_response)
+        worker.start()
+
+        return worker
+
+    def on_response(self, callback, reply):
+        try:
+            callback(reply)
+            reply.deleteLater()
+        except:
+            logging.error("API 호출 실패")
 
     def on_failure(self, reply):
         json_str = reply.readAll().data().decode("utf-8")
@@ -141,10 +191,6 @@ class APIManager:
     def login(self, callback, login_info):
         endpoint = "user/login/"
         self._call_api(POST, endpoint, callback, login_info)
-
-    def refresh_token(self, callback, body, origin_api):
-        endpoint = REFRESH_TOKEN_END_POINT
-        self._call_api(POST, endpoint, callback, body, origin_api)
 
     def get_user_info(self, callback):
         endpoint = "user/info/"

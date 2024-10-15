@@ -47,30 +47,41 @@ class ColorGraphView(BaseWidgetView):
         self.colors.clear()
         self.colors.extend(new_colors)
 
-    def update_graph(self, elapsed_times: list, datas: list[pd.DataFrame]):
+    def update_graph(self, elapsed_times: list, distance_datas: pd.DataFrame, velocity_datas: pd.DataFrame):
         ax1 = self.ax1
         ax2 = self.ax2
         ax1.clear()
         ax2.clear()
+        show_v = velocity_datas is not None
 
-        distance_datas = datas[0]
-        velocity_datas = datas[1]
-        for idx, (distance_column, velocity_column) in enumerate(zip(distance_datas, velocity_datas)):
-            distance_values = distance_datas[distance_column].tolist()
-            velocity_values = velocity_datas[velocity_column].tolist()
-            ax1.plot(elapsed_times, distance_values, color=self.colors[idx], label=distance_column, linestyle="-")
-            ax2.plot(elapsed_times, velocity_values, color=self.colors[idx], label=velocity_column, linestyle="--")
+        if show_v:
+            for idx, (distance_column, velocity_column) in enumerate(zip(distance_datas, velocity_datas)):
+                distance_values = distance_datas[distance_column].tolist()
+                velocity_values = velocity_datas[velocity_column].tolist()
+                ax1.plot(elapsed_times, distance_values, color=self.colors[idx], label=distance_column, linestyle="-")
+                ax2.plot(elapsed_times, velocity_values, color=self.colors[idx], label=velocity_column, linestyle="--")
 
-        ax1.set_ylabel("distance")
-        ax2.set_ylabel("velocity")
-        ax2.yaxis.set_label_position("right")
-        ax2.yaxis.tick_right()
+            ax1.set_ylabel("distance")
+            ax2.set_ylabel("velocity")
+            ax2.yaxis.set_label_position("right")
+            ax2.yaxis.tick_right()
 
-        lines1, labels1 = ax1.get_legend_handles_labels()
-        lines2, labels2 = ax2.get_legend_handles_labels()
-        lines = lines1 + lines2
-        labels = labels1 + labels2
-        ax1.legend(lines, labels)
+            lines1, labels1 = ax1.get_legend_handles_labels()
+            lines2, labels2 = ax2.get_legend_handles_labels()
+            lines = lines1 + lines2
+            labels = labels1 + labels2
+            ax1.legend(lines, labels)
+        else:
+            for idx, distance_column in enumerate(distance_datas):
+                distance_values = distance_datas[distance_column].tolist()
+                ax1.plot(elapsed_times, distance_values, color=self.colors[idx], label=distance_column, linestyle="-")
+
+            ax1.set_ylabel("distance")
+            ax2.set_ylabel("")
+            ax2.set_yticks([])
+
+            lines1, labels1 = ax1.get_legend_handles_labels()
+            ax1.legend(lines1, labels1)
 
         self.canvas.draw()
 
@@ -82,9 +93,9 @@ class ColorGraphController(BaseController):
     def init_controller(self):
         super().init_controller()
 
-    def update_graph(self, elapsed_times: list, datas: list[pd.DataFrame]):
+    def update_graph(self, elapsed_times: list, distance_datas: pd.DataFrame, velocity_datas: pd.DataFrame):
         view: ColorGraphView = self.view
-        view.update_graph(elapsed_times, datas)
+        view.update_graph(elapsed_times, distance_datas, velocity_datas)
 
     def set_colors(self, num_display: int):
         view: ColorGraphView = self.view

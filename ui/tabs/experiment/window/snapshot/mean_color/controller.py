@@ -1,6 +1,5 @@
 from ui.common import BaseController
 from ui.tabs.experiment.window.snapshot.mean_color import MeanColorModel, MeanColorView
-from ui.tabs.experiment.window.snapshot.mean_color.image_list import ImageListController
 
 
 class MeanColorController(BaseController):
@@ -9,13 +8,6 @@ class MeanColorController(BaseController):
 
     def init_controller(self):
         super().init_controller()
-
-        view: MeanColorView = self.view
-        view.radio.selected.connect(self.on_radio_selected)
-
-    def on_radio_selected(self, index):
-        image_list: ImageListController = self.view.image_list
-        image_list.set_image_type(index)
 
 
 def main():

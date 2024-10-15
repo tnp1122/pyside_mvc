@@ -4,6 +4,7 @@ from PySide6.QtNetwork import QNetworkReply
 
 from data.api.api_manager import APIManager
 from ui.common import BaseController
+from ui.common.confirmation_dialog import ConfirmationDialog
 from ui.common.toast import Toast
 from ui.tabs.combination import CombinationModel, CombinationView
 from ui.tabs.combination.widgets import BaseCell, Cell
@@ -37,6 +38,7 @@ class CombinationController(BaseController):
 
         view.btn_refresh.clicked.connect(self.refresh)
         view.btn_cancel.clicked.connect(self.on_cancel_clicked)
+        view.btn_init_censor.clicked.connect(self.on_init_censor_clicked)
         view.btn_save.clicked.connect(self.on_save_clicked)
         view.btn_new_combination.clicked.connect(self.on_new_combination_clicked)
 
@@ -142,10 +144,26 @@ class CombinationController(BaseController):
         self.set_editable(False)
         self.load_sensors()
 
+    def get_combination_names(self):
+        combinations = self.combinations[self.experiment_index]
+        names = []
+        for combination in combinations:
+            names.append(combination["name"])
+
+        return names
+
     def on_save_clicked(self):
         view: CombinationView = self.view
 
         name = view.et_combination_name.text()
+        combination_names = self.get_combination_names()
+        if name in combination_names:
+            dlg_duplicated_name_warning = ConfirmationDialog(
+                "조합 추가", "이미 존재하는 조합이름 입니다.", cancel_text="확인", use_confirm=False
+            )
+            dlg_duplicated_name_warning.exec()
+            return
+
         combination = {"name": name, "sensor_associations": []}
 
         ex_index = self.experiment_index
@@ -213,6 +231,14 @@ class CombinationController(BaseController):
         if event > -1:
             self.combination_index = event
             self.load_sensors()
+
+    def on_init_censor_clicked(self):
+        view: CombinationView = self.view
+        for y in range(11, -1, -1):
+            for x in range(1, 9):
+                cell: Cell = view.lyt_grid.itemAtPosition(y, x).widget()
+                cell.set_additive(None)
+                cell.set_solvent(None)
 
     def on_cell_clicked(self, index: str):
         view: CombinationView = self.view
