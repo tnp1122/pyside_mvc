@@ -846,13 +846,19 @@ class Timeline(dict):
             velocity_datas = ([f"CorrectedColorVelocity{idx + 1}" for idx in indexes])
         return elapsed_times, self.datas[distance_datas], self.datas[velocity_datas] if include_velocity else None
 
-    def get_timeline_datas(self, indexes: list) -> (list, pd.DataFrame, pd.DataFrame):
+    def get_timeline_datas(self, indexes: list, apply_lab_correct) -> (list, pd.DataFrame, pd.DataFrame):
         rgb_columns = []
         distance_columns = []
-        for idx in indexes:
-            rgb_columns.extend([f"R{idx + 1}", f"G{idx + 1}", f"B{idx + 1}"])
-        for idx in indexes:
-            distance_columns.extend([f"ColorDistance{idx + 1}"])
+        if self.lab_correction_factors is not None and apply_lab_correct:
+            for idx in indexes:
+                rgb_columns.extend([f"CorrectedR{idx + 1}", f"CorrectedG{idx + 1}", f"CorrectedB{idx + 1}"])
+            for idx in indexes:
+                distance_columns.extend([f"CorrectedColorDistance{idx + 1}"])
+        else:
+            for idx in indexes:
+                rgb_columns.extend([f"R{idx + 1}", f"G{idx + 1}", f"B{idx + 1}"])
+            for idx in indexes:
+                distance_columns.extend([f"ColorDistance{idx + 1}"])
 
         rgb_datas = self.datas[rgb_columns]
         distance_datas = self.datas[distance_columns]

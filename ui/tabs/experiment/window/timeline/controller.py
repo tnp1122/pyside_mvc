@@ -50,7 +50,9 @@ class PlateTimelineController(BaseController):
     @with_loading_spinner
     def export_to_excel(self):
         timeline: Timeline = self.model.timeline
-        elapsed_times, rgb_datas, distance_datas = timeline.get_timeline_datas(self.association_indexes)
+        apply_lab_correct = self.view.cb_apply_lab_correction.isChecked()
+        elapsed_times, rgb_datas, distance_datas = timeline.get_timeline_datas(self.association_indexes,
+                                                                               apply_lab_correct)
 
         worker = TimelineExcelWorker(elapsed_times, rgb_datas, distance_datas, self.timeline_path, self)
         worker.finished.connect(self.on_excel_saved)
