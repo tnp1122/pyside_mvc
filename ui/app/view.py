@@ -6,7 +6,7 @@ from ui.common import BaseWidgetView
 from ui.common.loading_spinner import LoadingSpinner
 from ui.common.toast import Toast
 from util import local_storage_manager as lsm
-from util.camera_manager import CameraManager
+from util.camera_manager import CameraManager, CameraUnit
 
 
 class AppView(BaseWidgetView):
@@ -75,3 +75,6 @@ class AppView(BaseWidgetView):
         self.loading_spinner.setFixedWidth(window_width)
         self.loading_spinner.setFixedSize(window_width, window_height)
         self.loading_spinner.move(0, 30)
+
+    def closeEvent(self, event):
+        CameraUnit().close_camera()
